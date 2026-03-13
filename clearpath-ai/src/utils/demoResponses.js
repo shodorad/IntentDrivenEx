@@ -2,10 +2,10 @@
 // Each intent pill has its own unique conversation flow with 3-4 contextual questions
 
 const PHONE_PREVIEWS = [
-  { name: "Moto G Power", price: 99, image: "https://fdn2.gsmarena.com/vv/bigpic/motorola-moto-g-power-2024.jpg" },
-  { name: "Galaxy A15", price: 139, image: "https://fdn2.gsmarena.com/vv/bigpic/samsung-galaxy-a15-5g-new.jpg" },
-  { name: "Galaxy A25", price: 199, image: "https://fdn2.gsmarena.com/vv/bigpic/samsung-galaxy-a25.jpg" },
-  { name: "iPhone SE", price: 249, image: "https://fdn2.gsmarena.com/vv/bigpic/apple-iphone-se-2022.jpg" }
+  { name: "Moto G Power", price: 99, image: "https://m.media-amazon.com/images/I/61c9OZyq2yL._AC_SX679_.jpg" },
+  { name: "Galaxy A15", price: 139, image: "https://m.media-amazon.com/images/I/41vU1u8DZXL._AC_SX679_.jpg" },
+  { name: "Galaxy A25", price: 199, image: "https://m.media-amazon.com/images/I/61cwMOVn17L._AC_SX679_.jpg" },
+  { name: "iPhone SE", price: 249, image: "https://m.media-amazon.com/images/I/61-wAIWB8NL._AC_SX679_.jpg" }
 ];
 
 const FLOWS = {

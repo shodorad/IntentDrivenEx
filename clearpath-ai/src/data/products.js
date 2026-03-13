@@ -86,7 +86,7 @@ export const PHONES = [
     highlight: "Best battery life on a budget",
     solves: ["battery", "slow-phone", "budget-phone", "cost"],
     badge: "Best Seller",
-    image: "https://fdn2.gsmarena.com/vv/bigpic/motorola-moto-g-power-2024.jpg",
+    image: "https://m.media-amazon.com/images/I/61c9OZyq2yL._AC_SX679_.jpg",
     url: "https://www.totalwireless.com/phones"
   },
   {
@@ -103,7 +103,7 @@ export const PHONES = [
     highlight: "Great display & camera at an affordable price",
     solves: ["camera", "slow-phone", "photos", "display"],
     badge: null,
-    image: "https://fdn2.gsmarena.com/vv/bigpic/samsung-galaxy-a15-5g-new.jpg",
+    image: "https://m.media-amazon.com/images/I/41vU1u8DZXL._AC_SX679_.jpg",
     url: "https://www.totalwireless.com/phones"
   },
   {
@@ -120,7 +120,7 @@ export const PHONES = [
     highlight: "Apple quality at the lowest price",
     solves: ["slow-phone", "apple", "upgrade"],
     badge: null,
-    image: "https://fdn2.gsmarena.com/vv/bigpic/apple-iphone-se-2022.jpg",
+    image: "https://m.media-amazon.com/images/I/61-wAIWB8NL._AC_SX679_.jpg",
     url: "https://www.totalwireless.com/phones"
   },
   {
@@ -137,7 +137,7 @@ export const PHONES = [
     highlight: "Best all-around mid-range phone",
     solves: ["camera", "slow-phone", "photos", "storage", "multitasking"],
     badge: "Best Value",
-    image: "https://fdn2.gsmarena.com/vv/bigpic/samsung-galaxy-a25.jpg",
+    image: "https://m.media-amazon.com/images/I/61cwMOVn17L._AC_SX679_.jpg",
     url: "https://www.totalwireless.com/phones"
   },
   {
@@ -154,7 +154,7 @@ export const PHONES = [
     highlight: "Most storage — great if you're always running out",
     solves: ["storage", "slow-phone", "photos", "multitasking"],
     badge: null,
-    image: "https://fdn2.gsmarena.com/vv/bigpic/motorola-moto-g-stylus-5g-2024.jpg",
+    image: "https://m.media-amazon.com/images/I/61LE9-6KxdL._AC_SX679_.jpg",
     url: "https://www.totalwireless.com/phones"
   }
 ];
