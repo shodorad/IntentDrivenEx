@@ -22,11 +22,23 @@ export function parseResponse(text) {
     }
   }
 
+  // Extract product images
+  const imageMatch = text.match(/\[PRODUCT_IMAGES\](.*?)\[\/PRODUCT_IMAGES\]/s);
+  let productImages = null;
+  if (imageMatch) {
+    try {
+      productImages = JSON.parse(imageMatch[1]);
+    } catch (e) {
+      console.warn('Failed to parse product images:', e);
+    }
+  }
+
   // Clean message text (remove JSON blocks)
   const message = text
     .replace(/\[ACTION_PILLS\].*?\[\/ACTION_PILLS\]/s, '')
     .replace(/\[RECOMMENDATIONS?\].*?\[\/RECOMMENDATIONS?\]/s, '')
+    .replace(/\[PRODUCT_IMAGES\].*?\[\/PRODUCT_IMAGES\]/s, '')
     .trim();
 
-  return { message, actionPills, recommendations };
+  return { message, actionPills, recommendations, productImages };
 }

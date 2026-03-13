@@ -1,6 +1,13 @@
 // Fallback responses when no API key is configured (demo mode)
 // Each intent pill has its own unique conversation flow with 3-4 contextual questions
 
+const PHONE_PREVIEWS = [
+  { name: "Moto G Power", price: 99, image: "https://i.imgur.com/8QqZlYj.png" },
+  { name: "Galaxy A15", price: 139, image: "https://i.imgur.com/YJhKMqO.png" },
+  { name: "Galaxy A25", price: 199, image: "https://i.imgur.com/kR5O8xZ.png" },
+  { name: "iPhone SE", price: 249, image: "https://i.imgur.com/3Jv5T8N.png" }
+];
+
 const FLOWS = {
   // ─── "My internet is slow" ───
   'slow-data': [
@@ -49,8 +56,9 @@ const FLOWS = {
       pills: ["Less than a year", "1-2 years", "3-4 years", "5+ years or not sure"]
     },
     {
-      text: "What kind of phone are you using right now? That'll help me understand what we're working with.",
-      pills: ["iPhone (older model)", "iPhone (recent model)", "Samsung Galaxy", "Another Android phone"]
+      text: "What kind of phone are you using right now? That'll help me understand what we're working with. Here are some popular upgrades people love:",
+      pills: ["iPhone (older model)", "iPhone (recent model)", "Samsung Galaxy", "Another Android phone"],
+      productImages: PHONE_PREVIEWS
     },
     {
       text: "When it feels slow, what's usually happening — is it when you open apps, switch between things, or all the time?",
@@ -73,8 +81,9 @@ const FLOWS = {
       pills: ["32 GB or less", "64 GB", "128 GB", "I don't know"]
     },
     {
-      text: "Have you tried clearing old files or offloading apps, or are you at the point where you need a phone with more built-in storage?",
-      pills: ["I've tried clearing stuff, still full", "I clear it but it fills back up", "I haven't tried yet", "I'd rather just get more storage"]
+      text: "Have you tried clearing old files or offloading apps, or are you at the point where you need a phone with more built-in storage? Here are some phones with great storage options:",
+      pills: ["I've tried clearing stuff, still full", "I clear it but it fills back up", "I haven't tried yet", "I'd rather just get more storage"],
+      productImages: PHONE_PREVIEWS
     },
     {
       text: "Would you prefer a phone with expandable storage (microSD card slot) so you can add more later, or is built-in storage fine?",
@@ -97,8 +106,9 @@ const FLOWS = {
       pills: ["Mostly photos", "Lots of video too", "About equal", "I mainly just do selfies"]
     },
     {
-      text: "And what's your budget range for a new phone? I want to find the best camera within what you're comfortable spending.",
-      pills: ["Under $150", "$150 - $250", "$250 - $400", "I'm flexible on budget"]
+      text: "And what's your budget range for a new phone? Here are some top camera phones in different price ranges:",
+      pills: ["Under $150", "$150 - $250", "$250 - $400", "I'm flexible on budget"],
+      productImages: PHONE_PREVIEWS
     }
   ],
 
@@ -133,8 +143,9 @@ const FLOWS = {
       pills: ["Great camera", "Long battery life", "Lots of storage", "Best overall performance"]
     },
     {
-      text: "Do you have a brand preference, or are you open to anything?",
-      pills: ["I prefer iPhone", "I prefer Samsung", "I'm open to any brand", "Whatever gives the best value"]
+      text: "Do you have a brand preference, or are you open to anything? Here's a preview of what's available:",
+      pills: ["I prefer iPhone", "I prefer Samsung", "I'm open to any brand", "Whatever gives the best value"],
+      productImages: PHONE_PREVIEWS
     },
     {
       text: "And what's your budget looking like? I'll find the best option in your range.",
@@ -244,6 +255,9 @@ export function generateDemoResponse(messages) {
   if (turn <= flow.length) {
     const step = flow[turn - 1];
     let response = step.text;
+    if (step.productImages) {
+      response += `\n[PRODUCT_IMAGES]${JSON.stringify(step.productImages)}[/PRODUCT_IMAGES]`;
+    }
     if (step.pills) {
       response += `\n[ACTION_PILLS]${JSON.stringify(step.pills)}[/ACTION_PILLS]`;
     }

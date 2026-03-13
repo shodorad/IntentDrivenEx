@@ -39,7 +39,7 @@ export function useChatActions() {
         responseText = generateDemoResponse(apiMessages);
       }
 
-      const { message, actionPills, recommendations } = parseResponse(responseText);
+      const { message, actionPills, recommendations, productImages } = parseResponse(responseText);
 
       dispatch({
         type: 'ADD_MESSAGE',
@@ -47,7 +47,8 @@ export function useChatActions() {
           role: 'assistant',
           content: message,
           actionPills,
-          recommendations
+          recommendations,
+          productImages
         }
       });
     } catch (err) {
@@ -58,7 +59,8 @@ export function useChatActions() {
           role: 'assistant',
           content: "Sorry, something went wrong. Let me try again — could you rephrase that?",
           actionPills: null,
-          recommendations: null
+          recommendations: null,
+          productImages: null
         }
       });
     } finally {

@@ -219,6 +219,64 @@
   box-shadow: 0 4px 16px rgba(0, 181, 173, 0.2);
 }
 
+/* ── Phone image ── */
+.phoneImageWrap {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 12px 8px;
+  background: linear-gradient(180deg, rgba(245, 245, 245, 0.5) 0%, rgba(255, 255, 255, 0) 100%);
+}
+
+.phoneImage {
+  width: 80px;
+  height: auto;
+  max-height: 120px;
+  object-fit: contain;
+  filter: drop-shadow(0 4px 12px rgba(0, 0, 0, 0.1));
+}
+
+/* ── Expanded actions ── */
+.expandedActions {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  overflow: hidden;
+}
+
+.reasonText {
+  font-size: 0.75rem;
+  color: var(--tw-gray-600);
+  line-height: 1.5;
+  margin: 0;
+  padding: 0 2px;
+}
+
+.btnPurchase {
+  width: 100%;
+  padding: 10px 16px;
+  background: linear-gradient(135deg, var(--tw-red) 0%, #ff2020 100%);
+  color: white;
+  border-radius: 8px;
+  font-size: 0.82rem;
+  font-weight: 600;
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 8px rgba(238, 0, 0, 0.2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  text-decoration: none;
+}
+
+.btnPurchase:hover {
+  box-shadow: 0 4px 16px rgba(238, 0, 0, 0.3);
+  transform: translateY(-1px);
+  color: white;
+}
+
 /* ── Human card body ── */
 .humanBody {
   display: flex;

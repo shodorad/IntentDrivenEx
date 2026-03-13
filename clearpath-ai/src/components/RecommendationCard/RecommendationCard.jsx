@@ -1,5 +1,6 @@
-import { CheckCircle, Phone, Headset, Star } from '@phosphor-icons/react';
-import { motion } from 'framer-motion';
+import { useState } from 'react';
+import { CheckCircle, Phone, Headset, Star, ArrowSquareOut, ShoppingCart } from '@phosphor-icons/react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { PLANS, PHONES } from '../../data/products';
 import styles from './RecommendationCard.module.css';
 
@@ -10,6 +11,8 @@ function findProduct(type, id) {
 }
 
 function PlanCard({ product, reason, isBest }) {
+  const [expanded, setExpanded] = useState(false);
+
   return (
     <motion.div
       className={`${styles.card} ${isBest ? styles.best : styles.alt}`}
@@ -65,15 +68,41 @@ function PlanCard({ product, reason, isBest }) {
 
       {/* CTA */}
       <div className={styles.actions}>
-        <button className={isBest ? styles.btnPrimary : styles.btnSecondary}>
-          Get This Plan
-        </button>
+        {!expanded ? (
+          <button
+            className={isBest ? styles.btnPrimary : styles.btnSecondary}
+            onClick={() => setExpanded(true)}
+          >
+            Explore More
+          </button>
+        ) : (
+          <motion.div
+            className={styles.expandedActions}
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: 'auto' }}
+            transition={{ duration: 0.3 }}
+          >
+            <p className={styles.reasonText}>{reason}</p>
+            <a
+              href={product.url || "https://www.totalwireless.com/plans"}
+              target="_blank"
+              rel="noopener noreferrer"
+              className={styles.btnPurchase}
+            >
+              <ShoppingCart size={16} weight="bold" />
+              Purchase on Website
+              <ArrowSquareOut size={14} />
+            </a>
+          </motion.div>
+        )}
       </div>
     </motion.div>
   );
 }
 
 function PhoneCard({ product, reason, isBest }) {
+  const [expanded, setExpanded] = useState(false);
+
   return (
     <motion.div
       className={`${styles.card} ${isBest ? styles.best : styles.alt}`}
@@ -96,6 +125,18 @@ function PhoneCard({ product, reason, isBest }) {
           <span className={styles.priceAmount}>{product.price}</span>
         </div>
       </div>
+
+      {/* Phone image */}
+      {product.image && (
+        <div className={styles.phoneImageWrap}>
+          <img
+            src={product.image}
+            alt={product.name}
+            className={styles.phoneImage}
+            onError={(e) => { e.target.style.display = 'none'; }}
+          />
+        </div>
+      )}
 
       {/* Stats row */}
       <div className={styles.statsRow}>
@@ -125,9 +166,33 @@ function PhoneCard({ product, reason, isBest }) {
 
       {/* CTA */}
       <div className={styles.actions}>
-        <button className={isBest ? styles.btnPrimary : styles.btnSecondary}>
-          Get This Phone
-        </button>
+        {!expanded ? (
+          <button
+            className={isBest ? styles.btnPrimary : styles.btnSecondary}
+            onClick={() => setExpanded(true)}
+          >
+            Explore More
+          </button>
+        ) : (
+          <motion.div
+            className={styles.expandedActions}
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: 'auto' }}
+            transition={{ duration: 0.3 }}
+          >
+            <p className={styles.reasonText}>{reason}</p>
+            <a
+              href={product.url || "https://www.totalwireless.com/phones"}
+              target="_blank"
+              rel="noopener noreferrer"
+              className={styles.btnPurchase}
+            >
+              <ShoppingCart size={16} weight="bold" />
+              Purchase on Website
+              <ArrowSquareOut size={14} />
+            </a>
+          </motion.div>
+        )}
       </div>
     </motion.div>
   );

@@ -10,7 +10,8 @@ export const PLANS = [
     features: ["Unlimited Talk & Text", "1GB High-Speed Data", "Wi-Fi Calling", "On Verizon's 5G Network"],
     highlight: "Best for talk & text users",
     solves: ["cost", "first-time", "light-use"],
-    badge: null
+    badge: null,
+    url: "https://www.totalwireless.com/plans"
   },
   {
     id: "basic-30",
@@ -23,7 +24,8 @@ export const PLANS = [
     features: ["Unlimited Talk & Text", "5GB High-Speed Data", "Mobile Hotspot (1GB)", "On Verizon's 5G Network"],
     highlight: "Best for light data users",
     solves: ["cost", "light-use"],
-    badge: null
+    badge: null,
+    url: "https://www.totalwireless.com/plans"
   },
   {
     id: "value-40",
@@ -36,7 +38,8 @@ export const PLANS = [
     features: ["Unlimited Talk & Text", "15GB High-Speed Data", "Mobile Hotspot (5GB)", "On Verizon's 5G Network", "International Texting"],
     highlight: "Best for moderate data users",
     solves: ["data-runs-out", "slow-data", "moderate-use"],
-    badge: "Most Popular"
+    badge: "Most Popular",
+    url: "https://www.totalwireless.com/plans"
   },
   {
     id: "unlimited-50",
@@ -49,7 +52,8 @@ export const PLANS = [
     features: ["Unlimited Talk & Text", "Unlimited High-Speed Data", "Mobile Hotspot (10GB)", "On Verizon's 5G Network", "International Texting", "Spam Call Filter"],
     highlight: "Unlimited everything — no surprises",
     solves: ["data-runs-out", "slow-data", "heavy-use", "streaming"],
-    badge: "Best Value"
+    badge: "Best Value",
+    url: "https://www.totalwireless.com/plans"
   },
   {
     id: "unlimited-plus-60",
@@ -62,7 +66,8 @@ export const PLANS = [
     features: ["Unlimited Talk & Text", "Unlimited Premium Data", "Mobile Hotspot (25GB)", "5G Ultra Wideband Access", "100GB Cloud Storage", "International Texting & Calling", "Spam Call Filter"],
     highlight: "Our best plan — premium data with 5G Ultra Wideband",
     solves: ["data-runs-out", "slow-data", "heavy-use", "streaming", "hotspot", "premium"],
-    badge: null
+    badge: null,
+    url: "https://www.totalwireless.com/plans"
   }
 ];
 
@@ -81,7 +86,8 @@ export const PHONES = [
     highlight: "Best battery life on a budget",
     solves: ["battery", "slow-phone", "budget-phone", "cost"],
     badge: "Best Seller",
-    image: "https://placehold.co/120x240/f5f5f5/1a1a1a?text=Moto+G+Power"
+    image: "https://i.imgur.com/8QqZlYj.png",
+    url: "https://www.totalwireless.com/phones"
   },
   {
     id: "samsung-a15",
@@ -97,7 +103,8 @@ export const PHONES = [
     highlight: "Great display & camera at an affordable price",
     solves: ["camera", "slow-phone", "photos", "display"],
     badge: null,
-    image: "https://placehold.co/120x240/f5f5f5/1a1a1a?text=Galaxy+A15"
+    image: "https://i.imgur.com/YJhKMqO.png",
+    url: "https://www.totalwireless.com/phones"
   },
   {
     id: "iphone-se",
@@ -113,7 +120,8 @@ export const PHONES = [
     highlight: "Apple quality at the lowest price",
     solves: ["slow-phone", "apple", "upgrade"],
     badge: null,
-    image: "https://placehold.co/120x240/f5f5f5/1a1a1a?text=iPhone+SE"
+    image: "https://i.imgur.com/3Jv5T8N.png",
+    url: "https://www.totalwireless.com/phones"
   },
   {
     id: "samsung-a25",
@@ -129,7 +137,8 @@ export const PHONES = [
     highlight: "Best all-around mid-range phone",
     solves: ["camera", "slow-phone", "photos", "storage", "multitasking"],
     badge: "Best Value",
-    image: "https://placehold.co/120x240/f5f5f5/1a1a1a?text=Galaxy+A25"
+    image: "https://i.imgur.com/kR5O8xZ.png",
+    url: "https://www.totalwireless.com/phones"
   },
   {
     id: "moto-g-stylus",
@@ -145,7 +154,8 @@ export const PHONES = [
     highlight: "Most storage — great if you're always running out",
     solves: ["storage", "slow-phone", "photos", "multitasking"],
     badge: null,
-    image: "https://placehold.co/120x240/f5f5f5/1a1a1a?text=Moto+G+Stylus"
+    image: "https://i.imgur.com/qN7lVcE.png",
+    url: "https://www.totalwireless.com/phones"
   }
 ];
 
