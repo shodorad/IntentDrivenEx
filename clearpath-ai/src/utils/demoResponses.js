@@ -2,10 +2,10 @@
 // Each intent pill has its own unique conversation flow with 3-4 contextual questions
 
 const PHONE_PREVIEWS = [
-  { name: "Moto G Power", price: 99, image: "https://i.imgur.com/8QqZlYj.png" },
-  { name: "Galaxy A15", price: 139, image: "https://i.imgur.com/YJhKMqO.png" },
-  { name: "Galaxy A25", price: 199, image: "https://i.imgur.com/kR5O8xZ.png" },
-  { name: "iPhone SE", price: 249, image: "https://i.imgur.com/3Jv5T8N.png" }
+  { name: "Moto G Power", price: 99, image: "https://fdn2.gsmarena.com/vv/bigpic/motorola-moto-g-power-2024.jpg" },
+  { name: "Galaxy A15", price: 139, image: "https://fdn2.gsmarena.com/vv/bigpic/samsung-galaxy-a15-5g-new.jpg" },
+  { name: "Galaxy A25", price: 199, image: "https://fdn2.gsmarena.com/vv/bigpic/samsung-galaxy-a25.jpg" },
+  { name: "iPhone SE", price: 249, image: "https://fdn2.gsmarena.com/vv/bigpic/apple-iphone-se-2022.jpg" }
 ];
 
 const FLOWS = {
@@ -56,9 +56,8 @@ const FLOWS = {
       pills: ["Less than a year", "1-2 years", "3-4 years", "5+ years or not sure"]
     },
     {
-      text: "What kind of phone are you using right now? That'll help me understand what we're working with. Here are some popular upgrades people love:",
-      pills: ["iPhone (older model)", "iPhone (recent model)", "Samsung Galaxy", "Another Android phone"],
-      productImages: PHONE_PREVIEWS
+      text: "What kind of phone are you using right now? That'll help me understand what we're working with.",
+      pills: ["iPhone (older model)", "iPhone (recent model)", "Samsung Galaxy", "Another Android phone"]
     },
     {
       text: "When it feels slow, what's usually happening — is it when you open apps, switch between things, or all the time?",

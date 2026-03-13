@@ -6,10 +6,11 @@ import ActionPills from '../ActionPills/ActionPills';
 import TypingIndicator from '../TypingIndicator/TypingIndicator';
 import RecommendationCard from '../RecommendationCard/RecommendationCard';
 import ProductImageStrip from '../ProductImageStrip/ProductImageStrip';
+import ExploreDetail from '../ExploreDetail/ExploreDetail';
 import styles from './ChatArea.module.css';
 
 export default function ChatArea() {
-  const { state } = useChat();
+  const { state, dispatch } = useChat();
   const { sendMessage } = useChatActions();
   const bottomRef = useRef(null);
 
@@ -19,6 +20,20 @@ export default function ChatArea() {
 
   const handlePillSelect = (pillText) => {
     sendMessage(pillText);
+  };
+
+  const handleExplore = (product, type, reason) => {
+    dispatch({
+      type: 'ADD_MESSAGE',
+      payload: {
+        role: 'assistant',
+        content: `Great choice! Here's a closer look at the ${product.name} — including what real customers have to say.`,
+        exploreData: { product, type, reason },
+        actionPills: null,
+        recommendations: null,
+        productImages: null,
+      },
+    });
   };
 
   return (
@@ -31,7 +46,10 @@ export default function ChatArea() {
             <ProductImageStrip images={msg.productImages} />
           )}
           {msg.role === 'assistant' && msg.recommendations && (
-            <RecommendationCard recommendations={msg.recommendations} />
+            <RecommendationCard recommendations={msg.recommendations} onExplore={handleExplore} />
+          )}
+          {msg.role === 'assistant' && msg.exploreData && (
+            <ExploreDetail exploreData={msg.exploreData} />
           )}
           {msg.role === 'assistant' && msg.actionPills && (
             <ActionPills pills={msg.actionPills} onSelect={handlePillSelect} />
