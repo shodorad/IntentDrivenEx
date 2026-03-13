@@ -1,107 +1,167 @@
+/*
+  Layout: flex-end anchors content near the input bar.
+  Empty space goes to the top — standard chat UI pattern.
+  Spacing scale: 8px base → 8, 12, 16, 24
+*/
+
 .landing {
   flex: 1;
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
-  padding: 40px 32px;
+  padding: 32px 32px 20px;
   text-align: center;
-  animation: fadeIn 0.4s ease-out;
+  overflow-y: auto;
+  min-height: 0;
 }
+
+/* --- Brand --- */
 
 .brand {
   display: flex;
   align-items: center;
   gap: 10px;
-  margin-bottom: 28px;
+  margin-bottom: 18px;
 }
 
 .logoMark {
-  width: 44px;
-  height: 44px;
-  background: var(--tw-teal);
+  width: 40px;
+  height: 40px;
+  background: linear-gradient(135deg, var(--tw-teal) 0%, #00d4cb 100%);
   border-radius: 12px;
   display: flex;
   align-items: center;
   justify-content: center;
   color: white;
+  box-shadow: 0 3px 12px rgba(0, 181, 173, 0.3);
 }
 
 .logoText {
-  font-size: 1.5rem;
-  font-weight: 700;
-  color: var(--tw-gray-900);
-  letter-spacing: -0.5px;
+  font-size: 1.4rem;
+  font-weight: 800;
+  background: linear-gradient(135deg, var(--tw-navy) 0%, var(--tw-teal) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  letter-spacing: -0.3px;
 }
 
+/* --- Typography --- */
+
 .headline {
-  font-size: 1.85rem;
+  font-size: 1.75rem;
   font-weight: 800;
-  line-height: 1.25;
+  line-height: 1.2;
   color: var(--tw-gray-900);
-  margin-bottom: 16px;
+  margin-bottom: 12px;
   letter-spacing: -0.5px;
 }
 
 .subhead {
-  font-size: 0.95rem;
+  font-size: 0.85rem;
   color: var(--tw-gray-600);
-  max-width: 560px;
-  line-height: 1.65;
-  margin-bottom: 36px;
+  max-width: 480px;
+  line-height: 1.6;
+  margin-bottom: 0;
 }
+
+.spacer {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 40px;
+}
+
+.spacer::after {
+  content: '';
+  width: 40px;
+  height: 3px;
+  border-radius: 2px;
+  background: rgba(0, 181, 173, 0.15);
+}
+
+/* --- Pills --- */
 
 .pillsGrid {
   display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 10px;
+  grid-template-columns: repeat(4, auto);
+  justify-content: center;
+  gap: 8px;
   width: 100%;
-  max-width: 520px;
+  max-width: 840px;
 }
 
 .pill {
   display: flex;
   align-items: center;
-  gap: 10px;
-  padding: 14px 18px;
-  background: var(--tw-white);
-  border: 1.5px solid var(--tw-gray-200);
-  border-radius: var(--radius-sm);
-  font-size: 0.9rem;
+  gap: 8px;
+  padding: 10px 14px;
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  border-radius: 12px;
+  font-size: 0.8rem;
   font-weight: 500;
-  color: var(--tw-gray-900);
-  transition: all 0.15s ease;
+  color: var(--tw-gray-700);
   cursor: pointer;
   text-align: left;
+  transition: all 0.2s ease;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.03);
+  line-height: 1.3;
+  white-space: nowrap;
+}
+
+.pillIcon {
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 181, 173, 0.08);
+  border-radius: 8px;
+  color: var(--tw-teal);
+  flex-shrink: 0;
+  transition: all 0.2s ease;
 }
 
 .pill:hover {
-  border-color: var(--tw-teal);
-  color: var(--tw-teal);
-  background: var(--tw-teal-light);
-  box-shadow: 0 2px 8px rgba(0, 181, 173, 0.12);
+  border-color: rgba(0, 181, 173, 0.3);
+  background: rgba(255, 255, 255, 1);
+  box-shadow: 0 4px 16px rgba(0, 181, 173, 0.12);
+  transform: translateY(-1px);
 }
 
-.pill:active {
-  transform: scale(0.98);
+.pill:hover .pillIcon {
+  background: linear-gradient(135deg, var(--tw-teal) 0%, #00d4cb 100%);
+  color: white;
 }
+
+/* --- Mobile --- */
 
 @media (max-width: 768px) {
   .landing {
-    padding: 28px 20px;
+    padding: 24px 16px 12px;
     justify-content: flex-start;
-    padding-top: 40px;
   }
 
   .headline {
-    font-size: 1.5rem;
+    font-size: 1.4rem;
   }
 
   .subhead {
-    font-size: 0.88rem;
+    font-size: 0.82rem;
   }
 
   .pillsGrid {
-    grid-template-columns: 1fr;
+    grid-template-columns: repeat(2, auto);
+    max-width: 100%;
+  }
+
+  .pill {
+    white-space: normal;
+    font-size: 0.76rem;
+    padding: 9px 12px;
   }
 }

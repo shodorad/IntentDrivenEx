@@ -1,125 +1,170 @@
+/* ── Wrapper ── */
 .wrapper {
   margin-left: 44px;
   margin-top: 12px;
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 14px;
   animation: fadeSlideUp 0.4s ease-out;
 }
 
+/* ── Horizontal cards row ── */
+.cardsRow {
+  display: flex;
+  gap: 12px;
+  align-items: stretch;
+}
+
+/* ── Card base ── */
 .card {
-  border-radius: var(--radius);
-  padding: 20px;
-  transition: box-shadow 0.2s ease;
+  flex: 1;
+  min-width: 0;
+  border-radius: 14px;
+  overflow: hidden;
+  transition: all 0.25s ease;
+  display: flex;
+  flex-direction: column;
+}
+
+.card:hover {
+  transform: translateY(-3px);
 }
 
 .best {
   border: 2px solid var(--tw-teal);
-  background: var(--tw-teal-light);
+  background: white;
+  box-shadow: 0 4px 24px rgba(0, 181, 173, 0.15);
 }
 
 .alt {
-  border: 1.5px solid var(--tw-gray-200);
-  background: var(--tw-white);
+  border: 1.5px solid rgba(0, 0, 0, 0.08);
+  background: rgba(255, 255, 255, 0.85);
 }
 
-.badge {
-  font-size: 0.7rem;
+/* ── Gradient header ── */
+.cardTop {
+  padding: 14px 14px 12px;
+}
+
+.cardTopBest {
+  background: linear-gradient(135deg, #009a93 0%, #00c9bf 50%, #00b5ad 100%);
+  color: white;
+}
+
+.cardTopAlt {
+  background: linear-gradient(135deg, #3a4a5c 0%, #4a5568 50%, #2d3748 100%);
+  color: white;
+}
+
+.cardTopRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+}
+
+.planName {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: white;
+  margin: 0;
+  letter-spacing: -0.2px;
+}
+
+.badgePill {
+  font-size: 0.6rem;
   font-weight: 700;
   text-transform: uppercase;
-  letter-spacing: 1px;
-  margin-bottom: 10px;
+  letter-spacing: 0.8px;
+  background: rgba(255, 255, 255, 0.2);
+  color: white;
+  padding: 3px 8px;
+  border-radius: 20px;
+  white-space: nowrap;
 }
 
-.best .badge {
-  color: var(--tw-teal);
-}
-
-.alt .badge {
-  color: var(--tw-gray-400);
-}
-
-.cardHeader {
+/* ── Price display ── */
+.priceRow {
   display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  margin-bottom: 10px;
+  align-items: flex-end;
+  gap: 2px;
 }
 
-.productName {
+.priceDollar {
   font-size: 1.1rem;
   font-weight: 700;
-  color: var(--tw-gray-900);
+  color: white;
+  line-height: 1;
+  align-self: flex-start;
+  margin-top: 4px;
+}
+
+.priceAmount {
+  font-size: 2rem;
+  font-weight: 800;
+  color: white;
+  line-height: 1;
+  letter-spacing: -1px;
+}
+
+.priceMeta {
+  display: flex;
+  flex-direction: column;
+  font-size: 0.7rem;
+  color: rgba(255, 255, 255, 0.8);
+  line-height: 1.2;
+  margin-left: 4px;
   margin-bottom: 4px;
 }
 
-.productBadge {
-  display: inline-block;
-  font-size: 0.7rem;
-  font-weight: 600;
-  background: var(--tw-teal);
-  color: white;
-  padding: 2px 8px;
-  border-radius: 4px;
+/* ── Stats row ── */
+.statsRow {
+  display: flex;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+}
+
+.stat {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 10px 6px;
+  gap: 2px;
+}
+
+.stat:not(:last-child) {
+  border-right: 1px solid rgba(0, 0, 0, 0.06);
+}
+
+.statLabel {
+  font-size: 0.65rem;
+  font-weight: 500;
+  color: var(--tw-gray-400);
   text-transform: uppercase;
   letter-spacing: 0.5px;
 }
 
-.price {
-  text-align: right;
-  flex-shrink: 0;
-}
-
-.priceAmount {
-  font-size: 1.5rem;
-  font-weight: 800;
+.statValue {
+  font-size: 0.82rem;
+  font-weight: 700;
   color: var(--tw-gray-900);
 }
 
-.priceUnit {
-  font-size: 0.85rem;
-  color: var(--tw-gray-600);
-  font-weight: 500;
-}
-
-.specs {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  font-size: 0.8rem;
-  color: var(--tw-gray-600);
-  margin-bottom: 10px;
-}
-
-.specDot {
-  color: var(--tw-gray-400);
-}
-
-.reason {
-  border-left: 3px solid var(--tw-teal);
-  padding-left: 12px;
-  margin-bottom: 14px;
-}
-
-.reason p {
-  font-size: 0.88rem;
-  color: var(--tw-gray-700);
-  line-height: 1.55;
-  font-style: italic;
-}
-
+/* ── Features ── */
 .features {
   list-style: none;
-  margin-bottom: 16px;
+  padding: 10px 14px 4px;
+  flex: 1;
 }
 
 .features li {
   display: flex;
   align-items: center;
-  gap: 8px;
-  font-size: 0.85rem;
+  gap: 6px;
+  font-size: 0.72rem;
   color: var(--tw-gray-700);
-  padding: 3px 0;
+  padding: 2.5px 0;
+  line-height: 1.35;
 }
 
 .checkIcon {
@@ -127,81 +172,104 @@
   flex-shrink: 0;
 }
 
+/* ── CTA buttons ── */
 .actions {
-  display: flex;
-  gap: 10px;
+  padding: 6px 14px 12px;
 }
 
 .btnPrimary {
-  flex: 1;
-  padding: 12px 20px;
-  background: var(--tw-red);
+  width: 100%;
+  padding: 10px 16px;
+  background: linear-gradient(135deg, var(--tw-red) 0%, #ff2020 100%);
   color: white;
-  border-radius: var(--radius-sm);
-  font-size: 0.9rem;
+  border-radius: 8px;
+  font-size: 0.82rem;
   font-weight: 600;
   border: none;
   cursor: pointer;
-  transition: background 0.15s ease;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 8px rgba(238, 0, 0, 0.2);
 }
 
 .btnPrimary:hover {
-  background: #CC0000;
+  box-shadow: 0 4px 16px rgba(238, 0, 0, 0.3);
+  transform: translateY(-1px);
 }
 
 .btnSecondary {
-  flex: 1;
-  padding: 12px 20px;
+  width: 100%;
+  padding: 10px 16px;
   background: transparent;
   color: var(--tw-teal);
   border: 1.5px solid var(--tw-teal);
-  border-radius: var(--radius-sm);
-  font-size: 0.9rem;
+  border-radius: 8px;
+  font-size: 0.82rem;
   font-weight: 600;
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 6px;
-  transition: all 0.15s ease;
+  transition: all 0.2s ease;
 }
 
 .btnSecondary:hover {
-  background: var(--tw-teal);
+  background: linear-gradient(135deg, var(--tw-teal) 0%, #00c9c0 100%);
   color: white;
+  box-shadow: 0 4px 16px rgba(0, 181, 173, 0.2);
+}
+
+/* ── Human card body ── */
+.humanBody {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  padding: 16px 16px 8px;
+  flex: 1;
 }
 
 .headsetIcon {
   color: var(--tw-teal);
 }
 
+.humanReason {
+  font-size: 0.82rem;
+  color: var(--tw-gray-600);
+  text-align: center;
+  line-height: 1.5;
+  margin: 0;
+}
+
+/* ── Talk link ── */
 .talkLink {
   display: flex;
   align-items: center;
   gap: 8px;
-  font-size: 0.82rem;
+  font-size: 0.78rem;
   color: var(--tw-gray-600);
-  padding-top: 4px;
+  padding-top: 2px;
 }
 
 .talkLink strong {
   color: var(--tw-teal);
 }
 
+/* ── Mobile ── */
 @media (max-width: 768px) {
   .wrapper {
     margin-left: 0;
   }
 
-  .card {
-    padding: 16px;
+  .cardsRow {
+    flex-direction: column;
   }
 
   .priceAmount {
-    font-size: 1.3rem;
+    font-size: 2rem;
   }
 
-  .actions {
-    flex-direction: column;
+  .features li {
+    font-size: 0.75rem;
   }
 }

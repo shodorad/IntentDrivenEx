@@ -1,4 +1,5 @@
-import { CheckCircle, Phone, Headset } from '@phosphor-icons/react';
+import { CheckCircle, Phone, Headset, Star } from '@phosphor-icons/react';
+import { motion } from 'framer-motion';
 import { PLANS, PHONES } from '../../data/products';
 import styles from './RecommendationCard.module.css';
 
@@ -10,93 +11,142 @@ function findProduct(type, id) {
 
 function PlanCard({ product, reason, isBest }) {
   return (
-    <div className={`${styles.card} ${isBest ? styles.best : styles.alt}`}>
-      <div className={styles.badge}>
-        {isBest ? '★ BEST RECOMMENDATION' : 'ALSO CONSIDER'}
-      </div>
-      <div className={styles.cardHeader}>
-        <div>
-          <h3 className={styles.productName}>{product.name}</h3>
-          {product.badge && <span className={styles.productBadge}>{product.badge}</span>}
+    <motion.div
+      className={`${styles.card} ${isBest ? styles.best : styles.alt}`}
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.4 }}
+    >
+      {/* Gradient header */}
+      <div className={`${styles.cardTop} ${isBest ? styles.cardTopBest : styles.cardTopAlt}`}>
+        <div className={styles.cardTopRow}>
+          <h3 className={styles.planName}>{product.name}</h3>
+          {product.badge && (
+            <span className={styles.badgePill}>
+              {product.badge}
+            </span>
+          )}
         </div>
-        <div className={styles.price}>
-          <span className={styles.priceAmount}>${product.price}</span>
-          <span className={styles.priceUnit}>/mo</span>
+        <div className={styles.priceRow}>
+          <span className={styles.priceDollar}>$</span>
+          <span className={styles.priceAmount}>{product.price}</span>
+          <div className={styles.priceMeta}>
+            <span>/line</span>
+            <span>per month</span>
+          </div>
         </div>
       </div>
-      <div className={styles.reason}>
-        <p>{reason}</p>
+
+      {/* Stats row */}
+      <div className={styles.statsRow}>
+        <div className={styles.stat}>
+          <span className={styles.statLabel}>Data</span>
+          <span className={styles.statValue}>{product.data}</span>
+        </div>
+        <div className={styles.stat}>
+          <span className={styles.statLabel}>Network</span>
+          <span className={styles.statValue}>{product.network}</span>
+        </div>
+        <div className={styles.stat}>
+          <span className={styles.statLabel}>Talk & Text</span>
+          <span className={styles.statValue}>{product.talk}</span>
+        </div>
       </div>
+
+      {/* Features */}
       <ul className={styles.features}>
-        {product.features.slice(0, isBest ? 6 : 3).map((f, i) => (
+        {product.features.slice(0, isBest ? 6 : 4).map((f, i) => (
           <li key={i}>
-            <CheckCircle size={16} weight="fill" className={styles.checkIcon} />
+            <CheckCircle size={15} weight="fill" className={styles.checkIcon} />
             {f}
           </li>
         ))}
       </ul>
+
+      {/* CTA */}
       <div className={styles.actions}>
         <button className={isBest ? styles.btnPrimary : styles.btnSecondary}>
           Get This Plan
         </button>
       </div>
-    </div>
+    </motion.div>
   );
 }
 
 function PhoneCard({ product, reason, isBest }) {
   return (
-    <div className={`${styles.card} ${isBest ? styles.best : styles.alt}`}>
-      <div className={styles.badge}>
-        {isBest ? '★ BEST RECOMMENDATION' : 'ALSO CONSIDER'}
-      </div>
-      <div className={styles.cardHeader}>
-        <div>
-          <h3 className={styles.productName}>{product.name}</h3>
-          {product.badge && <span className={styles.productBadge}>{product.badge}</span>}
+    <motion.div
+      className={`${styles.card} ${isBest ? styles.best : styles.alt}`}
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.4 }}
+    >
+      {/* Gradient header */}
+      <div className={`${styles.cardTop} ${isBest ? styles.cardTopBest : styles.cardTopAlt}`}>
+        <div className={styles.cardTopRow}>
+          <h3 className={styles.planName}>{product.name}</h3>
+          {product.badge && (
+            <span className={styles.badgePill}>
+              {product.badge}
+            </span>
+          )}
         </div>
-        <div className={styles.price}>
-          <span className={styles.priceAmount}>${product.price}</span>
+        <div className={styles.priceRow}>
+          <span className={styles.priceDollar}>$</span>
+          <span className={styles.priceAmount}>{product.price}</span>
         </div>
       </div>
-      <div className={styles.specs}>
-        <span>{product.camera} Camera</span>
-        <span className={styles.specDot}>·</span>
-        <span>{product.storage}</span>
-        <span className={styles.specDot}>·</span>
-        <span>{product.battery}</span>
+
+      {/* Stats row */}
+      <div className={styles.statsRow}>
+        <div className={styles.stat}>
+          <span className={styles.statLabel}>Camera</span>
+          <span className={styles.statValue}>{product.camera}</span>
+        </div>
+        <div className={styles.stat}>
+          <span className={styles.statLabel}>Storage</span>
+          <span className={styles.statValue}>{product.storage}</span>
+        </div>
+        <div className={styles.stat}>
+          <span className={styles.statLabel}>Battery</span>
+          <span className={styles.statValue}>{product.battery}</span>
+        </div>
       </div>
-      <div className={styles.reason}>
-        <p>{reason}</p>
-      </div>
+
+      {/* Features */}
       <ul className={styles.features}>
         {product.features.slice(0, isBest ? 5 : 3).map((f, i) => (
           <li key={i}>
-            <CheckCircle size={16} weight="fill" className={styles.checkIcon} />
+            <CheckCircle size={15} weight="fill" className={styles.checkIcon} />
             {f}
           </li>
         ))}
       </ul>
+
+      {/* CTA */}
       <div className={styles.actions}>
         <button className={isBest ? styles.btnPrimary : styles.btnSecondary}>
           Get This Phone
         </button>
       </div>
-    </div>
+    </motion.div>
   );
 }
 
 function HumanCard({ reason }) {
   return (
-    <div className={`${styles.card} ${styles.alt}`}>
-      <div className={styles.cardHeader}>
-        <div>
-          <h3 className={styles.productName}>Talk to a Specialist</h3>
-        </div>
-        <Headset size={28} className={styles.headsetIcon} />
+    <motion.div
+      className={`${styles.card} ${styles.alt}`}
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.4 }}
+    >
+      <div className={`${styles.cardTop} ${styles.cardTopAlt}`}>
+        <h3 className={styles.planName}>Talk to a Specialist</h3>
       </div>
-      <div className={styles.reason}>
-        <p>{reason}</p>
+      <div className={styles.humanBody}>
+        <Headset size={32} className={styles.headsetIcon} />
+        <p className={styles.humanReason}>{reason}</p>
       </div>
       <div className={styles.actions}>
         <button className={styles.btnSecondary}>
@@ -104,7 +154,7 @@ function HumanCard({ reason }) {
           Call 1-866-663-3633
         </button>
       </div>
-    </div>
+    </motion.div>
   );
 }
 
@@ -116,18 +166,20 @@ export default function RecommendationCard({ recommendations }) {
 
   return (
     <div className={styles.wrapper}>
-      {sorted.map((rec, i) => {
-        if (rec.type === 'human') {
-          return <HumanCard key={i} reason={rec.reason} />;
-        }
-        const product = findProduct(rec.type, rec.id);
-        if (!product) return null;
+      <div className={styles.cardsRow}>
+        {sorted.map((rec, i) => {
+          if (rec.type === 'human') {
+            return <HumanCard key={i} reason={rec.reason} />;
+          }
+          const product = findProduct(rec.type, rec.id);
+          if (!product) return null;
 
-        if (rec.type === 'plan') {
-          return <PlanCard key={i} product={product} reason={rec.reason} isBest={rec.isBest} />;
-        }
-        return <PhoneCard key={i} product={product} reason={rec.reason} isBest={rec.isBest} />;
-      })}
+          if (rec.type === 'plan') {
+            return <PlanCard key={i} product={product} reason={rec.reason} isBest={rec.isBest} />;
+          }
+          return <PhoneCard key={i} product={product} reason={rec.reason} isBest={rec.isBest} />;
+        })}
+      </div>
 
       <div className={styles.talkLink}>
         <Headset size={16} />

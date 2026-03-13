@@ -1,7 +1,9 @@
 .overlay {
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, 0.5);
+  background: rgba(0, 0, 0, 0.4);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -11,15 +13,18 @@
 }
 
 .panel {
-  background: white;
-  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-radius: 20px;
   max-width: 580px;
   width: 100%;
   max-height: 85vh;
   overflow-y: auto;
   padding: 36px;
   position: relative;
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15), 0 0 40px rgba(0, 181, 173, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.6);
   animation: fadeSlideUp 0.3s ease-out;
 }
 
@@ -37,11 +42,12 @@
   justify-content: center;
   border: none;
   cursor: pointer;
-  transition: background 0.15s ease;
+  transition: all 0.15s ease;
 }
 
 .closeBtn:hover {
   background: var(--tw-gray-200);
+  transform: rotate(90deg);
 }
 
 .header {
@@ -72,9 +78,10 @@
 }
 
 .rulesSection {
-  background: var(--tw-gray-100);
+  background: linear-gradient(135deg, rgba(0, 181, 173, 0.04) 0%, rgba(0, 48, 135, 0.03) 100%);
   border-radius: var(--radius);
   padding: 24px;
+  border: 1px solid rgba(0, 0, 0, 0.04);
 }
 
 .rulesHeader {
@@ -103,7 +110,7 @@
 .ruleNum {
   width: 24px;
   height: 24px;
-  background: var(--tw-teal);
+  background: linear-gradient(135deg, var(--tw-teal) 0%, #00d4cb 100%);
   color: white;
   border-radius: 50%;
   display: flex;
@@ -112,6 +119,7 @@
   font-size: 0.72rem;
   font-weight: 700;
   flex-shrink: 0;
+  box-shadow: 0 2px 6px rgba(0, 181, 173, 0.2);
 }
 
 @media (max-width: 768px) {

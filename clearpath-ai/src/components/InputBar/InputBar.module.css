@@ -1,25 +1,28 @@
 .bar {
   flex-shrink: 0;
-  padding: 12px 24px 20px;
-  border-top: 1px solid var(--tw-gray-200);
-  background: var(--tw-white);
-  border-radius: 0 0 16px 16px;
+  padding: 8px 20px 14px;
+  background: rgba(255, 255, 255, 0.7);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-top: 1px solid rgba(0, 0, 0, 0.04);
 }
 
 .inner {
   display: flex;
   align-items: flex-end;
-  gap: 10px;
-  background: var(--tw-gray-100);
+  gap: 6px;
+  background: rgba(255, 255, 255, 0.8);
   border-radius: 24px;
-  padding: 6px 6px 6px 18px;
-  border: 1.5px solid transparent;
-  transition: border-color 0.15s ease;
+  padding: 6px 6px 6px 10px;
+  border: 1.5px solid rgba(0, 0, 0, 0.08);
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
 }
 
 .inner:focus-within {
   border-color: var(--tw-teal);
-  box-shadow: 0 0 0 3px rgba(0, 181, 173, 0.1);
+  box-shadow: 0 0 0 3px rgba(0, 181, 173, 0.1), 0 4px 16px rgba(0, 181, 173, 0.08);
+  background: rgba(255, 255, 255, 0.95);
 }
 
 .textarea {
@@ -28,9 +31,9 @@
   background: transparent;
   resize: none;
   outline: none;
-  font-size: 0.93rem;
+  font-size: 0.9rem;
   line-height: 1.5;
-  padding: 8px 0;
+  padding: 7px 0;
   color: var(--tw-gray-900);
   max-height: 140px;
 }
@@ -43,9 +46,30 @@
   opacity: 0.5;
 }
 
+.iconBtn {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: transparent;
+  color: var(--tw-gray-400);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: all 0.2s ease;
+  border: none;
+  cursor: pointer;
+  margin-bottom: 2px;
+}
+
+.iconBtn:hover {
+  color: var(--tw-teal);
+  background: rgba(0, 181, 173, 0.08);
+}
+
 .sendBtn {
-  width: 38px;
-  height: 38px;
+  width: 36px;
+  height: 36px;
   border-radius: 50%;
   background: var(--tw-gray-200);
   color: var(--tw-gray-400);
@@ -53,24 +77,25 @@
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
-  transition: all 0.15s ease;
+  transition: all 0.2s ease;
   border: none;
   cursor: not-allowed;
 }
 
 .sendBtn.active {
-  background: var(--tw-teal);
+  background: linear-gradient(135deg, var(--tw-teal) 0%, #00d4cb 100%);
   color: white;
   cursor: pointer;
+  box-shadow: 0 2px 8px rgba(0, 181, 173, 0.3);
 }
 
 .sendBtn.active:hover {
-  background: var(--tw-teal-dark);
-  box-shadow: 0 2px 8px rgba(0, 181, 173, 0.3);
+  box-shadow: 0 4px 16px rgba(0, 181, 173, 0.4);
+  transform: scale(1.05);
 }
 
 @media (max-width: 768px) {
   .bar {
-    padding: 10px 16px 16px;
+    padding: 8px 12px 12px;
   }
 }

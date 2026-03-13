@@ -5,7 +5,7 @@
 }
 
 .userBubble {
-  background: var(--tw-teal);
+  background: linear-gradient(135deg, var(--tw-teal) 0%, #00c9c0 100%);
   color: white;
   padding: 12px 18px;
   border-radius: 18px 18px 4px 18px;
@@ -13,6 +13,7 @@
   font-size: 0.93rem;
   line-height: 1.55;
   word-break: break-word;
+  box-shadow: 0 2px 8px rgba(0, 181, 173, 0.2);
 }
 
 .aiRow {
@@ -25,7 +26,7 @@
 .avatar {
   width: 32px;
   height: 32px;
-  background: var(--tw-teal);
+  background: linear-gradient(135deg, var(--tw-teal) 0%, #00d4cb 100%);
   border-radius: 10px;
   display: flex;
   align-items: center;
@@ -33,6 +34,7 @@
   color: white;
   flex-shrink: 0;
   margin-top: 2px;
+  box-shadow: 0 2px 8px rgba(0, 181, 173, 0.25);
 }
 
 .aiContent {
@@ -42,7 +44,7 @@
 
 .aiLabel {
   display: block;
-  font-size: 0.75rem;
+  font-size: 0.72rem;
   font-weight: 600;
   color: var(--tw-gray-400);
   text-transform: uppercase;
@@ -52,6 +54,10 @@
 
 .aiText {
   font-size: 0.93rem;
-  line-height: 1.6;
+  line-height: 1.65;
   color: var(--tw-gray-900);
+  background: rgba(255, 255, 255, 0.5);
+  padding: 12px 16px;
+  border-radius: 4px 16px 16px 16px;
+  border: 1px solid rgba(0, 0, 0, 0.04);
 }

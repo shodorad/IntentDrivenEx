@@ -9,25 +9,28 @@
 
 .pill {
   padding: 9px 18px;
-  background: var(--tw-white);
+  background: rgba(255, 255, 255, 0.7);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
   border: 1.5px solid var(--tw-teal);
   border-radius: 20px;
   font-size: 0.85rem;
   font-weight: 500;
   color: var(--tw-teal);
-  transition: all 0.15s ease;
+  transition: all 0.2s ease;
   cursor: pointer;
   white-space: nowrap;
 }
 
 .pill:hover {
-  background: var(--tw-teal);
+  background: linear-gradient(135deg, var(--tw-teal) 0%, #00c9c0 100%);
   color: white;
-  box-shadow: 0 2px 8px rgba(0, 181, 173, 0.25);
+  box-shadow: 0 4px 16px rgba(0, 181, 173, 0.25);
+  transform: translateY(-1px);
 }
 
 .pill:active {
-  transform: scale(0.96);
+  transform: scale(0.96) translateY(0);
 }
 
 @media (max-width: 768px) {

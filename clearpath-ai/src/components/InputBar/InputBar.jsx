@@ -1,5 +1,5 @@
 import { useRef, useState } from 'react';
-import { PaperPlaneRight } from '@phosphor-icons/react';
+import { PaperPlaneRight, Paperclip, Microphone } from '@phosphor-icons/react';
 import { useChat } from '../../context/ChatContext';
 import { useChatActions } from '../../hooks/useChat';
 import styles from './InputBar.module.css';
@@ -44,6 +44,13 @@ export default function InputBar() {
   return (
     <div className={styles.bar}>
       <div className={styles.inner}>
+        <button
+          className={styles.iconBtn}
+          aria-label="Attach file"
+          title="Attach file"
+        >
+          <Paperclip size={18} weight="regular" />
+        </button>
         <textarea
           ref={textareaRef}
           className={styles.textarea}
@@ -54,6 +61,13 @@ export default function InputBar() {
           rows={1}
           disabled={state.isLoading}
         />
+        <button
+          className={styles.iconBtn}
+          aria-label="Voice input"
+          title="Voice input"
+        >
+          <Microphone size={18} weight="regular" />
+        </button>
         <button
           className={`${styles.sendBtn} ${canSend ? styles.active : ''}`}
           onClick={handleSend}
