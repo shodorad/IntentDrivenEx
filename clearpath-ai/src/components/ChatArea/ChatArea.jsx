@@ -5,7 +5,6 @@ import MessageBubble from '../MessageBubble/MessageBubble';
 import ActionPills from '../ActionPills/ActionPills';
 import TypingIndicator from '../TypingIndicator/TypingIndicator';
 import RecommendationCard from '../RecommendationCard/RecommendationCard';
-import ProductImageStrip from '../ProductImageStrip/ProductImageStrip';
 import ExploreDetail from '../ExploreDetail/ExploreDetail';
 import styles from './ChatArea.module.css';
 
@@ -31,7 +30,6 @@ export default function ChatArea() {
         exploreData: { product, type, reason },
         actionPills: null,
         recommendations: null,
-        productImages: null,
       },
     });
   };
@@ -42,9 +40,6 @@ export default function ChatArea() {
       {state.messages.map((msg, i) => (
         <div key={i} className={styles.messageGroup}>
           <MessageBubble role={msg.role} content={msg.content} />
-          {msg.role === 'assistant' && msg.productImages && (
-            <ProductImageStrip images={msg.productImages} />
-          )}
           {msg.role === 'assistant' && msg.recommendations && (
             <RecommendationCard recommendations={msg.recommendations} onExplore={handleExplore} />
           )}
