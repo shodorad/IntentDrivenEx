@@ -1,0 +1,57 @@
+.userRow {
+  display: flex;
+  justify-content: flex-end;
+  animation: fadeIn 0.25s ease-out;
+}
+
+.userBubble {
+  background: var(--tw-teal);
+  color: white;
+  padding: 12px 18px;
+  border-radius: 18px 18px 4px 18px;
+  max-width: 75%;
+  font-size: 0.93rem;
+  line-height: 1.55;
+  word-break: break-word;
+}
+
+.aiRow {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+  animation: fadeIn 0.3s ease-out;
+}
+
+.avatar {
+  width: 32px;
+  height: 32px;
+  background: var(--tw-teal);
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.aiContent {
+  flex: 1;
+  min-width: 0;
+}
+
+.aiLabel {
+  display: block;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--tw-gray-400);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 4px;
+}
+
+.aiText {
+  font-size: 0.93rem;
+  line-height: 1.6;
+  color: var(--tw-gray-900);
+}

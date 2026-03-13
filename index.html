@@ -1,0 +1,1295 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Total Wireless — How can we help?</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><circle cx='16' cy='16' r='16' fill='%2300B5AD'/><text x='16' y='21' text-anchor='middle' fill='white' font-family='Arial' font-weight='bold' font-size='14'>TW</text></svg>">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <script src="https://unpkg.com/@phosphor-icons/web"></script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --tw-red:      #EE0000;
+      --tw-teal:     #00B5AD;
+      --tw-blue:     #003087;
+      --tw-yellow:   #F7C948;
+      --tw-gray-900: #1A1A1A;
+      --tw-gray-600: #6B6B6B;
+      --tw-gray-200: #E8E8E8;
+      --tw-gray-100: #F5F5F5;
+      --tw-white:    #FFFFFF;
+      --font-primary: 'Inter', 'Helvetica Neue', Arial, sans-serif;
+      --sidebar-w: 260px;
+    }
+
+    html, body {
+      font-family: var(--font-primary);
+      background: var(--tw-gray-900);
+      color: var(--tw-gray-900);
+      height: 100%;
+      overflow: hidden;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* ════════════════ APP SHELL ════════════════ */
+    .app {
+      display: flex;
+      height: 100vh;
+      height: 100dvh;
+    }
+
+    /* ════════════════ SIDEBAR ════════════════ */
+    .sidebar {
+      width: var(--sidebar-w);
+      background: var(--tw-gray-900);
+      color: var(--tw-white);
+      display: flex;
+      flex-direction: column;
+      flex-shrink: 0;
+      padding: 20px 16px;
+      overflow-y: auto;
+      border-right: 1px solid #2a2a2a;
+    }
+
+    .sidebar-brand { margin-bottom: 24px; }
+    .sidebar-logo {
+      font-size: 1.15rem;
+      font-weight: 800;
+      letter-spacing: -0.01em;
+      line-height: 1.15;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .sidebar-logo-icon {
+      width: 28px; height: 28px;
+      border-radius: 6px;
+      background: var(--tw-teal);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 0.65rem; font-weight: 800; color: var(--tw-white);
+      flex-shrink: 0;
+    }
+    .sidebar-tagline {
+      font-size: 0.68rem;
+      color: #888;
+      margin-top: 2px;
+      padding-left: 36px;
+    }
+
+    .sidebar-new-chat {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      width: 100%;
+      padding: 10px 0;
+      background: var(--tw-teal);
+      color: var(--tw-white);
+      border: none;
+      border-radius: 8px;
+      font-family: var(--font-primary);
+      font-size: 0.88rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.15s;
+      margin-bottom: 28px;
+    }
+    .sidebar-new-chat:hover { background: #009991; }
+    .sidebar-new-chat i { font-size: 1rem; }
+
+    .sidebar-section-label {
+      font-size: 0.68rem;
+      font-weight: 600;
+      color: #888;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      margin-bottom: 8px;
+    }
+
+    .sidebar-links { list-style: none; margin-bottom: 20px; }
+    .sidebar-links li { margin-bottom: 2px; }
+    .sidebar-link {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 9px 12px;
+      border-radius: 6px;
+      color: #ccc;
+      font-size: 0.84rem;
+      cursor: pointer;
+      transition: all 0.18s ease;
+      border: none;
+      background: none;
+      width: 100%;
+      text-align: left;
+      font-family: var(--font-primary);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .sidebar-link:hover {
+      background: rgba(0,181,173,0.12);
+      color: var(--tw-white);
+      transform: translateX(2px);
+    }
+    .sidebar-link i { font-size: 1rem; color: var(--tw-teal); flex-shrink: 0; }
+
+    /* Talk to a Real Person link */
+    .sidebar-talk-link {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 12px;
+      border-radius: 6px;
+      color: var(--tw-yellow);
+      font-size: 0.84rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.18s ease;
+      border: none;
+      background: rgba(247,201,72,0.08);
+      width: 100%;
+      text-align: left;
+      font-family: var(--font-primary);
+      margin-bottom: 16px;
+    }
+    .sidebar-talk-link:hover {
+      background: rgba(247,201,72,0.15);
+      transform: translateX(2px);
+    }
+    .sidebar-talk-link i { font-size: 1.05rem; color: var(--tw-yellow); flex-shrink: 0; }
+
+    .sidebar-footer {
+      margin-top: auto;
+      padding-top: 20px;
+      border-top: 1px solid #2a2a2a;
+      font-size: 0.72rem;
+      color: #888;
+      line-height: 1.5;
+    }
+    .sidebar-footer span { color: var(--tw-teal); font-weight: 600; }
+
+    /* ════════════════ MAIN PANEL ════════════════ */
+    .main {
+      flex: 1;
+      background: var(--tw-white);
+      display: flex;
+      flex-direction: column;
+      min-width: 0;
+      position: relative;
+      overflow: hidden;
+    }
+
+    /* Demo badge — small inline chip instead of banner */
+    .demo-badge {
+      position: absolute;
+      top: 12px;
+      right: 16px;
+      background: #FFF8E1;
+      color: #8D6E00;
+      padding: 4px 12px;
+      border-radius: 100px;
+      font-size: 0.72rem;
+      font-weight: 600;
+      display: none;
+      z-index: 10;
+      border: 1px solid #F0E0A0;
+    }
+    .demo-badge.visible { display: flex; align-items: center; gap: 5px; }
+    .demo-badge i { font-size: 0.8rem; }
+
+    /* ════════════════ LANDING STATE ════════════════ */
+    .landing {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 0 24px 16px;
+      max-width: 680px;
+      margin: 0 auto;
+      width: 100%;
+      overflow-y: auto;
+      min-height: 0;
+      transition: opacity 0.3s ease, transform 0.3s ease;
+    }
+
+    .landing.hidden {
+      display: none;
+    }
+
+    .landing h1 {
+      font-size: 2.4rem;
+      font-weight: 800;
+      color: var(--tw-gray-900);
+      text-align: center;
+      line-height: 1.12;
+      letter-spacing: -0.025em;
+      margin-bottom: 10px;
+    }
+    .landing .sub {
+      font-size: 1.05rem;
+      color: var(--tw-gray-600);
+      text-align: center;
+      margin-bottom: 32px;
+    }
+
+    .pills-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      width: 100%;
+      max-width: 580px;
+      margin-bottom: 20px;
+    }
+
+    .pill {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 13px 16px;
+      border-radius: 100px;
+      border: 2px solid var(--tw-teal);
+      background: var(--tw-white);
+      color: var(--tw-gray-900);
+      font-size: 0.88rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      text-align: left;
+      line-height: 1.25;
+      font-family: var(--font-primary);
+    }
+    .pill i { font-size: 1.15rem; color: var(--tw-teal); flex-shrink: 0; transition: color 0.2s; }
+    .pill:hover {
+      background: var(--tw-teal);
+      color: var(--tw-white);
+      border-color: var(--tw-teal);
+      transform: translateY(-1px);
+      box-shadow: 0 4px 14px rgba(0,181,173,0.3);
+    }
+    .pill:hover i { color: var(--tw-white); }
+    .pill:active {
+      transform: scale(0.96);
+      box-shadow: 0 1px 4px rgba(0,181,173,0.2);
+    }
+
+    .landing-hint {
+      font-size: 0.85rem;
+      color: var(--tw-gray-600);
+      text-align: center;
+    }
+
+    /* ════════════════ CHAT STATE ════════════════ */
+    .chat-area {
+      flex: 1;
+      display: none;
+      flex-direction: column;
+      min-height: 0;
+    }
+    .chat-area.active {
+      display: flex;
+      animation: fadeSlideIn 0.35s ease;
+    }
+
+    .messages-list {
+      flex: 1;
+      overflow-y: auto;
+      padding: 24px 24px 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 24px;
+      scroll-behavior: smooth;
+    }
+    /* Spacer pushes messages to bottom when few messages */
+    .messages-list::before {
+      content: '';
+      flex: 1 1 auto;
+    }
+    .messages-list::-webkit-scrollbar { width: 5px; }
+    .messages-list::-webkit-scrollbar-track { background: transparent; }
+    .messages-list::-webkit-scrollbar-thumb { background: var(--tw-gray-200); border-radius: 4px; }
+
+    .msg-container {
+      max-width: 780px;
+      width: 100%;
+      margin: 0 auto;
+      animation: fadeIn 0.3s ease;
+    }
+
+    /* ── User message ── */
+    .msg-user {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+    }
+    .msg-user .msg-label {
+      font-size: 0.85rem;
+      color: var(--tw-gray-600);
+      margin-bottom: 5px;
+      font-weight: 600;
+    }
+    .msg-user .msg-bubble {
+      background: var(--tw-teal);
+      color: var(--tw-white);
+      border-radius: 18px 18px 4px 18px;
+      padding: 12px 18px;
+      max-width: 65%;
+      min-width: 80px;
+      font-size: 0.95rem;
+      line-height: 1.55;
+    }
+
+    /* ── AI message ── */
+    .msg-ai { display: flex; flex-direction: column; align-items: flex-start; }
+    .msg-ai-header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 8px;
+    }
+    .ai-avatar {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      background: var(--tw-teal);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      color: var(--tw-white);
+      font-size: 0.7rem;
+      font-weight: 800;
+    }
+    .msg-ai-header .msg-label {
+      font-size: 0.85rem;
+      color: var(--tw-gray-600);
+      font-weight: 600;
+    }
+    .msg-ai .msg-text {
+      color: var(--tw-gray-900);
+      font-size: 0.96rem;
+      line-height: 1.65;
+      max-width: 80%;
+      padding-left: 42px; /* aligned with text after avatar */
+    }
+
+    /* ── Typing indicator ── */
+    .typing-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .typing-indicator {
+      display: flex;
+      gap: 5px;
+      align-items: center;
+      padding: 10px 14px;
+    }
+    .typing-dot {
+      width: 8px; height: 8px;
+      border-radius: 50%;
+      background: var(--tw-teal);
+      animation: bounce 1.2s infinite;
+    }
+    .typing-dot:nth-child(2) { animation-delay: 0.2s; }
+    .typing-dot:nth-child(3) { animation-delay: 0.4s; }
+
+    @keyframes bounce {
+      0%, 80%, 100% { transform: translateY(0); opacity: 0.4; }
+      40%            { transform: translateY(-7px); opacity: 1; }
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(6px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes fadeSlideIn {
+      from { opacity: 0; transform: translateY(8px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    /* ════════════════ RECOMMENDATION CARD ════════════════ */
+    .rec-card {
+      background: var(--tw-white);
+      border: 2px solid var(--tw-teal);
+      border-radius: 16px;
+      padding: 22px 26px;
+      margin-top: 16px;
+      margin-left: 42px;
+      box-shadow: 0 4px 24px rgba(0,181,173,0.12);
+      max-width: 580px;
+      animation: fadeIn 0.4s ease;
+    }
+    .rec-card-header {
+      font-size: 0.69rem; font-weight: 700;
+      letter-spacing: 0.1em; text-transform: uppercase;
+      color: var(--tw-teal); margin-bottom: 10px;
+    }
+    .rec-card-title-row {
+      display: flex; justify-content: space-between;
+      align-items: flex-start; gap: 10px; margin-bottom: 2px;
+    }
+    .rec-card-name { font-size: 1.2rem; font-weight: 800; color: var(--tw-gray-900); }
+    .rec-card-badge {
+      background: var(--tw-yellow); color: var(--tw-gray-900);
+      font-size: 0.69rem; font-weight: 700;
+      padding: 2px 10px; border-radius: 100px;
+      white-space: nowrap; flex-shrink: 0;
+    }
+    .rec-card-price {
+      font-size: 2rem; font-weight: 800; color: var(--tw-gray-900);
+      display: flex; align-items: baseline; gap: 3px; margin: 4px 0 8px;
+    }
+    .rec-card-price span { font-size: 0.875rem; font-weight: 500; color: var(--tw-gray-600); }
+    .rec-card-reason {
+      background: rgba(0,181,173,0.07);
+      border-left: 3px solid var(--tw-teal);
+      border-radius: 0 8px 8px 0;
+      padding: 10px 14px;
+      font-size: 0.9rem; font-style: italic;
+      color: var(--tw-gray-900); margin: 14px 0; line-height: 1.5;
+    }
+    .rec-card-features { display: flex; flex-direction: column; gap: 5px; margin-bottom: 18px; }
+    .rec-card-feature {
+      display: flex; align-items: center; gap: 8px;
+      font-size: 0.875rem; color: var(--tw-gray-900); padding: 2px 0;
+    }
+    .rec-card-feature .check { color: var(--tw-blue); font-size: 1rem; flex-shrink: 0; }
+
+    .btn-primary {
+      background: var(--tw-red); color: var(--tw-white); border: none;
+      border-radius: 8px; padding: 13px 20px; font-size: 0.95rem;
+      font-weight: 700; cursor: pointer; width: 100%;
+      transition: background 0.2s; font-family: var(--font-primary);
+      height: 44px; display: flex; align-items: center; justify-content: center;
+    }
+    .btn-primary:hover { background: #CC0000; }
+    .btn-secondary {
+      background: transparent; color: var(--tw-teal);
+      border: 2px solid var(--tw-teal); border-radius: 8px;
+      padding: 11px 20px; font-size: 0.9rem; font-weight: 600;
+      cursor: pointer; width: 100%; margin-top: 8px;
+      transition: all 0.2s; font-family: var(--font-primary);
+      height: 40px; display: flex; align-items: center; justify-content: center;
+    }
+    .btn-secondary:hover { background: var(--tw-teal); color: var(--tw-white); }
+
+    .btn-talk-person {
+      background: transparent; color: var(--tw-gray-600);
+      border: none; border-radius: 8px;
+      padding: 10px 20px; font-size: 0.84rem; font-weight: 500;
+      cursor: pointer; width: 100%; margin-top: 8px;
+      transition: all 0.2s; font-family: var(--font-primary);
+      display: flex; align-items: center; justify-content: center; gap: 6px;
+    }
+    .btn-talk-person:hover { color: var(--tw-gray-900); background: var(--tw-gray-100); }
+    .btn-talk-person i { font-size: 1rem; }
+
+    /* Phone card — image + info layout */
+    .rec-card-phone-layout {
+      display: flex;
+      gap: 18px;
+      align-items: flex-start;
+      margin-bottom: 4px;
+    }
+    .rec-card-img-placeholder {
+      width: 100px; height: 120px;
+      border-radius: 12px;
+      background: var(--tw-gray-100);
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+      border: 1px solid var(--tw-gray-200);
+    }
+    .rec-card-img-placeholder i {
+      font-size: 2.4rem; color: var(--tw-gray-200);
+    }
+    .rec-card-phone-info { flex: 1; }
+    .rec-card-phone-info .rec-card-title-row { margin-bottom: 4px; }
+    .rec-card-phone-info .rec-card-price { margin: 2px 0 0; }
+
+    /* Post-recommendation follow-up */
+    .followup-prompt {
+      margin-top: 14px;
+      margin-left: 42px;
+      font-size: 0.88rem;
+      color: var(--tw-gray-600);
+      line-height: 1.5;
+      animation: fadeIn 0.5s ease 0.3s both;
+    }
+    .followup-link {
+      color: var(--tw-teal);
+      font-weight: 600;
+      cursor: pointer;
+      background: none;
+      border: none;
+      font-family: var(--font-primary);
+      font-size: 0.88rem;
+      text-decoration: underline;
+      text-underline-offset: 2px;
+    }
+    .followup-link:hover { color: #009991; }
+
+    /* ════════════════ INPUT BAR ════════════════ */
+    .input-bar {
+      border-top: 1px solid var(--tw-gray-200);
+      background: var(--tw-white);
+      flex-shrink: 0;
+      padding: 16px 24px 16px;
+    }
+    .input-inner {
+      max-width: 780px;
+      margin: 0 auto;
+      position: relative;
+    }
+    .input-textarea {
+      width: 100%;
+      border: 2px solid var(--tw-gray-200);
+      border-radius: 14px;
+      padding: 14px 56px 14px 18px;
+      font-size: 0.96rem;
+      font-family: var(--font-primary);
+      outline: none;
+      resize: none;
+      line-height: 1.5;
+      min-height: 48px;
+      max-height: 140px;
+      overflow-y: auto;
+      transition: border-color 0.2s, box-shadow 0.2s;
+      color: var(--tw-gray-900);
+    }
+    .input-textarea:focus {
+      border-color: var(--tw-teal);
+      box-shadow: 0 0 0 3px rgba(0,181,173,0.12);
+    }
+    .input-textarea::placeholder { color: #aaa; }
+    .btn-send {
+      position: absolute;
+      bottom: 8px; right: 10px;
+      width: 36px; height: 36px;
+      border-radius: 50%;
+      background: #D0D0D0;
+      color: var(--tw-white);
+      border: none; cursor: not-allowed;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.1rem;
+      transition: all 0.2s ease;
+    }
+    .btn-send.active {
+      background: var(--tw-teal);
+      cursor: pointer;
+      box-shadow: 0 2px 8px rgba(0,181,173,0.35);
+    }
+    .btn-send.active:hover { background: #009991; transform: scale(1.06); }
+
+    /* ════════════════ ERROR TOAST ════════════════ */
+    .error-toast {
+      position: fixed;
+      bottom: 80px;
+      left: 50%;
+      transform: translateX(-50%) translateY(20px);
+      background: #DC2626;
+      color: white;
+      padding: 10px 20px;
+      border-radius: 10px;
+      font-size: 0.85rem;
+      font-weight: 500;
+      font-family: var(--font-primary);
+      box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+      z-index: 1000;
+      opacity: 0;
+      transition: opacity 0.3s ease, transform 0.3s ease;
+      pointer-events: none;
+    }
+    .error-toast.show {
+      opacity: 1;
+      transform: translateX(-50%) translateY(0);
+    }
+
+    /* ════════════════ MOBILE (<768px) ════════════════ */
+    .mobile-header {
+      display: none;
+      background: var(--tw-teal);
+      color: var(--tw-white);
+      padding: 12px 16px;
+      align-items: center;
+      gap: 12px;
+      flex-shrink: 0;
+    }
+    .mobile-header-hamburger {
+      background: none; border: none; color: var(--tw-white);
+      font-size: 1.4rem; cursor: pointer; padding: 2px;
+      display: flex; align-items: center;
+    }
+    .mobile-header-brand { font-size: 1.1rem; font-weight: 800; }
+    .mobile-header-sub { font-size: 0.62rem; color: rgba(255,255,255,0.8); }
+
+    .sidebar-overlay {
+      display: none;
+      position: fixed; inset: 0;
+      background: rgba(0,0,0,0.5);
+      z-index: 99;
+    }
+    .sidebar-overlay.visible { display: block; }
+
+    @media (max-width: 768px) {
+      .sidebar {
+        position: fixed; left: -280px; top: 0; bottom: 0;
+        z-index: 100; width: 280px;
+        transition: left 0.3s ease;
+      }
+      .sidebar.open { left: 0; }
+      .mobile-header { display: flex; }
+      .landing h1 { font-size: 1.6rem; }
+      .landing .sub { font-size: 0.92rem; }
+      .pills-grid { grid-template-columns: 1fr; max-width: 100%; }
+      .pill { font-size: 0.85rem; padding: 12px 14px; }
+      .landing { justify-content: flex-start; padding-top: 20px; }
+      .msg-ai .msg-text { max-width: 95%; padding-left: 0; }
+      .rec-card { margin-left: 0; max-width: 100%; }
+      .followup-prompt { margin-left: 0; }
+      .input-bar { padding: 12px 12px 12px; }
+      .messages-list { padding: 16px 12px; }
+      .rec-card-phone-layout { flex-direction: column; gap: 12px; }
+      .rec-card-img-placeholder { width: 100%; height: 100px; }
+      .demo-badge { top: auto; bottom: 12px; right: 12px; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="app">
+
+  <!-- Sidebar overlay (mobile) -->
+  <div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+  <!-- ══ SIDEBAR ══ -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-brand">
+      <div class="sidebar-logo">
+        <div class="sidebar-logo-icon">TW</div>
+        Total Wireless
+      </div>
+      <div class="sidebar-tagline">Powered by Verizon</div>
+    </div>
+
+    <button class="sidebar-new-chat" id="newChatBtn">
+      <i class="ph-fill ph-plus"></i> New Chat
+    </button>
+
+    <div class="sidebar-section-label">Common Questions</div>
+    <ul class="sidebar-links" id="sidebarLinks">
+      <!-- Injected by JS -->
+    </ul>
+
+    <button class="sidebar-talk-link" id="sidebarTalkBtn">
+      <i class="ph-fill ph-headset"></i> Talk to a Real Person
+    </button>
+
+    <div class="sidebar-footer">
+      <span>&#10003;</span> 5-Year Price Lock Guarantee on all plans
+    </div>
+  </aside>
+
+  <!-- ══ MAIN PANEL ══ -->
+  <div class="main">
+
+    <!-- Mobile header -->
+    <div class="mobile-header">
+      <button class="mobile-header-hamburger" id="hamburgerBtn">
+        <i class="ph-fill ph-list"></i>
+      </button>
+      <div>
+        <div class="mobile-header-brand">Total Wireless</div>
+        <div class="mobile-header-sub">Powered by Verizon</div>
+      </div>
+    </div>
+
+    <!-- Demo badge (small chip) -->
+    <div class="demo-badge" id="demoBanner">
+      <i class="ph-fill ph-info"></i> Demo Mode
+    </div>
+
+    <!-- LANDING STATE -->
+    <div class="landing" id="landing">
+      <h1>What can we help you with today?</h1>
+      <p class="sub">Tell us what's going on — we'll find the right fix.</p>
+      <div class="pills-grid" id="pillsGrid"></div>
+      <p class="landing-hint">Or describe your situation in the box below</p>
+    </div>
+
+    <!-- CHAT STATE -->
+    <div class="chat-area" id="chatArea">
+      <div class="messages-list" id="messagesList"></div>
+    </div>
+
+    <!-- INPUT BAR (always visible) -->
+    <div class="input-bar">
+      <div class="input-inner">
+        <textarea class="input-textarea" id="mainInput" rows="1"
+          placeholder="Ask anything about your phone or plan..."></textarea>
+        <button class="btn-send" id="sendBtn">
+          <i class="ph-fill ph-paper-plane-tilt"></i>
+        </button>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- Error toast -->
+<div class="error-toast" id="errorToast"></div>
+
+<script>
+(function() {
+  'use strict';
+
+  // ══════════ PRODUCT DATA ══════════
+  const PLANS = [
+    { id:"basic-35", name:"Basic Plan", price:35, data:"5GB", talk:"Unlimited", text:"Unlimited",
+      features:["5GB High-Speed Data","Unlimited Talk & Text","On Verizon's 5G Network","Price locked for 5 years"],
+      badge:null, highlight:"Best for light users", solves:["cost","light-use"] },
+    { id:"value-50", name:"Value Plan", price:50, data:"15GB", talk:"Unlimited", text:"Unlimited",
+      features:["15GB High-Speed Data","Unlimited Talk & Text","Mobile Hotspot (5GB)","On Verizon's 5G Network","Price locked for 5 years"],
+      badge:"Most Popular", highlight:"Best for everyday users", solves:["data-runs-out","slow-data","moderate-use"] },
+    { id:"unlimited-60", name:"Unlimited Plan", price:60, data:"Unlimited", talk:"Unlimited", text:"Unlimited",
+      features:["Unlimited High-Speed Data","Unlimited Talk & Text","Mobile Hotspot (10GB)","On Verizon's 5G Network","Price locked for 5 years"],
+      badge:"Best Value", highlight:"No data limits ever", solves:["data-runs-out","heavy-use","slow-data","streaming"] }
+  ];
+
+  const PHONES = [
+    { id:"moto-g-power", name:"Motorola Moto G Power", brand:"Motorola", price:89,
+      camera:"50MP", storage:"128GB", battery:"5000mAh", display:'6.5" HD+',
+      features:["50MP Camera","128GB Storage","5000mAh All-Day Battery","Water Repellent"],
+      badge:"Best Battery", highlight:"Lasts 2 days per charge", solves:["slow-phone","battery","budget-phone"] },
+    { id:"samsung-a15", name:"Samsung Galaxy A15", brand:"Samsung", price:119,
+      camera:"50MP", storage:"128GB", battery:"5000mAh", display:'6.5" AMOLED',
+      features:["50MP Triple Camera","128GB Storage","6.5\" AMOLED Display","5G Capable"],
+      badge:null, highlight:"Crisp display, reliable performance", solves:["slow-phone","camera","display"] },
+    { id:"moto-g-stylus", name:"Motorola Moto G Stylus", brand:"Motorola", price:149,
+      camera:"50MP", storage:"256GB", battery:"5000mAh", display:'6.6" OLED',
+      features:["50MP Camera System","256GB Storage","Built-in Stylus","6.6\" OLED Display"],
+      badge:"Most Storage", highlight:"Built-in stylus, massive storage", solves:["storage","camera","slow-phone"] }
+  ];
+
+  const INTENT_PILLS = [
+    { id:"slow-data",   label:"My internet is slow",     icon:"ph-cell-signal-slash", prompt:"My data speed has been really slow lately." },
+    { id:"runs-out",    label:"I run out of data",        icon:"ph-battery-empty",     prompt:"I always run out of data before the end of the month." },
+    { id:"slow-phone",  label:"My phone feels slow",      icon:"ph-hourglass-medium",  prompt:"My phone has been really sluggish and slow lately." },
+    { id:"storage",     label:"Running out of storage",   icon:"ph-hard-drive",        prompt:"My phone says I'm running out of storage space." },
+    { id:"camera",      label:"I want better photos",     icon:"ph-camera",            prompt:"I want to take better quality pictures with my phone." },
+    { id:"cost",        label:"I want to spend less",     icon:"ph-currency-dollar",   prompt:"I'm looking for the cheapest option that still works well." },
+    { id:"new-phone",   label:"I need a new phone",       icon:"ph-device-mobile",     prompt:"I'm thinking about getting a new phone." },
+    { id:"not-working", label:"Something isn't working",  icon:"ph-warning-circle",    prompt:"Something on my phone or plan isn't working right." }
+  ];
+
+  const SYSTEM_PROMPT = `You are a friendly Total Wireless advisor helping budget-conscious prepay customers solve problems with their phone or plan.
+
+ROLE:
+- Understand the customer's problem first — never lead with a product
+- Ask at most 2 short clarifying questions before recommending
+- Recommend the best-fit plan or phone from the catalog, explaining exactly how it solves their problem
+
+CUSTOMER PROFILE:
+- Prepay customers on $30-60/month plans
+- Price is their #1 priority — they are NOT brand loyal
+- They want their problem solved at the lowest necessary cost
+- Frame everything as "only $X more" not "premium tier"
+
+CONVERSATION RULES:
+1. Max 2 clarifying questions before recommending
+2. Responses are short — 2-3 sentences, then a question OR recommendation
+3. Never say "based on your inputs" — say "sounds like" or "it seems like"
+4. When ready to recommend, append this exact block at the END of your response:
+   [RECOMMENDATION]{"type":"plan","id":"value-50","reason":"15GB will comfortably cover your mid-month data gap"}[/RECOMMENDATION]
+   OR for phones:
+   [RECOMMENDATION]{"type":"phone","id":"moto-g-stylus","reason":"256GB storage will solve your space problem for years"}[/RECOMMENDATION]
+5. If unable to determine, respond with:
+   [RECOMMENDATION]{"type":"human","reason":"This needs a specialist — let me connect you with a real person"}[/RECOMMENDATION]
+
+PRODUCT CATALOG:
+Plans: Basic $35/5GB, Value $50/15GB, Unlimited $60/unlimited
+Phones: Moto G Power $89/128GB, Samsung A15 $119/128GB, Moto G Stylus $149/256GB
+
+BRAND VOICE: Direct, warm, no jargon. Price-positive. Utilitarian. Like a knowledgeable friend, not a salesperson.`;
+
+  // ══════════ CONFIG ══════════
+  const API_KEY = ''; // Paste your Anthropic API key here, or leave blank for demo mode
+  const API_PROXY_URL = '/api/chat';
+
+  // ══════════ STATE ══════════
+  let mode = 'landing'; // 'landing' | 'chatting'
+  let messages = [];
+  let isLoading = false;
+  let activeIntent = null;
+  let isDemoMode = !API_KEY;
+
+  // ══════════ DOM REFS ══════════
+  const landing = document.getElementById('landing');
+  const chatArea = document.getElementById('chatArea');
+  const messagesList = document.getElementById('messagesList');
+  const pillsGrid = document.getElementById('pillsGrid');
+  const mainInput = document.getElementById('mainInput');
+  const sendBtn = document.getElementById('sendBtn');
+  const newChatBtn = document.getElementById('newChatBtn');
+  const sidebarLinks = document.getElementById('sidebarLinks');
+  const demoBanner = document.getElementById('demoBanner');
+  const sidebar = document.getElementById('sidebar');
+  const sidebarOverlay = document.getElementById('sidebarOverlay');
+  const hamburgerBtn = document.getElementById('hamburgerBtn');
+  const sidebarTalkBtn = document.getElementById('sidebarTalkBtn');
+  const errorToast = document.getElementById('errorToast');
+
+  // ══════════ INIT ══════════
+  function init() {
+    if (isDemoMode) demoBanner.classList.add('visible');
+    renderPills();
+    renderSidebarLinks();
+    bindEvents();
+    updateSendBtn();
+    mainInput.focus();
+  }
+
+  // ══════════ RENDER ══════════
+  function renderPills() {
+    pillsGrid.innerHTML = INTENT_PILLS.map(p => `
+      <button class="pill" data-prompt="${encodeURIComponent(p.prompt)}">
+        <i class="ph-fill ${p.icon}"></i>${p.label}
+      </button>
+    `).join('');
+  }
+
+  function renderSidebarLinks() {
+    // All 8 intents — matching the pills grid
+    const links = [
+      { icon:'ph-cell-signal-slash', label:'My internet is slow',      prompt:'My data speed has been really slow lately.' },
+      { icon:'ph-battery-empty',     label:'I run out of data',         prompt:'I always run out of data before the end of the month.' },
+      { icon:'ph-hourglass-medium',  label:'My phone feels slow',      prompt:'My phone has been really sluggish and slow lately.' },
+      { icon:'ph-hard-drive',        label:'Running out of storage',   prompt:'My phone says I\'m running out of storage space.' },
+      { icon:'ph-camera',            label:'I want better photos',     prompt:'I want to take better quality pictures with my phone.' },
+      { icon:'ph-currency-dollar',   label:'I want to spend less',     prompt:"I'm looking for the cheapest option that still works well." },
+      { icon:'ph-device-mobile',     label:'I need a new phone',       prompt:"I'm thinking about getting a new phone." },
+      { icon:'ph-warning-circle',    label:"Something isn't working",  prompt:"Something on my phone or plan isn't working right." }
+    ];
+    sidebarLinks.innerHTML = links.map(l => `
+      <li><button class="sidebar-link" data-prompt="${encodeURIComponent(l.prompt)}">
+        <i class="ph-fill ${l.icon}"></i>${l.label}
+      </button></li>
+    `).join('');
+  }
+
+  // ══════════ SEND BUTTON STATE ══════════
+  function updateSendBtn() {
+    const hasText = mainInput.value.trim().length > 0;
+    if (hasText && !isLoading) {
+      sendBtn.classList.add('active');
+      sendBtn.disabled = false;
+    } else {
+      sendBtn.classList.remove('active');
+      sendBtn.disabled = true;
+    }
+  }
+
+  // ══════════ EVENTS ══════════
+  function bindEvents() {
+    pillsGrid.addEventListener('click', e => {
+      const pill = e.target.closest('.pill');
+      if (pill) startChat(decodeURIComponent(pill.dataset.prompt));
+    });
+
+    sidebarLinks.addEventListener('click', e => {
+      const link = e.target.closest('.sidebar-link');
+      if (link) {
+        closeSidebar();
+        resetChat();
+        startChat(decodeURIComponent(link.dataset.prompt));
+      }
+    });
+
+    newChatBtn.addEventListener('click', () => { closeSidebar(); resetChat(); });
+    sidebarTalkBtn.addEventListener('click', () => {
+      closeSidebar();
+      if (mode === 'landing') {
+        startChat("I'd like to talk to a real person.");
+      } else {
+        window.app.talkPerson();
+      }
+    });
+
+    sendBtn.addEventListener('click', submitInput);
+    mainInput.addEventListener('keydown', e => {
+      if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); submitInput(); }
+    });
+    mainInput.addEventListener('input', () => {
+      autoGrow();
+      updateSendBtn();
+    });
+
+    hamburgerBtn.addEventListener('click', () => {
+      sidebar.classList.add('open');
+      sidebarOverlay.classList.add('visible');
+    });
+    sidebarOverlay.addEventListener('click', closeSidebar);
+  }
+
+  function closeSidebar() {
+    sidebar.classList.remove('open');
+    sidebarOverlay.classList.remove('visible');
+  }
+
+  function autoGrow() {
+    mainInput.style.height = 'auto';
+    mainInput.style.height = Math.min(mainInput.scrollHeight, 140) + 'px';
+  }
+
+  function submitInput() {
+    const text = mainInput.value.trim();
+    if (!text || isLoading) return;
+    mainInput.value = '';
+    mainInput.style.height = 'auto';
+    updateSendBtn();
+
+    if (mode === 'landing') {
+      startChat(text);
+    } else {
+      handleUserMessage(text);
+    }
+  }
+
+  // ══════════ STATE TRANSITIONS ══════════
+  function startChat(userText) {
+    mode = 'chatting';
+    // Animate landing out, then show chat
+    landing.style.opacity = '0';
+    landing.style.transform = 'translateY(-10px)';
+    setTimeout(() => {
+      landing.classList.add('hidden');
+      landing.style.opacity = '';
+      landing.style.transform = '';
+      chatArea.classList.add('active');
+      handleUserMessage(userText);
+    }, 280);
+  }
+
+  function resetChat() {
+    mode = 'landing';
+    messages = [];
+    isLoading = false;
+    activeIntent = null;
+    messagesList.innerHTML = '';
+    chatArea.classList.remove('active');
+    landing.classList.remove('hidden');
+    landing.style.opacity = '';
+    landing.style.transform = '';
+    mainInput.value = '';
+    mainInput.style.height = 'auto';
+    updateSendBtn();
+    mainInput.focus();
+  }
+
+  // ══════════ MESSAGE HANDLING ══════════
+  function handleUserMessage(text) {
+    messages.push({ role: 'user', content: text });
+    renderUserMsg(text);
+    sendToAI();
+  }
+
+  function renderUserMsg(text) {
+    const el = document.createElement('div');
+    el.className = 'msg-container';
+    el.innerHTML = `<div class="msg-user">
+      <div class="msg-label">You</div>
+      <div class="msg-bubble">${esc(text)}</div>
+    </div>`;
+    messagesList.appendChild(el);
+    scrollBottom();
+  }
+
+  function renderAIMsg(text) {
+    const el = document.createElement('div');
+    el.className = 'msg-container';
+    el.innerHTML = `<div class="msg-ai">
+      <div class="msg-ai-header">
+        <div class="ai-avatar">TW</div>
+        <div class="msg-label">Total Wireless Advisor</div>
+      </div>
+      <div class="msg-text">${esc(text)}</div>
+    </div>`;
+    messagesList.appendChild(el);
+    scrollBottom();
+    return el;
+  }
+
+  function renderAIMsgWithCard(text, cardHTML) {
+    const el = document.createElement('div');
+    el.className = 'msg-container';
+    el.innerHTML = `<div class="msg-ai">
+      <div class="msg-ai-header">
+        <div class="ai-avatar">TW</div>
+        <div class="msg-label">Total Wireless Advisor</div>
+      </div>
+      ${text ? `<div class="msg-text">${esc(text)}</div>` : ''}
+      ${cardHTML}
+      <div class="followup-prompt">
+        Still have questions? Ask me anything, or <button class="followup-link" onclick="app.talkPerson()">talk to a real person</button>.
+      </div>
+    </div>`;
+    messagesList.appendChild(el);
+    scrollBottom();
+  }
+
+  function showTyping() {
+    const el = document.createElement('div');
+    el.className = 'msg-container';
+    el.id = 'typingEl';
+    el.innerHTML = `<div class="msg-ai">
+      <div class="typing-row">
+        <div class="ai-avatar">TW</div>
+        <div class="typing-indicator">
+          <div class="typing-dot"></div>
+          <div class="typing-dot"></div>
+          <div class="typing-dot"></div>
+        </div>
+      </div>
+    </div>`;
+    messagesList.appendChild(el);
+    scrollBottom();
+  }
+
+  function hideTyping() {
+    const el = document.getElementById('typingEl');
+    if (el) el.remove();
+  }
+
+  function scrollBottom() {
+    requestAnimationFrame(() => { messagesList.scrollTop = messagesList.scrollHeight; });
+  }
+
+  // ══════════ ERROR TOAST ══════════
+  function showErrorToast(msg) {
+    errorToast.textContent = msg;
+    errorToast.classList.add('show');
+    setTimeout(() => { errorToast.classList.remove('show'); }, 3500);
+  }
+
+  // ══════════ AI COMMUNICATION ══════════
+  async function sendToAI() {
+    isLoading = true;
+    mainInput.disabled = true;
+    updateSendBtn();
+    showTyping();
+
+    let responseText;
+    try {
+      if (isDemoMode) throw new Error('demo');
+      responseText = await callAPI(messages);
+    } catch (err) {
+      if (!isDemoMode) {
+        isDemoMode = true;
+        demoBanner.classList.add('visible');
+        if (err.message !== 'demo') {
+          showErrorToast('API unavailable — switching to demo mode');
+        }
+      }
+      responseText = generateDemoResponse(messages);
+    }
+
+    hideTyping();
+    const parsed = parseResponse(responseText);
+    messages.push({ role: 'assistant', content: responseText });
+
+    if (parsed.recommendation) {
+      const card = renderRecCard(parsed.recommendation);
+      renderAIMsgWithCard(parsed.message, card);
+    } else {
+      renderAIMsg(parsed.message);
+    }
+
+    isLoading = false;
+    mainInput.disabled = false;
+    mainInput.focus();
+    updateSendBtn();
+  }
+
+  async function callAPI(msgs) {
+    const res = await fetch(API_PROXY_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-5-20250514',
+        max_tokens: 600,
+        system: SYSTEM_PROMPT,
+        messages: msgs
+      })
+    });
+    if (!res.ok) throw new Error(`API ${res.status}`);
+    const data = await res.json();
+    if (data.content && data.content[0]) return data.content[0].text;
+    throw new Error('bad response');
+  }
+
+  function parseResponse(text) {
+    const match = text.match(/\[RECOMMENDATION\](.*?)\[\/RECOMMENDATION\]/s);
+    return {
+      message: text.replace(/\[RECOMMENDATION\].*?\[\/RECOMMENDATION\]/s, '').trim(),
+      recommendation: match ? JSON.parse(match[1]) : null
+    };
+  }
+
+  // ══════════ RECOMMENDATION CARD ══════════
+  function renderRecCard(rec) {
+    if (rec.type === 'plan') {
+      const p = PLANS.find(x => x.id === rec.id);
+      if (!p) return renderHumanCard(rec);
+      return `<div class="rec-card">
+        <div class="rec-card-header">✦ WE RECOMMEND</div>
+        <div class="rec-card-title-row">
+          <span class="rec-card-name">${p.name}</span>
+          ${p.badge ? `<span class="rec-card-badge">${p.badge}</span>` : ''}
+        </div>
+        <div class="rec-card-price">$${p.price}<span>/mo</span></div>
+        <div class="rec-card-reason">"${esc(rec.reason)}"</div>
+        <div class="rec-card-features">
+          ${p.features.map(f => `<div class="rec-card-feature"><i class="ph-fill ph-check-circle check"></i> ${f}</div>`).join('')}
+        </div>
+        <button class="btn-primary" onclick="app.cta('plan','${p.id}')">Get This Plan</button>
+        <button class="btn-secondary" onclick="app.allPlans()">See All Plans</button>
+        <button class="btn-talk-person" onclick="app.talkPerson()"><i class="ph-fill ph-headset"></i> Talk to a Real Person</button>
+      </div>`;
+    }
+    if (rec.type === 'phone') {
+      const p = PHONES.find(x => x.id === rec.id);
+      if (!p) return renderHumanCard(rec);
+      return `<div class="rec-card">
+        <div class="rec-card-header">✦ WE RECOMMEND</div>
+        <div class="rec-card-phone-layout">
+          <div class="rec-card-img-placeholder">
+            <i class="ph-fill ph-device-mobile"></i>
+          </div>
+          <div class="rec-card-phone-info">
+            <div class="rec-card-title-row">
+              <span class="rec-card-name">${p.name}</span>
+              ${p.badge ? `<span class="rec-card-badge">${p.badge}</span>` : ''}
+            </div>
+            <div class="rec-card-price">$${p.price}<span> one-time</span></div>
+          </div>
+        </div>
+        <div class="rec-card-reason">"${esc(rec.reason)}"</div>
+        <div class="rec-card-features">
+          ${p.features.map(f => `<div class="rec-card-feature"><i class="ph-fill ph-check-circle check"></i> ${f}</div>`).join('')}
+        </div>
+        <button class="btn-primary" onclick="app.cta('phone','${p.id}')">Get This Phone</button>
+        <button class="btn-secondary" onclick="app.allPhones()">See All Phones</button>
+        <button class="btn-talk-person" onclick="app.talkPerson()"><i class="ph-fill ph-headset"></i> Talk to a Real Person</button>
+      </div>`;
+    }
+    return renderHumanCard(rec);
+  }
+
+  function renderHumanCard(rec) {
+    return `<div class="rec-card">
+      <div class="rec-card-header">✦ LET'S GET YOU HELP</div>
+      <div class="rec-card-reason">"${esc(rec.reason || 'This needs a specialist.')}"</div>
+      <button class="btn-primary" onclick="app.talkPerson()">Talk to a Real Person</button>
+    </div>`;
+  }
+
+  // ══════════ CTA HANDLERS ══════════
+  window.app = {
+    cta(type, id) {
+      const item = (type==='plan' ? PLANS : PHONES).find(x => x.id === id);
+      renderAIMsg(`Great choice! In the live experience, you'd now be taken to complete your ${type==='plan'?'plan upgrade':'phone purchase'} for the ${item?item.name:'selected item'}. This is where the checkout flow would begin.`);
+    },
+    allPlans() {
+      let rows = PLANS.map(p =>
+        `<div style="display:flex;justify-content:space-between;align-items:center;padding:12px 16px;border:1.5px solid #E8E8E8;border-radius:10px;margin-top:8px;transition:all 0.15s;cursor:pointer;" onmouseover="this.style.borderColor='#00B5AD';this.style.boxShadow='0 2px 8px rgba(0,181,173,0.12)'" onmouseout="this.style.borderColor='#E8E8E8';this.style.boxShadow='none'" onclick="app.cta('plan','${p.id}')">
+          <div><div style="font-weight:700;font-size:0.92rem;">${p.name}</div><div style="font-size:0.8rem;color:#6B6B6B;">${p.data} data · Unlimited Talk & Text</div></div>
+          <div style="font-weight:800;font-size:1.1rem;">$${p.price}<span style="font-size:0.75rem;font-weight:500;color:#6B6B6B;">/mo</span></div>
+        </div>`
+      ).join('');
+      const el = document.createElement('div');
+      el.className = 'msg-container';
+      el.innerHTML = `<div class="msg-ai">
+        <div class="msg-ai-header"><div class="ai-avatar">TW</div><div class="msg-label">Total Wireless Advisor</div></div>
+        <div class="msg-text">Here are all our current plans — tap any to get started:${rows}</div>
+      </div>`;
+      messagesList.appendChild(el);
+      scrollBottom();
+    },
+    allPhones() {
+      let rows = PHONES.map(p =>
+        `<div style="display:flex;justify-content:space-between;align-items:center;padding:12px 16px;border:1.5px solid #E8E8E8;border-radius:10px;margin-top:8px;transition:all 0.15s;cursor:pointer;" onmouseover="this.style.borderColor='#00B5AD';this.style.boxShadow='0 2px 8px rgba(0,181,173,0.12)'" onmouseout="this.style.borderColor='#E8E8E8';this.style.boxShadow='none'" onclick="app.cta('phone','${p.id}')">
+          <div><div style="font-weight:700;font-size:0.92rem;">${p.name}</div><div style="font-size:0.8rem;color:#6B6B6B;">${p.camera} · ${p.storage}</div></div>
+          <div style="font-weight:800;font-size:1.1rem;">$${p.price}</div>
+        </div>`
+      ).join('');
+      const el = document.createElement('div');
+      el.className = 'msg-container';
+      el.innerHTML = `<div class="msg-ai">
+        <div class="msg-ai-header"><div class="ai-avatar">TW</div><div class="msg-label">Total Wireless Advisor</div></div>
+        <div class="msg-text">Here are all the phones we carry — tap any to learn more:${rows}</div>
+      </div>`;
+      messagesList.appendChild(el);
+      scrollBottom();
+    },
+    talkPerson() {
+      renderAIMsg("No problem! In the live experience, you'd be connected to a Total Wireless advisor right now. Call 1-866-663-3633 anytime.");
+    }
+  };
+
+  // ══════════ DEMO RESPONSES ══════════
+  function generateDemoResponse(history) {
+    const userMsgs = history.filter(m => m.role === 'user');
+    const last = userMsgs[userMsgs.length - 1];
+    if (!last) return "Hey! Tell me what's going on — I'll help you figure it out.";
+    const msg = last.content.toLowerCase();
+    const turn = userMsgs.length;
+
+    if (turn === 1) {
+      if (msg.includes('real person') || msg.includes('talk to') || msg.includes('human') || msg.includes('agent'))
+        return `Of course — let me connect you with someone who can help.\n\n[RECOMMENDATION]{"type":"human","reason":"You asked to speak with a real person — let me connect you right away"}[/RECOMMENDATION]`;
+      if (msg.includes('data') && (msg.includes('run') || msg.includes('out') || msg.includes('slow')))
+        return "That's frustrating — running out of data mid-month is no fun. Quick question: do you know how much data your current plan gives you?";
+      if (msg.includes('slow') && (msg.includes('phone') || msg.includes('sluggish')))
+        return "Ugh, that's annoying! How old is your phone, roughly? And is it slow for everything or just certain apps?";
+      if (msg.includes('camera') || msg.includes('photo') || msg.includes('picture'))
+        return "Nice — better photos make a big difference! What kind of shots do you take most? Outdoor, group photos, low-light?";
+      if (msg.includes('storage') || msg.includes('memory') || msg.includes('space'))
+        return "Running out of storage is a pain. Is it mostly photos and videos taking up space, or apps?";
+      if (msg.includes('spend less') || msg.includes('cheap') || msg.includes('cost') || msg.includes('pay less'))
+        return "Totally get it — let's find you the most bang for your buck. What do you use your phone for most? Mostly calls and texts, or do you use a decent amount of data too?";
+      if (msg.includes('new phone') || msg.includes('upgrade') || msg.includes('replace'))
+        return "Thinking about a new phone — exciting! What's most important to you: camera quality, battery life, storage space, or keeping the price low?";
+      if (msg.includes('not working') || msg.includes('broken') || msg.includes('problem'))
+        return "Sorry to hear that! Can you tell me a bit more? Is it your phone itself, your data/internet, or something with calls and texts?";
+      return "Got it — tell me a bit more about what's going on. Is it a problem with your phone, your plan, or something else?";
+    }
+
+    const all = userMsgs.map(m => m.content.toLowerCase()).join(' ');
+    if (all.includes('data') || (all.includes('internet') || (all.includes('slow') && !all.includes('phone'))))
+      return `Sounds like you need more data to get through the month comfortably. Our Value Plan gives you 15GB — that's usually plenty for streaming, social media, and browsing. And it's only $50/mo.\n\n[RECOMMENDATION]{"type":"plan","id":"value-50","reason":"15GB will comfortably cover your mid-month data gap — 3x more data for just $15 more"}[/RECOMMENDATION]`;
+    if (all.includes('phone') && (all.includes('slow') || all.includes('old') || all.includes('sluggish')))
+      return `Sounds like your phone might be due for an upgrade. The Samsung Galaxy A15 has a great AMOLED display and solid performance — a big step up from older budget phones.\n\n[RECOMMENDATION]{"type":"phone","id":"samsung-a15","reason":"Newer processor and AMOLED display will make everything feel fast and smooth again"}[/RECOMMENDATION]`;
+    if (all.includes('camera') || all.includes('photo') || all.includes('picture'))
+      return `For better photos, the Samsung Galaxy A15 is a great pick. 50MP triple camera system with a beautiful AMOLED screen to show off your shots.\n\n[RECOMMENDATION]{"type":"phone","id":"samsung-a15","reason":"50MP triple camera gives you sharper, more vibrant photos — major upgrade from most budget phones"}[/RECOMMENDATION]`;
+    if (all.includes('storage') || all.includes('memory') || all.includes('space'))
+      return `For storage, the Moto G Stylus can't be beat — 256GB built in means you won't worry about deleting photos or apps for a long time.\n\n[RECOMMENDATION]{"type":"phone","id":"moto-g-stylus","reason":"256GB of storage means no more constantly deleting photos and apps to make room"}[/RECOMMENDATION]`;
+    if (all.includes('cheap') || all.includes('cost') || all.includes('spend less') || all.includes('pay less'))
+      return `Our Basic Plan is solid value at $35/mo — 5GB of data with unlimited talk and text. If you're mostly on Wi-Fi, that's plenty.\n\n[RECOMMENDATION]{"type":"plan","id":"basic-35","reason":"5GB of data with unlimited talk and text for just $35/mo — simple and affordable"}[/RECOMMENDATION]`;
+    if (all.includes('new phone') || all.includes('upgrade'))
+      return `The Moto G Power is hard to beat for the price — $89 gets you a 50MP camera, 128GB storage, and a massive 5000mAh battery that lasts up to 2 days.\n\n[RECOMMENDATION]{"type":"phone","id":"moto-g-power","reason":"At $89, you get all-day battery, 50MP camera, and 128GB storage — incredible value"}[/RECOMMENDATION]`;
+    return `I think the Value Plan would be a great fit here. 15GB covers most people's needs, and at $50/mo with the 5-year price lock, you know exactly what you're paying.\n\n[RECOMMENDATION]{"type":"plan","id":"value-50","reason":"15GB of high-speed data with unlimited talk & text — covers most needs at a locked-in price"}[/RECOMMENDATION]`;
+  }
+
+  // ══════════ UTIL ══════════
+  function esc(s) { const d = document.createElement('div'); d.textContent = s; return d.innerHTML; }
+
+  init();
+})();
+</script>
+
+</body>
+</html>

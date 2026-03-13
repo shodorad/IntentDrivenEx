@@ -1,0 +1,207 @@
+.wrapper {
+  margin-left: 44px;
+  margin-top: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  animation: fadeSlideUp 0.4s ease-out;
+}
+
+.card {
+  border-radius: var(--radius);
+  padding: 20px;
+  transition: box-shadow 0.2s ease;
+}
+
+.best {
+  border: 2px solid var(--tw-teal);
+  background: var(--tw-teal-light);
+}
+
+.alt {
+  border: 1.5px solid var(--tw-gray-200);
+  background: var(--tw-white);
+}
+
+.badge {
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin-bottom: 10px;
+}
+
+.best .badge {
+  color: var(--tw-teal);
+}
+
+.alt .badge {
+  color: var(--tw-gray-400);
+}
+
+.cardHeader {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+
+.productName {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--tw-gray-900);
+  margin-bottom: 4px;
+}
+
+.productBadge {
+  display: inline-block;
+  font-size: 0.7rem;
+  font-weight: 600;
+  background: var(--tw-teal);
+  color: white;
+  padding: 2px 8px;
+  border-radius: 4px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.price {
+  text-align: right;
+  flex-shrink: 0;
+}
+
+.priceAmount {
+  font-size: 1.5rem;
+  font-weight: 800;
+  color: var(--tw-gray-900);
+}
+
+.priceUnit {
+  font-size: 0.85rem;
+  color: var(--tw-gray-600);
+  font-weight: 500;
+}
+
+.specs {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.8rem;
+  color: var(--tw-gray-600);
+  margin-bottom: 10px;
+}
+
+.specDot {
+  color: var(--tw-gray-400);
+}
+
+.reason {
+  border-left: 3px solid var(--tw-teal);
+  padding-left: 12px;
+  margin-bottom: 14px;
+}
+
+.reason p {
+  font-size: 0.88rem;
+  color: var(--tw-gray-700);
+  line-height: 1.55;
+  font-style: italic;
+}
+
+.features {
+  list-style: none;
+  margin-bottom: 16px;
+}
+
+.features li {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.85rem;
+  color: var(--tw-gray-700);
+  padding: 3px 0;
+}
+
+.checkIcon {
+  color: var(--tw-teal);
+  flex-shrink: 0;
+}
+
+.actions {
+  display: flex;
+  gap: 10px;
+}
+
+.btnPrimary {
+  flex: 1;
+  padding: 12px 20px;
+  background: var(--tw-red);
+  color: white;
+  border-radius: var(--radius-sm);
+  font-size: 0.9rem;
+  font-weight: 600;
+  border: none;
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+
+.btnPrimary:hover {
+  background: #CC0000;
+}
+
+.btnSecondary {
+  flex: 1;
+  padding: 12px 20px;
+  background: transparent;
+  color: var(--tw-teal);
+  border: 1.5px solid var(--tw-teal);
+  border-radius: var(--radius-sm);
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  transition: all 0.15s ease;
+}
+
+.btnSecondary:hover {
+  background: var(--tw-teal);
+  color: white;
+}
+
+.headsetIcon {
+  color: var(--tw-teal);
+}
+
+.talkLink {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.82rem;
+  color: var(--tw-gray-600);
+  padding-top: 4px;
+}
+
+.talkLink strong {
+  color: var(--tw-teal);
+}
+
+@media (max-width: 768px) {
+  .wrapper {
+    margin-left: 0;
+  }
+
+  .card {
+    padding: 16px;
+  }
+
+  .priceAmount {
+    font-size: 1.3rem;
+  }
+
+  .actions {
+    flex-direction: column;
+  }
+}

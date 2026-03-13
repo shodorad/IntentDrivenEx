@@ -1,0 +1,42 @@
+.wrapper {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-left: 44px;
+  margin-top: 8px;
+  animation: fadeIn 0.3s ease-out;
+}
+
+.pill {
+  padding: 9px 18px;
+  background: var(--tw-white);
+  border: 1.5px solid var(--tw-teal);
+  border-radius: 20px;
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: var(--tw-teal);
+  transition: all 0.15s ease;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.pill:hover {
+  background: var(--tw-teal);
+  color: white;
+  box-shadow: 0 2px 8px rgba(0, 181, 173, 0.25);
+}
+
+.pill:active {
+  transform: scale(0.96);
+}
+
+@media (max-width: 768px) {
+  .wrapper {
+    margin-left: 0;
+  }
+
+  .pill {
+    font-size: 0.82rem;
+    padding: 8px 14px;
+  }
+}

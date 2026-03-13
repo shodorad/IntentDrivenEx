@@ -1,0 +1,68 @@
+import { useRef, useState } from 'react';
+import { PaperPlaneRight } from '@phosphor-icons/react';
+import { useChat } from '../../context/ChatContext';
+import { useChatActions } from '../../hooks/useChat';
+import styles from './InputBar.module.css';
+
+export default function InputBar() {
+  const { state } = useChat();
+  const { sendMessage, startChat } = useChatActions();
+  const [text, setText] = useState('');
+  const textareaRef = useRef(null);
+
+  const canSend = text.trim().length > 0 && !state.isLoading;
+
+  const handleSend = () => {
+    if (!canSend) return;
+    const msg = text.trim();
+    setText('');
+    if (textareaRef.current) {
+      textareaRef.current.style.height = 'auto';
+    }
+    if (state.mode === 'landing') {
+      startChat(msg);
+    } else {
+      sendMessage(msg);
+    }
+  };
+
+  const handleKeyDown = (e) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      handleSend();
+    }
+  };
+
+  const handleInput = (e) => {
+    setText(e.target.value);
+    // Auto-grow
+    const el = e.target;
+    el.style.height = 'auto';
+    el.style.height = Math.min(el.scrollHeight, 140) + 'px';
+  };
+
+  return (
+    <div className={styles.bar}>
+      <div className={styles.inner}>
+        <textarea
+          ref={textareaRef}
+          className={styles.textarea}
+          value={text}
+          onChange={handleInput}
+          onKeyDown={handleKeyDown}
+          placeholder="Type your message..."
+          rows={1}
+          disabled={state.isLoading}
+        />
+        <button
+          className={`${styles.sendBtn} ${canSend ? styles.active : ''}`}
+          onClick={handleSend}
+          disabled={!canSend}
+          aria-label="Send message"
+        >
+          <PaperPlaneRight size={18} weight="bold" />
+        </button>
+      </div>
+    </div>
+  );
+}

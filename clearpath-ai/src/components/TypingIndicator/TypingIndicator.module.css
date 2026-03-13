@@ -1,0 +1,40 @@
+.row {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+  animation: fadeIn 0.25s ease-out;
+}
+
+.avatar {
+  width: 32px;
+  height: 32px;
+  background: var(--tw-teal);
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  flex-shrink: 0;
+}
+
+.dots {
+  display: flex;
+  gap: 5px;
+  padding: 14px 0;
+}
+
+.dot {
+  width: 7px;
+  height: 7px;
+  background: var(--tw-gray-400);
+  border-radius: 50%;
+  animation: bounce 1.2s infinite;
+}
+
+.dot:nth-child(2) {
+  animation-delay: 0.15s;
+}
+
+.dot:nth-child(3) {
+  animation-delay: 0.3s;
+}

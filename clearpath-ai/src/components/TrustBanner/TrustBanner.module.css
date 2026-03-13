@@ -1,0 +1,71 @@
+.sideTab {
+  position: fixed;
+  right: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  background: var(--tw-navy);
+  color: white;
+  border: none;
+  border-radius: 12px 0 0 12px;
+  padding: 16px 14px;
+  cursor: pointer;
+  z-index: 100;
+  max-width: 180px;
+  text-align: left;
+  transition: all 0.2s ease;
+  box-shadow: -2px 2px 12px rgba(0, 0, 0, 0.15);
+}
+
+.sideTab:hover {
+  padding-right: 20px;
+  box-shadow: -4px 2px 20px rgba(0, 0, 0, 0.2);
+}
+
+.tabContent {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 6px;
+}
+
+.tabLabel {
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.3px;
+  white-space: nowrap;
+}
+
+.tabDesc {
+  display: block;
+  font-size: 0.65rem;
+  color: rgba(255, 255, 255, 0.7);
+  line-height: 1.4;
+}
+
+.mobileBtn {
+  display: none;
+  position: fixed;
+  bottom: 90px;
+  right: 16px;
+  width: 44px;
+  height: 44px;
+  background: var(--tw-navy);
+  color: white;
+  border: none;
+  border-radius: 50%;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  z-index: 100;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.2);
+}
+
+@media (max-width: 768px) {
+  .sideTab {
+    display: none;
+  }
+
+  .mobileBtn {
+    display: flex;
+  }
+}
