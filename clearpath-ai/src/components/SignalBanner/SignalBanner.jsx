@@ -25,19 +25,17 @@ export default function SignalBanner({ onAction }) {
     <AnimatePresence>
       <motion.div
         className={`${styles.banner} ${colorClass}`}
-        initial={{ opacity: 0, y: -12, scale: 0.97 }}
-        animate={{ opacity: 1, y: 0, scale: 1 }}
-        exit={{ opacity: 0, y: -12 }}
-        transition={{ duration: 0.4, delay: 0.5, ease: 'easeOut' }}
+        initial={{ opacity: 0, scaleX: 0.6, scaleY: 0.8 }}
+        animate={{ opacity: 1, scaleX: 1, scaleY: 1 }}
+        exit={{ opacity: 0, scaleX: 0.6, scaleY: 0.8 }}
+        transition={{ duration: 0.5, delay: 0.5, ease: [0.22, 1, 0.36, 1] }}
       >
-        <div className={`${styles.accent} ${colorClass}`} />
+        <div className={`${styles.iconRing} ${colorClass}`}>
+          <Icon size={16} weight="bold" className={styles.icon} />
+        </div>
         <div className={styles.body}>
-          <div className={styles.labelRow}>
-            <Icon size={14} weight="bold" className={styles.icon} />
-            <span className={styles.label}>{t(`signal.${signalKey}.label`)}</span>
-          </div>
-          <div className={styles.headline}>{t(`signal.${signalKey}.headline`)}</div>
-          <div className={styles.subtext}>{t(`signal.${signalKey}.subtext`)}</div>
+          <div className={styles.title}>{t(`signal.${signalKey}.headline`)}</div>
+          <div className={styles.meta}>{t(`signal.${signalKey}.subtext`)}</div>
         </div>
         <button className={`${styles.cta} ${colorClass}`} onClick={() => onAction?.(banner)}>
           {t(`signal.${signalKey}.cta`)}
