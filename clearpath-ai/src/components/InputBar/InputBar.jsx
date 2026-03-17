@@ -2,11 +2,13 @@ import { useRef, useState } from 'react';
 import { PaperPlaneRight, Paperclip, Microphone } from '@phosphor-icons/react';
 import { useChat } from '../../context/ChatContext';
 import { useChatActions } from '../../hooks/useChat';
+import { useTranslation } from '../../i18n/useTranslation';
 import styles from './InputBar.module.css';
 
 export default function InputBar() {
   const { state } = useChat();
   const { sendMessage, startChat } = useChatActions();
+  const { t } = useTranslation();
   const [text, setText] = useState('');
   const textareaRef = useRef(null);
 
@@ -57,7 +59,7 @@ export default function InputBar() {
           value={text}
           onChange={handleInput}
           onKeyDown={handleKeyDown}
-          placeholder="Type your message..."
+          placeholder={t('inputPlaceholder')}
           rows={1}
           disabled={state.isLoading}
         />

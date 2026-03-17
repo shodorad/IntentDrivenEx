@@ -1,4 +1,5 @@
 import { createContext, useContext, useReducer } from 'react';
+import { DEFAULT_SIGNAL } from '../data/signalBanners';
 
 const ChatContext = createContext(null);
 
@@ -7,6 +8,9 @@ const initialState = {
   messages: [],     // { role, content, actionPills?, recommendations? }
   isLoading: false,
   showTransparencyPanel: false,
+  language: 'en',   // 'en' | 'es'
+  signalBanner: DEFAULT_SIGNAL, // { type, color, flowId, signalKey }
+  showSMSModal: false,
 };
 
 function chatReducer(state, action) {
@@ -18,7 +22,17 @@ function chatReducer(state, action) {
     case 'SET_LOADING':
       return { ...state, isLoading: action.payload };
     case 'RESET_CHAT':
-      return { ...initialState };
+      return { ...initialState, language: state.language };
+    case 'SET_LANGUAGE':
+      return { ...state, language: action.payload };
+    case 'SET_SIGNAL_BANNER':
+      return { ...state, signalBanner: action.payload };
+    case 'CLEAR_SIGNAL_BANNER':
+      return { ...state, signalBanner: null };
+    case 'SHOW_SMS_MODAL':
+      return { ...state, showSMSModal: true };
+    case 'HIDE_SMS_MODAL':
+      return { ...state, showSMSModal: false };
     case 'TOGGLE_TRANSPARENCY':
       return { ...state, showTransparencyPanel: !state.showTransparencyPanel };
     case 'CLOSE_TRANSPARENCY':

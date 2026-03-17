@@ -1,64 +1,51 @@
-import { Globe, MagnifyingGlass, ShoppingCart } from '@phosphor-icons/react';
+import { useChat } from '../../context/ChatContext';
 import { useChatActions } from '../../hooks/useChat';
+import UserChip from '../UserChip/UserChip';
 import styles from './Header.module.css';
 
 export default function Header() {
+  const { state, dispatch } = useChat();
   const { resetChat } = useChatActions();
+  const lang = state.language || 'en';
+
+  const toggleLanguage = (newLang) => {
+    dispatch({ type: 'SET_LANGUAGE', payload: newLang });
+  };
 
   return (
     <header className={styles.header}>
-      {/* Utility bar */}
-      <div className={styles.utilityBar}>
-        <div className={styles.utilityInner}>
-          <button className={styles.utilityLink}>
-            <Globe size={14} weight="regular" />
-            <span>Español</span>
-          </button>
-          <div className={styles.utilityRight}>
-            <a href="#" className={styles.utilityLink}>
-              <span>Find a store</span>
-            </a>
-            <a href="#" className={styles.utilityLink}>
-              <span>Help & support</span>
-            </a>
-            <span className={styles.utilityText}>611611</span>
-          </div>
-        </div>
-      </div>
+      <div className={styles.inner}>
+        <a
+          href="#"
+          className={styles.logo}
+          onClick={(e) => { e.preventDefault(); resetChat(); }}
+        >
+          <img
+            src="/tw-logo.svg"
+            alt="Total Wireless"
+            className={styles.logoImg}
+          />
+        </a>
 
-      {/* Main nav */}
-      <div className={styles.mainNav}>
-        <div className={styles.navInner}>
-          <div className={styles.navLeft}>
-            <a
-              href="#"
-              className={styles.logo}
-              onClick={(e) => { e.preventDefault(); resetChat(); }}
+        <div className={styles.right}>
+          <div className={styles.langToggle}>
+            <button
+              className={`${styles.langBtn} ${lang === 'en' ? styles.langActive : ''}`}
+              onClick={() => toggleLanguage('en')}
             >
-              <img
-                src="/tw-logo.svg"
-                alt="Total Wireless"
-                className={styles.logoImg}
-              />
-            </a>
-            <nav className={styles.navLinks}>
-              <a href="#" className={styles.navLink}>Shop</a>
-              <a href="#" className={styles.navLink}>Deals</a>
-              <a href="#" className={styles.navLink}>Pay</a>
-              <a href="#" className={styles.navLink}>Activate</a>
-              <a href="#" className={styles.navLink}>Why Total Wireless</a>
-            </nav>
-          </div>
-          <div className={styles.navRight}>
-            <a href="#" className={styles.navLinkAccent}>Total Rewards</a>
-            <a href="#" className={styles.navLink}>Log in</a>
-            <button className={styles.iconBtn} aria-label="Cart">
-              <ShoppingCart size={20} weight="regular" />
+              EN
             </button>
-            <button className={styles.iconBtn} aria-label="Search">
-              <MagnifyingGlass size={20} weight="regular" />
+            <button
+              className={`${styles.langBtn} ${lang === 'es' ? styles.langActive : ''}`}
+              onClick={() => toggleLanguage('es')}
+            >
+              ES
             </button>
           </div>
+
+          <div className={styles.divider} />
+
+          <UserChip />
         </div>
       </div>
     </header>

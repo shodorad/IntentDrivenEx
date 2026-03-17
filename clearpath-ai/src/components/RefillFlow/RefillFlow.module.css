@@ -1,0 +1,251 @@
+.flowCard {
+  background: white;
+  border-radius: 16px;
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
+  overflow: hidden;
+  margin: 8px 0 4px;
+  max-width: 380px;
+}
+
+.stepContent {
+  padding: 24px;
+}
+
+.centered {
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 32px 24px;
+}
+
+/* Header */
+.stepHeader {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.stepIcon {
+  color: var(--tw-teal);
+}
+
+.stepTitle {
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--tw-gray-900);
+}
+
+/* Plan info card */
+.planInfo {
+  background: var(--tw-gray-50, #f9fafb);
+  border-radius: 12px;
+  padding: 16px;
+  margin-bottom: 16px;
+}
+
+.planRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.planLabel {
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: var(--tw-gray-900);
+}
+
+.planLine {
+  font-size: 0.8rem;
+  color: var(--tw-gray-500);
+}
+
+.itemName {
+  font-size: 0.85rem;
+  color: var(--tw-gray-700);
+}
+
+.itemPrice {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--tw-teal);
+}
+
+.divider {
+  height: 1px;
+  background: rgba(0, 0, 0, 0.06);
+  margin: 12px 0;
+}
+
+.activationNote {
+  font-size: 0.75rem;
+  color: var(--tw-teal);
+  margin-top: 8px;
+  font-weight: 500;
+}
+
+/* Buttons */
+.primaryBtn {
+  width: 100%;
+  padding: 12px;
+  border-radius: 12px;
+  border: none;
+  background: linear-gradient(135deg, var(--tw-teal) 0%, #00c4bc 100%);
+  color: white;
+  font-size: 0.9rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-family: var(--font);
+}
+
+.primaryBtn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 16px rgba(0, 181, 173, 0.3);
+}
+
+.secondaryBtn {
+  flex: 1;
+  padding: 12px;
+  border-radius: 12px;
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  background: white;
+  color: var(--tw-gray-600);
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  font-family: var(--font);
+}
+
+.secondaryBtn:hover {
+  background: var(--tw-gray-50, #f9fafb);
+}
+
+.btnRow {
+  display: flex;
+  gap: 10px;
+}
+
+.btnRow .primaryBtn {
+  flex: 2;
+}
+
+/* Confirm details */
+.confirmDetails {
+  background: var(--tw-gray-50, #f9fafb);
+  border-radius: 12px;
+  padding: 16px;
+  margin-bottom: 16px;
+}
+
+.confirmRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.confirmLabel {
+  font-size: 0.82rem;
+  color: var(--tw-gray-500);
+}
+
+.confirmValue {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--tw-gray-800);
+}
+
+.confirmTotal {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--tw-teal);
+}
+
+/* Processing spinner */
+.spinner {
+  width: 40px;
+  height: 40px;
+  border: 3px solid rgba(0, 181, 173, 0.15);
+  border-top-color: var(--tw-teal);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+  margin-bottom: 16px;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.processingTitle {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--tw-gray-900);
+  margin-bottom: 4px;
+}
+
+.processingSubtext {
+  font-size: 0.8rem;
+  color: var(--tw-gray-500);
+}
+
+/* Success */
+.successIcon {
+  color: #10b981;
+  margin-bottom: 12px;
+}
+
+.successTitle {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--tw-gray-900);
+  margin-bottom: 16px;
+}
+
+.successDetails {
+  background: rgba(16, 185, 129, 0.05);
+  border-radius: 12px;
+  padding: 14px 16px;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  border: 1px solid rgba(16, 185, 129, 0.1);
+}
+
+.successRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.82rem;
+  color: var(--tw-gray-700);
+}
+
+.successRow svg {
+  color: #10b981;
+  flex-shrink: 0;
+}
+
+.successMeta {
+  font-size: 0.78rem;
+  color: var(--tw-gray-500);
+  padding-left: 22px;
+}
+
+.rewardsTag {
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--tw-teal);
+  background: rgba(0, 181, 173, 0.08);
+  padding: 3px 10px;
+  border-radius: 20px;
+}
+
+@media (max-width: 768px) {
+  .flowCard {
+    max-width: 100%;
+  }
+}

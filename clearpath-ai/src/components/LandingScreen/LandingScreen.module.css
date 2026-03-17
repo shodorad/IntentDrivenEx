@@ -64,20 +64,11 @@
   margin-bottom: 0;
 }
 
-.spacer {
-  flex: 1;
+.signalWrap {
+  width: 100%;
   display: flex;
-  align-items: center;
   justify-content: center;
-  min-height: 40px;
-}
-
-.spacer::after {
-  content: '';
-  width: 40px;
-  height: 3px;
-  border-radius: 2px;
-  background: rgba(0, 181, 173, 0.15);
+  margin: 20px 0;
 }
 
 /* --- Pills --- */

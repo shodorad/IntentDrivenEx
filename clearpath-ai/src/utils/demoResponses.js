@@ -222,6 +222,11 @@ const REC_MESSAGES = {
 function getFlowKey(firstMessage) {
   const msg = firstMessage.toLowerCase();
 
+  // Signal-triggered flows
+  if (msg.includes('refill') && msg.includes('data')) return 'refill';
+  if (msg.includes('upgrade') && msg.includes('plan')) return 'upgrade';
+  if (msg.includes('international') && msg.includes('calling')) return 'international';
+
   if (msg.includes('slow') && (msg.includes('data') || msg.includes('internet') || msg.includes('speed'))) return 'slow-data';
   if (msg.includes('run out') || msg.includes('runs out') || (msg.includes('data') && msg.includes('end of'))) return 'runs-out';
   if (msg.includes('sluggish') || (msg.includes('slow') && msg.includes('phone'))) return 'slow-phone';
@@ -240,6 +245,45 @@ export function generateDemoResponse(messages) {
   const firstUserMsg = userMessages[0]?.content || '';
   const flowKey = getFlowKey(firstUserMsg);
   const flow = FLOWS[flowKey] || FLOWS['cost'];
+
+  // Signal-triggered flows: refill shows inline component on first response
+  if (flowKey === 'refill' && turn === 1) {
+    return `I can see your data is running low — 0.8 GB left with 2 days until your cycle resets. A quick $15 refill will add 2 GB instantly. Want me to set that up?\n[ACTION_PILLS]${JSON.stringify(["Yes, refill now", "Show me other options", "I'll wait it out"])}[/ACTION_PILLS]`;
+  }
+
+  if (flowKey === 'refill' && turn === 2) {
+    const lastMsg = userMessages[1]?.content?.toLowerCase() || '';
+    if (lastMsg.includes('yes') || lastMsg.includes('refill')) {
+      return `Great — I'll set that up for you right now.\n[REFILL_FLOW]`;
+    }
+    return `No problem! Here are some other options for your data situation:\n[ACTION_PILLS]${JSON.stringify(["Add a 1 GB booster for $10", "Switch to Unlimited for $50/mo", "Just help me use less data"])}[/ACTION_PILLS]`;
+  }
+
+  // Upgrade flow (US-006)
+  if (flowKey === 'upgrade' && turn === 1) {
+    return `I noticed you've hit your data cap 3 months in a row on your current 5 GB plan. The Unlimited plan is only $10 more per month — and it includes Disney+ Basic. Want to compare the two plans?\n[ACTION_PILLS]${JSON.stringify(["Yes, show me the comparison", "What else is included?", "Not right now"])}[/ACTION_PILLS]`;
+  }
+
+  if (flowKey === 'upgrade' && turn === 2) {
+    const lastMsg = userMessages[1]?.content?.toLowerCase() || '';
+    if (lastMsg.includes('yes') || lastMsg.includes('comparison') || lastMsg.includes('show')) {
+      return `Here's a side-by-side comparison of your current plan versus Unlimited:\n[UPGRADE_FLOW]`;
+    }
+    return `No problem! Your current plan still works. If you change your mind, I'm here to help.\n[ACTION_PILLS]${JSON.stringify(["Tell me more about the plans", "I want to explore other options"])}[/ACTION_PILLS]`;
+  }
+
+  // International flow (US-007)
+  if (flowKey === 'international' && turn === 1) {
+    return `I noticed you made 12 calls to Mexico last month. With a $10/mo add-on, you could save up to $18 per month on international calls. Want to see your options?\n[ACTION_PILLS]${JSON.stringify(["Yes, show me add-ons", "How much am I spending now?", "Not interested"])}[/ACTION_PILLS]`;
+  }
+
+  if (flowKey === 'international' && turn === 2) {
+    const lastMsg = userMessages[1]?.content?.toLowerCase() || '';
+    if (lastMsg.includes('yes') || lastMsg.includes('add-on') || lastMsg.includes('show')) {
+      return `Here are the international add-ons that match your calling patterns:\n[INTERNATIONAL_FLOW]`;
+    }
+    return `No worries! If you change your mind, I can always pull up international options for you.\n[ACTION_PILLS]${JSON.stringify(["Tell me more about savings", "I have another question"])}[/ACTION_PILLS]`;
+  }
 
   if (turn <= flow.length) {
     const step = flow[turn - 1];

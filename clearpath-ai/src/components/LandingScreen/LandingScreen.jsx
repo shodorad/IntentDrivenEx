@@ -1,8 +1,13 @@
+import { useEffect } from 'react';
 import { Sparkle } from '@phosphor-icons/react';
 import * as Icons from '@phosphor-icons/react';
 import { motion } from 'framer-motion';
 import { INTENT_PILLS } from '../../data/products';
+import { useChat } from '../../context/ChatContext';
 import { useChatActions } from '../../hooks/useChat';
+import { useTranslation } from '../../i18n/useTranslation';
+import { DEFAULT_SIGNAL, SIGNAL_BANNERS } from '../../data/signalBanners';
+import SignalBanner from '../SignalBanner/SignalBanner';
 import styles from './LandingScreen.module.css';
 
 const containerVariants = {
@@ -18,7 +23,41 @@ const itemVariants = {
 };
 
 export default function LandingScreen() {
+  const { dispatch } = useChat();
   const { startChat } = useChatActions();
+  const { t } = useTranslation();
+
+  // Set default signal banner on mount
+  useEffect(() => {
+    dispatch({ type: 'SET_SIGNAL_BANNER', payload: DEFAULT_SIGNAL });
+  }, [dispatch]);
+
+  // Keyboard shortcuts to cycle signal banners (1=refill, 2=upgrade, 3=international)
+  useEffect(() => {
+    const handleKey = (e) => {
+      if (e.target.tagName === 'TEXTAREA' || e.target.tagName === 'INPUT') return;
+      const signals = { '1': 'urgent', '2': 'smartTip', '3': 'savings' };
+      if (signals[e.key]) {
+        dispatch({ type: 'SET_SIGNAL_BANNER', payload: SIGNAL_BANNERS[signals[e.key]] });
+      }
+    };
+    window.addEventListener('keydown', handleKey);
+    return () => window.removeEventListener('keydown', handleKey);
+  }, [dispatch]);
+
+  const handleSignalAction = (banner) => {
+    dispatch({ type: 'CLEAR_SIGNAL_BANNER' });
+    // For refill flow, send a specific prompt
+    if (banner.flowId === 'refill') {
+      startChat('I need to refill my data');
+    } else if (banner.flowId === 'upgrade') {
+      startChat('I want to upgrade my plan');
+    } else if (banner.flowId === 'international') {
+      startChat('I want to add international calling');
+    }
+  };
+
+  const headlineParts = t('headline').split('\n');
 
   return (
     <div className={styles.landing}>
@@ -40,7 +79,7 @@ export default function LandingScreen() {
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5, delay: 0.15 }}
       >
-        Tell us what&apos;s going on.<br />We&apos;ll figure out the rest.
+        {headlineParts[0]}<br />{headlineParts[1]}
       </motion.h1>
 
       <motion.p
@@ -49,10 +88,17 @@ export default function LandingScreen() {
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5, delay: 0.25 }}
       >
-        Hi. I am ClearPath AI. I am going to ask you a couple of quick questions about what you are dealing with, and then I will find the option that makes the most sense for your situation. I will always show you the most affordable path first. Ready to get started?
+        {t('subhead')}
       </motion.p>
 
-      <div className={styles.spacer} />
+      <motion.div
+        className={styles.signalWrap}
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.4, delay: 0.5 }}
+      >
+        <SignalBanner onAction={handleSignalAction} />
+      </motion.div>
 
       <motion.div
         className={styles.pillsGrid}
@@ -74,7 +120,7 @@ export default function LandingScreen() {
               <span className={styles.pillIcon}>
                 {IconComponent && <IconComponent size={18} weight="regular" />}
               </span>
-              <span>{pill.label}</span>
+              <span>{t(`pills.${pill.id}`)}</span>
             </motion.button>
           );
         })}

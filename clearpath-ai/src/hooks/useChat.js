@@ -39,7 +39,7 @@ export function useChatActions() {
         responseText = generateDemoResponse(apiMessages);
       }
 
-      const { message, actionPills, recommendations } = parseResponse(responseText);
+      const { message, actionPills, recommendations, refillFlow, upgradeFlow, internationalFlow } = parseResponse(responseText);
 
       dispatch({
         type: 'ADD_MESSAGE',
@@ -47,7 +47,10 @@ export function useChatActions() {
           role: 'assistant',
           content: message,
           actionPills,
-          recommendations
+          recommendations,
+          ...(refillFlow && { refillFlow: true }),
+          ...(upgradeFlow && { upgradeFlow: true }),
+          ...(internationalFlow && { internationalFlow: true }),
         }
       });
     } catch (err) {

@@ -1,10 +1,11 @@
 import { Info } from '@phosphor-icons/react';
 import { useChat } from '../../context/ChatContext';
-import { TRANSPARENCY } from '../../data/transparencyContent';
+import { useTranslation } from '../../i18n/useTranslation';
 import styles from './TrustBanner.module.css';
 
 export default function TrustBanner() {
   const { dispatch } = useChat();
+  const { t } = useTranslation();
 
   return (
     <>
@@ -12,20 +13,20 @@ export default function TrustBanner() {
       <button
         className={styles.sideTab}
         onClick={() => dispatch({ type: 'TOGGLE_TRANSPARENCY' })}
-        aria-label="How ClearPath AI works"
+        aria-label={t('transparency.bannerLabel')}
       >
         <div className={styles.tabContent}>
           <Info size={16} weight="bold" />
-          <span className={styles.tabLabel}>{TRANSPARENCY.bannerLabel}</span>
+          <span className={styles.tabLabel}>{t('transparency.bannerLabel')}</span>
         </div>
-        <span className={styles.tabDesc}>{TRANSPARENCY.bannerDescriptor}</span>
+        <span className={styles.tabDesc}>{t('transparency.bannerDescriptor')}</span>
       </button>
 
       {/* Mobile: floating icon */}
       <button
         className={styles.mobileBtn}
         onClick={() => dispatch({ type: 'TOGGLE_TRANSPARENCY' })}
-        aria-label="How ClearPath AI works"
+        aria-label={t('transparency.bannerLabel')}
       >
         <Info size={20} weight="bold" />
       </button>

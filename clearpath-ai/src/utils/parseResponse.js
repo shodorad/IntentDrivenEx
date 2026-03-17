@@ -22,11 +22,17 @@ export function parseResponse(text) {
     }
   }
 
-  // Clean message text (remove JSON blocks)
+  // Detect inline flow tags
+  const refillFlow = text.includes('[REFILL_FLOW]');
+  const upgradeFlow = text.includes('[UPGRADE_FLOW]');
+  const internationalFlow = text.includes('[INTERNATIONAL_FLOW]');
+
+  // Clean message text (remove JSON blocks and flow tags)
   const message = text
     .replace(/\[ACTION_PILLS\].*?\[\/ACTION_PILLS\]/s, '')
     .replace(/\[RECOMMENDATIONS?\].*?\[\/RECOMMENDATIONS?\]/s, '')
+    .replace(/\[(REFILL|UPGRADE|INTERNATIONAL)_FLOW\]/g, '')
     .trim();
 
-  return { message, actionPills, recommendations };
+  return { message, actionPills, recommendations, refillFlow, upgradeFlow, internationalFlow };
 }
