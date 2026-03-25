@@ -11,6 +11,7 @@ export default function InputBar() {
   const { t } = useTranslation();
   const [text, setText] = useState('');
   const textareaRef = useRef(null);
+  const blurTimerRef = useRef(null);
 
   const canSend = text.trim().length > 0 && !state.isLoading;
 
@@ -59,8 +60,16 @@ export default function InputBar() {
           value={text}
           onChange={handleInput}
           onKeyDown={handleKeyDown}
-          onFocus={() => dispatch({ type: 'SET_INPUT_FOCUSED', payload: true })}
-          onBlur={() => dispatch({ type: 'SET_INPUT_FOCUSED', payload: false })}
+          onFocus={() => {
+            clearTimeout(blurTimerRef.current);
+            dispatch({ type: 'SET_INPUT_FOCUSED', payload: true });
+          }}
+          onBlur={() => {
+            // Delay so pill onClick fires before we hide the pills
+            blurTimerRef.current = setTimeout(() => {
+              dispatch({ type: 'SET_INPUT_FOCUSED', payload: false });
+            }, 200);
+          }}
           placeholder={t('inputPlaceholder')}
           rows={1}
           disabled={state.isLoading}

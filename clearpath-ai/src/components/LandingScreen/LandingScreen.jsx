@@ -125,6 +125,7 @@ export default function LandingScreen() {
             <motion.button
               key={pill.id}
               className={styles.pill}
+              onMouseDown={(e) => e.preventDefault()}
               onClick={() => startChat(pill.prompt)}
               variants={itemVariants}
               whileHover={{ scale: 1.03, y: -2 }}
