@@ -1,5 +1,4 @@
 import { useEffect } from 'react';
-import { Sparkle } from '@phosphor-icons/react';
 import * as Icons from '@phosphor-icons/react';
 import { motion } from 'framer-motion';
 import { INTENT_PILLS } from '../../data/products';
@@ -61,38 +60,42 @@ export default function LandingScreen() {
     }
   };
 
-  const headlineParts = t('headline').split('\n');
+  const hour = new Date().getHours();
+  const greetingLabel = hour < 12 ? 'GOOD MORNING' : hour < 17 ? 'GOOD AFTERNOON' : 'GOOD EVENING';
+  const firstName = (state.persona.name || 'there').split(' ')[0].toUpperCase();
 
   return (
     <div className={styles.landing}>
+      {/* Greeting */}
       <motion.div
-        className={styles.brand}
-        initial={{ opacity: 0, scale: 0.8 }}
-        animate={{ opacity: 1, scale: 1 }}
-        transition={{ duration: 0.5, ease: 'easeOut' }}
+        className={styles.greeting}
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.4 }}
       >
-        <div className={styles.logoMark}>
-          <Sparkle size={26} weight="fill" />
-        </div>
-        <span className={styles.logoText}>ClearPath AI</span>
+        <span className={styles.greetingDash}>—</span>
+        <span className={styles.greetingText}>{greetingLabel}, {firstName}</span>
       </motion.div>
 
+      {/* Headline */}
       <motion.h1
         className={styles.headline}
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5, delay: 0.15 }}
+        transition={{ duration: 0.5, delay: 0.1 }}
       >
-        {headlineParts[0]}<br />{headlineParts[1]}
+        Tell us what's going on{' '}
+        <span className={styles.headlineAccent}>and we'll handle the rest</span>
       </motion.h1>
 
+      {/* Subhead */}
       <motion.p
         className={styles.subhead}
         initial={{ opacity: 0, y: 16 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5, delay: 0.25 }}
+        transition={{ duration: 0.5, delay: 0.2 }}
       >
-        {t('subhead')}
+        I'll always show you the most affordable option first.
       </motion.p>
 
       <motion.div

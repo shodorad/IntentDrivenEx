@@ -47,13 +47,44 @@
 
 /* --- Typography --- */
 
+/* --- Greeting line --- */
+.greeting {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 10px;
+  align-self: flex-start;
+}
+
+.greetingDash {
+  color: #00B5AD;
+  font-size: 1rem;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.greetingText {
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  color: #9ca3af;
+  text-transform: uppercase;
+}
+
+/* --- Headline accent --- */
+.headlineAccent {
+  color: #00B5AD;
+}
+
 .headline {
-  font-size: 1.75rem;
+  font-size: 2rem;
   font-weight: 800;
   line-height: 1.2;
   color: var(--tw-gray-900);
-  margin-bottom: 12px;
+  margin-bottom: 8px;
   letter-spacing: -0.5px;
+  text-align: left;
+  align-self: flex-start;
 }
 
 .subhead {
@@ -62,6 +93,8 @@
   max-width: 480px;
   line-height: 1.6;
   margin-bottom: 0;
+  text-align: left;
+  align-self: flex-start;
 }
 
 .signalWrap {

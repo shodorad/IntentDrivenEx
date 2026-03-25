@@ -28,7 +28,7 @@ function RingChart({ pct, color, size = 80 }) {
   );
 }
 
-function SignalBars({ bars = 4 }) {
+function SignalBars({ bars = 4, color = '#00B5AD' }) {
   return (
     <div className={styles.signalBars}>
       {[1, 2, 3, 4, 5].map((b) => (
@@ -37,7 +37,7 @@ function SignalBars({ bars = 4 }) {
           className={styles.signalBar}
           style={{
             height: `${b * 20}%`,
-            background: b <= bars ? '#00B5AD' : '#e0e0e0',
+            background: b <= bars ? color : '#e0e0e0',
           }}
         />
       ))}
@@ -60,6 +60,9 @@ export default function MiniDashboard({ onAddOnClick }) {
   const addons = p.addons || [];
   const handleAddOn = onAddOnClick || (() => {});
 
+  // Urgency derived from persona data
+  const urgency = remaining === 0 ? 'cap' : pctRemaining < 20 ? 'low' : addons.length > 0 ? 'intl' : 'normal';
+
   // Simulated monthly spend (plan price numeric)
   const spendNum = p.planPrice ? parseFloat(p.planPrice.replace(/[^0-9.]/g, '')) : 0;
 
@@ -81,6 +84,8 @@ export default function MiniDashboard({ onAddOnClick }) {
             {p.dataRemaining} <span className={styles.dataUnit}>GB</span>
           </div>
           <div className={styles.dataSub}>of {p.dataTotal} GB total</div>
+          {urgency === 'cap' && <div className={styles.statusBadge} style={{background:'#DC3545'}}>DATA CAP REACHED</div>}
+          {urgency === 'low' && <div className={styles.statusBadge} style={{background:'#FFC107', color:'#7a5c00'}}>RUNNING LOW</div>}
         </div>
 
         {/* Tile B — Your Plan */}
@@ -88,16 +93,24 @@ export default function MiniDashboard({ onAddOnClick }) {
           <div className={styles.planAccent} />
           <div className={styles.tileLabel}>Your Plan</div>
           <div className={styles.planName}>{p.planName}</div>
-          <div className={styles.planBadge}>5G</div>
+          {urgency === 'cap'
+            ? <div className={styles.planBadge} style={{background:'rgba(255,255,255,0.35)'}}>UPGRADE?</div>
+            : <div className={styles.planBadge}>5G</div>
+          }
+          {urgency === 'cap' && <div className={styles.planUpgrade}>Unlimited available</div>}
           <div className={styles.planPrice}>{p.planPrice || '—'}</div>
         </div>
 
         {/* Tile C — Network */}
         <div className={`${styles.tile} ${styles.tileNetwork}`}>
           <div className={styles.tileLabel}>Network</div>
-          <SignalBars bars={4} />
-          <div className={styles.networkBadge}>5G</div>
-          <div className={styles.networkSub}>Strong signal</div>
+          <SignalBars bars={urgency === 'cap' ? 2 : 4} color={urgency === 'cap' ? '#FFC107' : '#00B5AD'} />
+          <div className={styles.networkBadge} style={{color: urgency === 'cap' ? '#FFC107' : '#00B5AD'}}>
+            {urgency === 'cap' ? '2G' : '5G'}
+          </div>
+          <div className={styles.networkSub}>
+            {urgency === 'cap' ? 'Speed throttled' : urgency === 'intl' ? 'Intl. ready' : 'Strong signal'}
+          </div>
         </div>
 
         {/* Tile D — Renews In */}
@@ -113,7 +126,9 @@ export default function MiniDashboard({ onAddOnClick }) {
         <div className={`${styles.tile} ${styles.tileSpend}`}>
           <div className={styles.tileLabel}>Monthly</div>
           <div className={styles.spendAmount}>${spendNum}</div>
-          <div className={styles.spendSub}>No overage fees</div>
+          <div className={styles.spendSub}>
+            {urgency === 'cap' ? 'Upgrade saves you more' : urgency === 'low' ? 'Refill for $15' : 'No overage fees'}
+          </div>
           <div className={styles.spendBar}>
             <div className={styles.spendFill} style={{ width: '70%' }} />
           </div>
