@@ -73,6 +73,19 @@
 
 /* --- Pills --- */
 
+.pillsBackdrop {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 220px;
+  background: linear-gradient(to top, rgba(232, 240, 248, 0.92) 40%, transparent 100%);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  z-index: 9;
+  pointer-events: none;
+}
+
 .pillsGrid {
   display: grid;
   grid-template-columns: repeat(4, auto);
@@ -80,6 +93,18 @@
   gap: 8px;
   width: 100%;
   max-width: 840px;
+}
+
+.pillsGridFocused {
+  position: fixed;
+  bottom: 82px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 100%;
+  max-width: 860px;
+  padding: 0 20px;
+  z-index: 10;
+  box-sizing: border-box;
 }
 
 .pill {

@@ -110,8 +110,10 @@ export default function LandingScreen() {
         <MiniDashboard />
       </motion.div>
 
+      {state.inputFocused && <div className={styles.pillsBackdrop} />}
+
       <motion.div
-        className={styles.pillsGrid}
+        className={`${styles.pillsGrid} ${state.inputFocused ? styles.pillsGridFocused : ''}`}
         variants={containerVariants}
         initial="hidden"
         animate={state.inputFocused ? 'show' : 'hidden'}
