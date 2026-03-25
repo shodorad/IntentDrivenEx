@@ -34,6 +34,7 @@ const initialState = {
   signalBanner: DEFAULT_SIGNAL, // { type, color, flowId, signalKey }
   showSMSModal: false,
   persona: getPersonaFromUrl(),
+  inputFocused: false,
 };
 
 function chatReducer(state, action) {
@@ -62,6 +63,8 @@ function chatReducer(state, action) {
       return { ...state, showTransparencyPanel: !state.showTransparencyPanel };
     case 'CLOSE_TRANSPARENCY':
       return { ...state, showTransparencyPanel: false };
+    case 'SET_INPUT_FOCUSED':
+      return { ...state, inputFocused: action.payload };
     case 'CLEAR_ACTION_PILLS': {
       // Remove action pills from the last AI message
       const msgs = [...state.messages];

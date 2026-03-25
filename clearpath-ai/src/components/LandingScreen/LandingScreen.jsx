@@ -24,7 +24,7 @@ const itemVariants = {
 };
 
 export default function LandingScreen() {
-  const { dispatch } = useChat();
+  const { state, dispatch } = useChat();
   const { startChat } = useChatActions();
   const { t } = useTranslation();
 
@@ -114,7 +114,8 @@ export default function LandingScreen() {
         className={styles.pillsGrid}
         variants={containerVariants}
         initial="hidden"
-        animate="show"
+        animate={state.inputFocused ? 'show' : 'hidden'}
+        style={{ pointerEvents: state.inputFocused ? 'auto' : 'none' }}
       >
         {INTENT_PILLS.map((pill) => {
           const IconComponent = Icons[pill.icon];

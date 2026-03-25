@@ -6,7 +6,7 @@ import { useTranslation } from '../../i18n/useTranslation';
 import styles from './InputBar.module.css';
 
 export default function InputBar() {
-  const { state } = useChat();
+  const { state, dispatch } = useChat();
   const { sendMessage, startChat } = useChatActions();
   const { t } = useTranslation();
   const [text, setText] = useState('');
@@ -59,6 +59,8 @@ export default function InputBar() {
           value={text}
           onChange={handleInput}
           onKeyDown={handleKeyDown}
+          onFocus={() => dispatch({ type: 'SET_INPUT_FOCUSED', payload: true })}
+          onBlur={() => dispatch({ type: 'SET_INPUT_FOCUSED', payload: false })}
           placeholder={t('inputPlaceholder')}
           rows={1}
           disabled={state.isLoading}
