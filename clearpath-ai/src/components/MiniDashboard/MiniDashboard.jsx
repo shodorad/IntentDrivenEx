@@ -64,77 +64,74 @@ export default function MiniDashboard({ onAddOnClick }) {
   const spendNum = p.planPrice ? parseFloat(p.planPrice.replace(/[^0-9.]/g, '')) : 0;
 
   return (
-    <div className={styles.mosaic}>
+    <>
+      <div className={styles.mosaic}>
+        {/* Tile A — Data (spans 2 rows) */}
+        <div className={`${styles.tile} ${styles.tileData}`}>
+          <div className={styles.tileLabel}>Data Left</div>
+          <div className={styles.ringWrap}>
+            <RingChart pct={pctRemaining} color={dataColor} size={68} />
+            <div className={styles.ringCenter}>
+              <span className={styles.ringValue} style={{ color: dataColor }}>
+                {Math.round(pctRemaining)}%
+              </span>
+            </div>
+          </div>
+          <div className={styles.dataGB} style={{ color: dataColor }}>
+            {p.dataRemaining} <span className={styles.dataUnit}>GB</span>
+          </div>
+          <div className={styles.dataSub}>of {p.dataTotal} GB total</div>
+        </div>
 
-      {/* Tile A — Data (tall, spans 2 rows) */}
-      <div className={`${styles.tile} ${styles.tileData}`}>
-        <div className={styles.tileLabel}>Data Left</div>
-        <div className={styles.ringWrap}>
-          <RingChart pct={pctRemaining} color={dataColor} size={90} />
-          <div className={styles.ringCenter}>
-            <span className={styles.ringValue} style={{ color: dataColor }}>
-              {Math.round(pctRemaining)}%
-            </span>
+        {/* Tile B — Your Plan */}
+        <div className={`${styles.tile} ${styles.tilePlan}`}>
+          <div className={styles.planAccent} />
+          <div className={styles.tileLabel}>Your Plan</div>
+          <div className={styles.planName}>{p.planName}</div>
+          <div className={styles.planBadge}>5G</div>
+          <div className={styles.planPrice}>{p.planPrice || '—'}</div>
+        </div>
+
+        {/* Tile C — Network */}
+        <div className={`${styles.tile} ${styles.tileNetwork}`}>
+          <div className={styles.tileLabel}>Network</div>
+          <SignalBars bars={4} />
+          <div className={styles.networkBadge}>5G</div>
+          <div className={styles.networkSub}>Strong signal</div>
+        </div>
+
+        {/* Tile D — Renews In */}
+        <div className={`${styles.tile} ${styles.tileRenew} ${renewUrgent ? styles.tileRenewUrgent : ''}`}>
+          <div className={styles.tileLabel}>Renews In</div>
+          <div className={styles.renewDays} style={{ color: renewUrgent ? '#FFC107' : '#00B5AD' }}>
+            {daysUntilRenewal}<span className={styles.renewUnit}>d</span>
+          </div>
+          <div className={styles.renewDate}>{p.renewalDate}</div>
+        </div>
+
+        {/* Tile E — Monthly Spend */}
+        <div className={`${styles.tile} ${styles.tileSpend}`}>
+          <div className={styles.tileLabel}>Monthly</div>
+          <div className={styles.spendAmount}>${spendNum}</div>
+          <div className={styles.spendSub}>No overage fees</div>
+          <div className={styles.spendBar}>
+            <div className={styles.spendFill} style={{ width: '70%' }} />
           </div>
         </div>
-        <div className={styles.dataGB} style={{ color: dataColor }}>
-          {p.dataRemaining} <span className={styles.dataUnit}>GB</span>
-        </div>
-        <div className={styles.dataSub}>of {p.dataTotal} GB total</div>
       </div>
 
-      {/* Tile B — Your Plan */}
-      <div className={`${styles.tile} ${styles.tilePlan}`}>
-        <div className={styles.planAccent} />
-        <div className={styles.tileLabel}>Your Plan</div>
-        <div className={styles.planName}>{p.planName}</div>
-        <div className={styles.planBadge}>5G</div>
-        <div className={styles.planPrice}>{p.planPrice || '—'}</div>
-      </div>
-
-      {/* Tile C — Network */}
-      <div className={`${styles.tile} ${styles.tileNetwork}`}>
-        <div className={styles.tileLabel}>Network</div>
-        <SignalBars bars={4} />
-        <div className={styles.networkBadge}>5G</div>
-        <div className={styles.networkSub}>Strong signal</div>
-      </div>
-
-      {/* Tile D — Renews In */}
-      <div className={`${styles.tile} ${styles.tileRenew} ${renewUrgent ? styles.tileRenewUrgent : ''}`}>
-        <div className={styles.tileLabel}>Renews In</div>
-        <div className={styles.renewDays} style={{ color: renewUrgent ? '#FFC107' : '#00B5AD' }}>
-          {daysUntilRenewal}
-          <span className={styles.renewUnit}>d</span>
-        </div>
-        <div className={styles.renewDate}>{p.renewalDate}</div>
-      </div>
-
-      {/* Tile E — Monthly Spend */}
-      <div className={`${styles.tile} ${styles.tileSpend}`}>
-        <div className={styles.tileLabel}>Monthly</div>
-        <div className={styles.spendAmount}>${spendNum}</div>
-        <div className={styles.spendSub}>No overage fees</div>
-        <div className={styles.spendBar}>
-          <div className={styles.spendFill} style={{ width: '70%' }} />
-        </div>
-      </div>
-
-      {/* Tile F — Add-ons */}
-      <div className={`${styles.tile} ${styles.tileAddons}`}>
-        <div className={styles.tileLabel}>Add-ons</div>
+      {/* Add-ons slim row */}
+      <div className={styles.addonsRow}>
+        <span className={styles.addonsRowLabel}>Add-ons</span>
         {addons.length > 0 ? (
           <div className={styles.addonList}>
-            {addons.map((a) => (
-              <span key={a} className={styles.addonChip}>{a}</span>
-            ))}
+            {addons.map((a) => <span key={a} className={styles.addonChip}>{a}</span>)}
           </div>
         ) : (
-          <div className={styles.addonNone}>None active</div>
+          <span className={styles.addonNone}>None active</span>
         )}
         <span className={styles.addLink} onClick={handleAddOn}>+ Add one</span>
       </div>
-
-    </div>
+    </>
   );
 }

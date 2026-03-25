@@ -1,53 +1,54 @@
-/* ── Mosaic grid ─────────────────────────────────────── */
+/* ── Mosaic grid (2 rows, no scroll) ─────────────────── */
 .mosaic {
   display: grid;
   grid-template-columns: 1fr 1fr 1fr;
-  grid-template-rows: auto auto;
+  grid-template-rows: 1fr 1fr;
   grid-template-areas:
-    "data plan  network"
-    "data renew spend  "
-    "data addons addons";
-  gap: 8px;
+    "data plan    network"
+    "data renew   spend  ";
+  gap: 6px;
   width: 100%;
   box-sizing: border-box;
-  margin-bottom: 16px;
+  margin-bottom: 10px;
 }
 
 /* ── Base tile ───────────────────────────────────────── */
 .tile {
   background: #ffffff;
-  border-radius: 16px;
-  padding: 14px 16px;
-  box-shadow: 0 1px 6px rgba(0, 0, 0, 0.07);
+  border-radius: 14px;
+  padding: 10px 12px;
+  box-shadow: 0 1px 5px rgba(0, 0, 0, 0.07);
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 2px;
   position: relative;
   overflow: hidden;
 }
 
 .tileLabel {
-  font-size: 10px;
+  font-size: 9px;
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.06em;
   color: #9ca3af;
 }
 
-/* ── Tile A: Data (tall, spans 3 rows) ───────────────── */
+/* ── Tile A: Data (spans 2 rows) ─────────────────────── */
 .tileData {
   grid-area: data;
   align-items: center;
   text-align: center;
+  justify-content: center;
   background: linear-gradient(160deg, #f0fffe 0%, #ffffff 60%);
   border: 1px solid rgba(0, 181, 173, 0.18);
 }
 
 .ringWrap {
   position: relative;
-  width: 90px;
-  height: 90px;
-  margin: 6px auto 2px;
+  width: 68px;
+  height: 68px;
+  margin: 4px auto 2px;
+  flex-shrink: 0;
 }
 
 .ringCenter {
@@ -59,25 +60,25 @@
 }
 
 .ringValue {
-  font-size: 18px;
+  font-size: 14px;
   font-weight: 700;
   line-height: 1;
 }
 
 .dataGB {
-  font-size: 22px;
+  font-size: 17px;
   font-weight: 700;
   line-height: 1.1;
 }
 
 .dataUnit {
-  font-size: 13px;
+  font-size: 11px;
   font-weight: 500;
   opacity: 0.75;
 }
 
 .dataSub {
-  font-size: 11px;
+  font-size: 10px;
   color: #9ca3af;
 }
 
@@ -94,16 +95,16 @@
 
 .planAccent {
   position: absolute;
-  top: -18px;
-  right: -18px;
-  width: 70px;
-  height: 70px;
+  top: -14px;
+  right: -14px;
+  width: 54px;
+  height: 54px;
   border-radius: 50%;
   background: rgba(255, 255, 255, 0.12);
 }
 
 .planName {
-  font-size: 15px;
+  font-size: 13px;
   font-weight: 700;
   color: #fff;
   margin-top: 2px;
@@ -114,16 +115,16 @@
   display: inline-block;
   background: rgba(255, 255, 255, 0.25);
   color: #fff;
-  font-size: 10px;
+  font-size: 9px;
   font-weight: 700;
-  padding: 2px 7px;
+  padding: 1px 6px;
   border-radius: 20px;
   margin-top: 2px;
   width: fit-content;
 }
 
 .planPrice {
-  font-size: 12px;
+  font-size: 11px;
   color: rgba(255, 255, 255, 0.8);
   margin-top: auto;
 }
@@ -137,8 +138,8 @@
   display: flex;
   align-items: flex-end;
   gap: 3px;
-  height: 32px;
-  margin: 6px 0 2px;
+  height: 24px;
+  margin: 4px 0 1px;
 }
 
 .signalBar {
@@ -148,14 +149,14 @@
 }
 
 .networkBadge {
-  font-size: 16px;
+  font-size: 13px;
   font-weight: 800;
   color: #00B5AD;
   line-height: 1;
 }
 
 .networkSub {
-  font-size: 11px;
+  font-size: 10px;
   color: #9ca3af;
 }
 
@@ -170,22 +171,22 @@
 }
 
 .renewDays {
-  font-size: 28px;
+  font-size: 22px;
   font-weight: 800;
   line-height: 1;
   margin-top: 2px;
 }
 
 .renewUnit {
-  font-size: 14px;
+  font-size: 12px;
   font-weight: 600;
   margin-left: 1px;
 }
 
 .renewDate {
-  font-size: 11px;
+  font-size: 10px;
   color: #9ca3af;
-  margin-top: 2px;
+  margin-top: 1px;
 }
 
 /* ── Tile E: Monthly Spend ───────────────────────────── */
@@ -194,7 +195,7 @@
 }
 
 .spendAmount {
-  font-size: 24px;
+  font-size: 20px;
   font-weight: 800;
   color: #1a1a1a;
   line-height: 1;
@@ -202,12 +203,12 @@
 }
 
 .spendSub {
-  font-size: 10px;
+  font-size: 9px;
   color: #9ca3af;
 }
 
 .spendBar {
-  height: 4px;
+  height: 3px;
   background: #e9ecef;
   border-radius: 3px;
   overflow: hidden;
@@ -220,24 +221,32 @@
   border-radius: 3px;
 }
 
-/* ── Tile F: Add-ons ─────────────────────────────────── */
-.tileAddons {
-  grid-area: addons;
-  flex-direction: row;
+/* ── Add-ons (inline row below grid, no separate tile) ── */
+.addonsRow {
+  display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 8px;
+  padding: 6px 12px;
+  background: #ffffff;
+  border-radius: 12px;
+  box-shadow: 0 1px 5px rgba(0, 0, 0, 0.06);
+  margin-bottom: 6px;
   flex-wrap: wrap;
 }
 
-.tileAddons .tileLabel {
-  width: 100%;
+.addonsRowLabel {
+  font-size: 9px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: #9ca3af;
   flex-shrink: 0;
 }
 
 .addonList {
   display: flex;
   flex-wrap: wrap;
-  gap: 6px;
+  gap: 5px;
 }
 
 .addonChip {
@@ -245,19 +254,19 @@
   color: #00B5AD;
   font-size: 11px;
   font-weight: 600;
-  padding: 3px 10px;
+  padding: 2px 8px;
   border-radius: 20px;
   border: 1px solid rgba(0, 181, 173, 0.25);
 }
 
 .addonNone {
-  font-size: 13px;
-  font-weight: 600;
+  font-size: 12px;
+  font-weight: 500;
   color: #c0c0c0;
 }
 
 .addLink {
-  font-size: 12px;
+  font-size: 11px;
   font-weight: 600;
   color: #00B5AD;
   cursor: pointer;
