@@ -1,4 +1,5 @@
 import { useEffect } from 'react';
+import { Sparkle } from '@phosphor-icons/react';
 import * as Icons from '@phosphor-icons/react';
 import { motion } from 'framer-motion';
 import { INTENT_PILLS } from '../../data/products';
@@ -66,12 +67,25 @@ export default function LandingScreen() {
 
   return (
     <div className={styles.landing}>
+      {/* Brand */}
+      <motion.div
+        className={styles.brand}
+        initial={{ opacity: 0, scale: 0.8 }}
+        animate={{ opacity: 1, scale: 1 }}
+        transition={{ duration: 0.5, ease: 'easeOut' }}
+      >
+        <div className={styles.logoMark}>
+          <Sparkle size={26} weight="fill" />
+        </div>
+        <span className={styles.logoText}>ClearPath AI</span>
+      </motion.div>
+
       {/* Greeting */}
       <motion.div
         className={styles.greeting}
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.4 }}
+        transition={{ duration: 0.4, delay: 0.1 }}
       >
         <span className={styles.greetingDash}>—</span>
         <span className={styles.greetingText}>{greetingLabel}, {firstName}</span>
@@ -82,7 +96,7 @@ export default function LandingScreen() {
         className={styles.headline}
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5, delay: 0.1 }}
+        transition={{ duration: 0.5, delay: 0.15 }}
       >
         Tell us what's going on{' '}
         <span className={styles.headlineAccent}>and we'll handle the rest</span>
@@ -93,7 +107,7 @@ export default function LandingScreen() {
         className={styles.subhead}
         initial={{ opacity: 0, y: 16 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5, delay: 0.2 }}
+        transition={{ duration: 0.5, delay: 0.25 }}
       >
         I'll always show you the most affordable option first.
       </motion.p>
