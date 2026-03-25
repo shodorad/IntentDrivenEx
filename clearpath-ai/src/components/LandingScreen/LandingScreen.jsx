@@ -102,7 +102,7 @@ export default function LandingScreen() {
       </motion.div>
 
       <motion.div
-        style={{ width: '100%' }}
+        className={styles.dashboardWrap}
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.4, delay: 0.6 }}

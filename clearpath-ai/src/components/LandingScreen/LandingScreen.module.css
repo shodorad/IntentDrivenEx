@@ -155,3 +155,7 @@
     padding: 9px 12px;
   }
 }
+.dashboardWrap {
+  width: 100%;
+  align-self: stretch;
+}
