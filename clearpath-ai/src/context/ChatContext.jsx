@@ -4,14 +4,14 @@ import { DEFAULT_SIGNAL } from '../data/signalBanners';
 const ChatContext = createContext(null);
 
 const PERSONAS = {
-  'maria':   { name: 'Maria R.', initials: 'MR', dataRemaining: '0.8', dataTotal: '5', planName: 'Total Base 5G', renewalDate: 'Apr 9, 2026' },
-  '1':       { name: 'Maria R.', initials: 'MR', dataRemaining: '0.8', dataTotal: '5', planName: 'Total Base 5G', renewalDate: 'Apr 9, 2026' },
-  'us-001':  { name: 'Maria R.', initials: 'MR', dataRemaining: '0.8', dataTotal: '5', planName: 'Total Base 5G', renewalDate: 'Apr 9, 2026' },
-  'us-006':  { name: 'James T.', initials: 'JT', dataRemaining: '0',   dataTotal: '5', planName: 'Total Base 5G', renewalDate: 'Apr 9, 2026' },
-  'us-007':  { name: 'Ana G.',   initials: 'AG', dataRemaining: '3.2', dataTotal: '10', planName: 'Total Connect', renewalDate: 'Apr 15, 2026' },
+  'maria':   { name: 'Maria R.', initials: 'MR', dataRemaining: '0.8', dataTotal: '5', planName: 'Total Base 5G', planPrice: '$25 / month', renewalDate: 'Apr 9, 2026',  addons: [] },
+  '1':       { name: 'Maria R.', initials: 'MR', dataRemaining: '0.8', dataTotal: '5', planName: 'Total Base 5G', planPrice: '$25 / month', renewalDate: 'Apr 9, 2026',  addons: [] },
+  'us-001':  { name: 'Maria R.', initials: 'MR', dataRemaining: '0.8', dataTotal: '5', planName: 'Total Base 5G', planPrice: '$25 / month', renewalDate: 'Apr 9, 2026',  addons: [] },
+  'us-006':  { name: 'James T.', initials: 'JT', dataRemaining: '0',   dataTotal: '5', planName: 'Total Base 5G', planPrice: '$25 / month', renewalDate: 'Apr 12, 2026', addons: [] },
+  'us-007':  { name: 'Ana G.',   initials: 'AG', dataRemaining: '3.2', dataTotal: '10', planName: 'Total Connect', planPrice: '$35 / month', renewalDate: 'Apr 20, 2026', addons: ['Intl. Calling'] },
 };
 
-const DEFAULT_PERSONA = { name: 'Maria R.', initials: 'MR', dataRemaining: '0.8', dataTotal: '5', planName: 'Total Base 5G', renewalDate: 'Apr 9, 2026' };
+const DEFAULT_PERSONA = { name: 'Maria R.', initials: 'MR', dataRemaining: '0.8', dataTotal: '5', planName: 'Total Base 5G', planPrice: '$25 / month', renewalDate: 'Apr 9, 2026', addons: [] };
 
 function getPersonaFromUrl() {
   try {
