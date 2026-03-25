@@ -3,6 +3,28 @@ import { DEFAULT_SIGNAL } from '../data/signalBanners';
 
 const ChatContext = createContext(null);
 
+const PERSONAS = {
+  'maria':   { name: 'Maria R.', initials: 'MR', dataRemaining: '0.8', dataTotal: '5', planName: 'Total Base 5G', renewalDate: 'Apr 9, 2026' },
+  '1':       { name: 'Maria R.', initials: 'MR', dataRemaining: '0.8', dataTotal: '5', planName: 'Total Base 5G', renewalDate: 'Apr 9, 2026' },
+  'us-001':  { name: 'Maria R.', initials: 'MR', dataRemaining: '0.8', dataTotal: '5', planName: 'Total Base 5G', renewalDate: 'Apr 9, 2026' },
+  'us-006':  { name: 'James T.', initials: 'JT', dataRemaining: '0',   dataTotal: '5', planName: 'Total Base 5G', renewalDate: 'Apr 9, 2026' },
+  'us-007':  { name: 'Ana G.',   initials: 'AG', dataRemaining: '3.2', dataTotal: '10', planName: 'Total Connect', renewalDate: 'Apr 15, 2026' },
+};
+
+const DEFAULT_PERSONA = { name: 'Maria R.', initials: 'MR', dataRemaining: '0.8', dataTotal: '5', planName: 'Total Base 5G', renewalDate: 'Apr 9, 2026' };
+
+function getPersonaFromUrl() {
+  try {
+    const params = new URLSearchParams(window.location.search);
+    const key = params.get('persona') || params.get('user');
+    if (key && PERSONAS[key]) return PERSONAS[key];
+    // Also check path segments like /us-001
+    const pathKey = window.location.pathname.replace(/\//g, '').toLowerCase();
+    if (pathKey && PERSONAS[pathKey]) return PERSONAS[pathKey];
+  } catch (_) { /* ignore */ }
+  return DEFAULT_PERSONA;
+}
+
 const initialState = {
   mode: 'landing', // 'landing' | 'chatting'
   messages: [],     // { role, content, actionPills?, recommendations? }
@@ -11,6 +33,7 @@ const initialState = {
   language: 'en',   // 'en' | 'es'
   signalBanner: DEFAULT_SIGNAL, // { type, color, flowId, signalKey }
   showSMSModal: false,
+  persona: getPersonaFromUrl(),
 };
 
 function chatReducer(state, action) {
@@ -22,7 +45,9 @@ function chatReducer(state, action) {
     case 'SET_LOADING':
       return { ...state, isLoading: action.payload };
     case 'RESET_CHAT':
-      return { ...initialState, language: state.language };
+      return { ...initialState, language: state.language, persona: state.persona };
+    case 'SET_PERSONA':
+      return { ...state, persona: action.payload };
     case 'SET_LANGUAGE':
       return { ...state, language: action.payload };
     case 'SET_SIGNAL_BANNER':

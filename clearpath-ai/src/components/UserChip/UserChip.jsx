@@ -1,14 +1,15 @@
-import { useTranslation } from '../../i18n/useTranslation';
+import { useChat } from '../../context/ChatContext';
 import styles from './UserChip.module.css';
 
 export default function UserChip() {
-  const { t } = useTranslation();
+  const { state } = useChat();
+  const { name, initials } = state.persona;
 
   return (
     <div className={styles.chip}>
-      <span className={styles.name}>{t('userChip.name')}</span>
+      <span className={styles.name}>{name}</span>
       <div className={styles.avatarWrap}>
-        <div className={styles.avatar}>{t('userChip.initials')}</div>
+        <div className={styles.avatar}>{initials}</div>
         <div className={styles.statusDot} />
       </div>
     </div>

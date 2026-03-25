@@ -8,6 +8,7 @@ import { useChatActions } from '../../hooks/useChat';
 import { useTranslation } from '../../i18n/useTranslation';
 import { DEFAULT_SIGNAL, SIGNAL_BANNERS } from '../../data/signalBanners';
 import SignalBanner from '../SignalBanner/SignalBanner';
+import MiniDashboard from '../MiniDashboard/MiniDashboard';
 import styles from './LandingScreen.module.css';
 
 const containerVariants = {
@@ -98,6 +99,14 @@ export default function LandingScreen() {
         transition={{ duration: 0.4, delay: 0.5 }}
       >
         <SignalBanner onAction={handleSignalAction} />
+      </motion.div>
+
+      <motion.div
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.4, delay: 0.6 }}
+      >
+        <MiniDashboard />
       </motion.div>
 
       <motion.div
