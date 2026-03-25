@@ -3,7 +3,7 @@ import { DEFAULT_SIGNAL } from '../data/signalBanners';
 
 const ChatContext = createContext(null);
 
-const PERSONAS = {
+export const PERSONAS = {
   'maria':   { name: 'Maria R.', initials: 'MR', dataRemaining: '0.8', dataTotal: '5', planName: 'Total Base 5G', planPrice: '$25 / month', renewalDate: 'Apr 9, 2026',  addons: [] },
   '1':       { name: 'Maria R.', initials: 'MR', dataRemaining: '0.8', dataTotal: '5', planName: 'Total Base 5G', planPrice: '$25 / month', renewalDate: 'Apr 9, 2026',  addons: [] },
   'us-001':  { name: 'Maria R.', initials: 'MR', dataRemaining: '0.8', dataTotal: '5', planName: 'Total Base 5G', planPrice: '$25 / month', renewalDate: 'Apr 9, 2026',  addons: [] },

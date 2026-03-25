@@ -7,6 +7,7 @@ import { useChat } from '../../context/ChatContext';
 import { useChatActions } from '../../hooks/useChat';
 import { useTranslation } from '../../i18n/useTranslation';
 import { DEFAULT_SIGNAL, SIGNAL_BANNERS } from '../../data/signalBanners';
+import { PERSONAS } from '../../context/ChatContext';
 import SignalBanner from '../SignalBanner/SignalBanner';
 import MiniDashboard from '../MiniDashboard/MiniDashboard';
 import styles from './LandingScreen.module.css';
@@ -33,14 +34,16 @@ export default function LandingScreen() {
     dispatch({ type: 'SET_SIGNAL_BANNER', payload: DEFAULT_SIGNAL });
   }, [dispatch]);
 
-  // Keyboard shortcuts to cycle signal banners (1=refill, 2=upgrade, 3=international)
+  // Keyboard shortcuts: 1=Maria/urgent, 2=James/upgrade, 3=Ana/international
   useEffect(() => {
+    const SIGNAL_MAP = { '1': 'urgent', '2': 'smartTip', '3': 'savings' };
+    const PERSONA_MAP = { '1': 'us-001', '2': 'us-006', '3': 'us-007' };
+
     const handleKey = (e) => {
       if (e.target.tagName === 'TEXTAREA' || e.target.tagName === 'INPUT') return;
-      const signals = { '1': 'urgent', '2': 'smartTip', '3': 'savings' };
-      if (signals[e.key]) {
-        dispatch({ type: 'SET_SIGNAL_BANNER', payload: SIGNAL_BANNERS[signals[e.key]] });
-      }
+      if (!SIGNAL_MAP[e.key]) return;
+      dispatch({ type: 'SET_SIGNAL_BANNER', payload: SIGNAL_BANNERS[SIGNAL_MAP[e.key]] });
+      dispatch({ type: 'SET_PERSONA', payload: PERSONAS[PERSONA_MAP[e.key]] });
     };
     window.addEventListener('keydown', handleKey);
     return () => window.removeEventListener('keydown', handleKey);
