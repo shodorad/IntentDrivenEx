@@ -83,6 +83,39 @@
   white-space: nowrap;
 }
 
+/* ── Cost differential badge ── */
+.costDiffBadge {
+  display: inline-block;
+  margin-top: 6px;
+  padding: 3px 10px;
+  background: rgba(255, 255, 255, 0.2);
+  backdrop-filter: blur(4px);
+  border-radius: 20px;
+  font-size: 0.68rem;
+  font-weight: 700;
+  color: white;
+  letter-spacing: 0.3px;
+}
+
+/* ── Problem-solved highlight ── */
+.solveHighlight {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 14px;
+  background: linear-gradient(135deg, rgba(247, 201, 72, 0.15) 0%, rgba(0, 181, 173, 0.1) 100%);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: var(--tw-gray-900);
+  line-height: 1.3;
+}
+
+.solveHighlight svg {
+  color: var(--tw-yellow);
+  flex-shrink: 0;
+}
+
 /* ── Price display ── */
 .priceRow {
   display: flex;

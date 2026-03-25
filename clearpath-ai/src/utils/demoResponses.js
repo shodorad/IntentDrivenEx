@@ -166,44 +166,44 @@ const FLOWS = {
 // ─── Recommendations (3 options each) ───
 const RECOMMENDATIONS = {
   'slow-data': [
-    { type: "plan", id: "value-40", reason: "The Value Plan gives you 15GB of high-speed 5G data for $40/mo. That's a solid upgrade that should handle your browsing and social media without throttling.", isBest: true },
-    { type: "plan", id: "unlimited-50", reason: "If you want to never think about speed limits, the Unlimited Plan at $50/mo gives you unlimited high-speed data plus 10GB hotspot.", isBest: false },
-    { type: "plan", id: "unlimited-plus-60", reason: "For the absolute fastest speeds, the Unlimited+ Plan at $60/mo includes 5G Ultra Wideband access and 25GB hotspot.", isBest: false }
+    { type: "plan", id: "value-40", reason: "The Value Plan gives you 15GB of high-speed 5G data for $40/mo. That's a solid upgrade that should handle your browsing and social media without throttling.", isBest: true, costDiff: "+$15/mo vs Connect", solveHighlight: "+10GB data = no more throttling" },
+    { type: "plan", id: "unlimited-50", reason: "If you want to never think about speed limits, the Unlimited Plan at $50/mo gives you unlimited high-speed data plus 10GB hotspot.", isBest: false, costDiff: "+$25/mo vs Connect", solveHighlight: "Unlimited data = zero speed limits" },
+    { type: "plan", id: "unlimited-plus-60", reason: "For the absolute fastest speeds, the Unlimited+ Plan at $60/mo includes 5G Ultra Wideband access and 25GB hotspot.", isBest: false, costDiff: "+$35/mo vs Connect", solveHighlight: "5G Ultra Wideband = fastest speeds available" }
   ],
   'runs-out': [
-    { type: "plan", id: "unlimited-50", reason: "The Unlimited Plan at $50/mo means you'll never run out of data again. Zero cap, zero surprises, plus 10GB of hotspot included.", isBest: true },
-    { type: "plan", id: "value-40", reason: "If you want to save a bit, the Value Plan at $40/mo gives you 15GB — that's triple what most basic plans offer and includes 5GB hotspot.", isBest: false },
-    { type: "plan", id: "unlimited-plus-60", reason: "For heavy users who also hotspot a lot, the Unlimited+ Plan at $60/mo adds 25GB hotspot and premium 5G Ultra Wideband speeds.", isBest: false }
+    { type: "plan", id: "unlimited-50", reason: "The Unlimited Plan at $50/mo means you'll never run out of data again. Zero cap, zero surprises, plus 10GB of hotspot included.", isBest: true, costDiff: "+$25/mo vs Connect", solveHighlight: "Unlimited = never run out again" },
+    { type: "plan", id: "value-40", reason: "If you want to save a bit, the Value Plan at $40/mo gives you 15GB — that's triple what most basic plans offer and includes 5GB hotspot.", isBest: false, costDiff: "+$15/mo vs Connect", solveHighlight: "+10GB = 3× more data" },
+    { type: "plan", id: "unlimited-plus-60", reason: "For heavy users who also hotspot a lot, the Unlimited+ Plan at $60/mo adds 25GB hotspot and premium 5G Ultra Wideband speeds.", isBest: false, costDiff: "+$35/mo vs Connect", solveHighlight: "25GB hotspot + premium 5G" }
   ],
   'slow-phone': [
-    { type: "phone", id: "samsung-a25", reason: "The Galaxy A25 at $199 has 6GB RAM and a fast processor — a major upgrade that'll make everything feel snappy and responsive again.", isBest: true },
-    { type: "phone", id: "moto-g-power", reason: "The Moto G Power at just $99 gives you solid performance with 128GB storage and a huge battery. Great value if you want a noticeable speed boost.", isBest: false },
-    { type: "phone", id: "iphone-se", reason: "If you prefer Apple, the iPhone SE at $249 has the A15 Bionic chip — the same one in much more expensive iPhones. Incredibly fast for the price.", isBest: false }
+    { type: "phone", id: "samsung-a25", reason: "The Galaxy A25 at $199 has 6GB RAM and a fast processor — a major upgrade that'll make everything feel snappy and responsive again.", isBest: true, costDiff: "$199", solveHighlight: "6GB RAM = no more lag or freezing" },
+    { type: "phone", id: "moto-g-power", reason: "The Moto G Power at just $99 gives you solid performance with 128GB storage and a huge battery. Great value if you want a noticeable speed boost.", isBest: false, costDiff: "$99", solveHighlight: "128GB + all-day battery for $99" },
+    { type: "phone", id: "iphone-se", reason: "If you prefer Apple, the iPhone SE at $249 has the A15 Bionic chip — the same one in much more expensive iPhones. Incredibly fast for the price.", isBest: false, costDiff: "$249", solveHighlight: "A15 chip = flagship-level speed" }
   ],
   'storage': [
-    { type: "phone", id: "moto-g-stylus", reason: "The Moto G Stylus has 256GB of built-in storage — double most phones at this price. You'll have room for thousands of photos and dozens of apps.", isBest: true },
-    { type: "phone", id: "samsung-a25", reason: "The Galaxy A25 at $199 has 128GB built in, plus a microSD card slot so you can expand to 1TB. Best of both worlds.", isBest: false },
-    { type: "phone", id: "samsung-a15", reason: "The Galaxy A15 at $139 gives you 128GB of storage with a great AMOLED display. Solid option if you want more space without spending too much.", isBest: false }
+    { type: "phone", id: "moto-g-stylus", reason: "The Moto G Stylus has 256GB of built-in storage — double most phones at this price. You'll have room for thousands of photos and dozens of apps.", isBest: true, costDiff: "$179", solveHighlight: "256GB = room for thousands of photos" },
+    { type: "phone", id: "samsung-a25", reason: "The Galaxy A25 at $199 has 128GB built in, plus a microSD card slot so you can expand to 1TB. Best of both worlds.", isBest: false, costDiff: "$199", solveHighlight: "128GB + expandable to 1TB" },
+    { type: "phone", id: "samsung-a15", reason: "The Galaxy A15 at $139 gives you 128GB of storage with a great AMOLED display. Solid option if you want more space without spending too much.", isBest: false, costDiff: "$139", solveHighlight: "128GB + gorgeous AMOLED screen" }
   ],
   'camera': [
-    { type: "phone", id: "samsung-a25", reason: "The Galaxy A25 at $199 has a 50MP camera with optical image stabilization — your photos will be sharper, even in low light. Plus a stunning Super AMOLED display.", isBest: true },
-    { type: "phone", id: "samsung-a15", reason: "The Galaxy A15 at $139 has the same 50MP sensor and a gorgeous AMOLED display. Great photos at a lower price point.", isBest: false },
-    { type: "phone", id: "iphone-se", reason: "If you love Apple's photo processing, the iPhone SE at $249 takes incredible photos with Portrait mode and Smart HDR despite having a 12MP sensor.", isBest: false }
+    { type: "phone", id: "samsung-a25", reason: "The Galaxy A25 at $199 has a 50MP camera with optical image stabilization — your photos will be sharper, even in low light. Plus a stunning Super AMOLED display.", isBest: true, costDiff: "$199", solveHighlight: "50MP + OIS = sharp photos in any light" },
+    { type: "phone", id: "samsung-a15", reason: "The Galaxy A15 at $139 has the same 50MP sensor and a gorgeous AMOLED display. Great photos at a lower price point.", isBest: false, costDiff: "$139", solveHighlight: "50MP sensor + vibrant AMOLED display" },
+    { type: "phone", id: "iphone-se", reason: "If you love Apple's photo processing, the iPhone SE at $249 takes incredible photos with Portrait mode and Smart HDR despite having a 12MP sensor.", isBest: false, costDiff: "$249", solveHighlight: "Portrait mode + Smart HDR" }
   ],
   'cost': [
-    { type: "plan", id: "connect-25", reason: "At just $25/mo, the Connect Plan gives you unlimited talk & text with 1GB of data. Perfect if you're mostly on Wi-Fi and want the lowest possible bill.", isBest: true },
-    { type: "plan", id: "basic-30", reason: "For only $5 more at $30/mo, the Basic Plan gives you 5GB of data and a mobile hotspot. A little extra flexibility without breaking the bank.", isBest: false },
-    { type: "plan", id: "value-40", reason: "The Value Plan at $40/mo is our most popular — 15GB of data, 5GB hotspot, and international texting. Best bang for your buck if you use data regularly.", isBest: false }
+    { type: "plan", id: "connect-25", reason: "At just $25/mo, the Connect Plan gives you unlimited talk & text with 1GB of data. Perfect if you're mostly on Wi-Fi and want the lowest possible bill.", isBest: true, costDiff: "$25/mo", solveHighlight: "Lowest bill — just $25/mo" },
+    { type: "plan", id: "basic-30", reason: "For only $5 more at $30/mo, the Basic Plan gives you 5GB of data and a mobile hotspot. A little extra flexibility without breaking the bank.", isBest: false, costDiff: "+$5/mo vs Connect", solveHighlight: "+4GB data for just $5 more" },
+    { type: "plan", id: "value-40", reason: "The Value Plan at $40/mo is our most popular — 15GB of data, 5GB hotspot, and international texting. Best bang for your buck if you use data regularly.", isBest: false, costDiff: "+$15/mo vs Connect", solveHighlight: "15GB + hotspot = best bang for buck" }
   ],
   'new-phone': [
-    { type: "phone", id: "samsung-a25", reason: "The Galaxy A25 at $199 is the best all-rounder — 50MP camera with OIS, 6GB RAM, gorgeous Super AMOLED display, and 5000mAh battery. Hard to beat.", isBest: true },
-    { type: "phone", id: "moto-g-power", reason: "If budget is a priority, the Moto G Power at $99 delivers solid performance, a massive battery, and 128GB storage. Best value phone we offer.", isBest: false },
-    { type: "phone", id: "iphone-se", reason: "For Apple fans, the iPhone SE at $249 packs the powerful A15 Bionic chip, 5G capability, and the full iOS ecosystem in a compact design.", isBest: false }
+    { type: "phone", id: "samsung-a25", reason: "The Galaxy A25 at $199 is the best all-rounder — 50MP camera with OIS, 6GB RAM, gorgeous Super AMOLED display, and 5000mAh battery. Hard to beat.", isBest: true, costDiff: "$199", solveHighlight: "Best all-rounder — camera, speed & battery" },
+    { type: "phone", id: "moto-g-power", reason: "If budget is a priority, the Moto G Power at $99 delivers solid performance, a massive battery, and 128GB storage. Best value phone we offer.", isBest: false, costDiff: "$99", solveHighlight: "Best value — solid performance for $99" },
+    { type: "phone", id: "iphone-se", reason: "For Apple fans, the iPhone SE at $249 packs the powerful A15 Bionic chip, 5G capability, and the full iOS ecosystem in a compact design.", isBest: false, costDiff: "$249", solveHighlight: "Full Apple ecosystem + A15 chip" }
   ],
   'not-working': [
     { type: "human", reason: "Based on what you've described, I think our support specialists can help troubleshoot this faster. They can check your account, run network diagnostics, and resolve most issues on the spot.", isBest: true },
-    { type: "plan", id: "value-40", reason: "If your current plan is causing data or connectivity issues, the Value Plan at $40/mo offers 15GB of reliable 5G data — a solid upgrade that might fix things.", isBest: false },
-    { type: "phone", id: "moto-g-power", reason: "If your phone itself is the problem, the Moto G Power at $99 is a dependable, budget-friendly replacement with great battery life and 5G support.", isBest: false }
+    { type: "plan", id: "value-40", reason: "If your current plan is causing data or connectivity issues, the Value Plan at $40/mo offers 15GB of reliable 5G data — a solid upgrade that might fix things.", isBest: false, costDiff: "+$15/mo vs Connect", solveHighlight: "15GB reliable 5G = fewer connectivity issues" },
+    { type: "phone", id: "moto-g-power", reason: "If your phone itself is the problem, the Moto G Power at $99 is a dependable, budget-friendly replacement with great battery life and 5G support.", isBest: false, costDiff: "$99", solveHighlight: "Reliable replacement with 5G support" }
   ]
 };
 

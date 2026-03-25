@@ -1,4 +1,4 @@
-import { CheckCircle, Phone, Headset, Star, ArrowSquareOut, ShoppingCart } from '@phosphor-icons/react';
+import { CheckCircle, Phone, Headset, Star, ArrowSquareOut, ShoppingCart, Lightning } from '@phosphor-icons/react';
 import { motion } from 'framer-motion';
 import { PLANS, PHONES } from '../../data/products';
 import styles from './RecommendationCard.module.css';
@@ -9,7 +9,7 @@ function findProduct(type, id) {
   return null;
 }
 
-function PlanCard({ product, reason, isBest, onExplore }) {
+function PlanCard({ product, reason, isBest, onExplore, costDiff, solveHighlight }) {
   return (
     <motion.div
       className={`${styles.card} ${isBest ? styles.best : styles.alt}`}
@@ -35,7 +35,19 @@ function PlanCard({ product, reason, isBest, onExplore }) {
             <span>per month</span>
           </div>
         </div>
+        {/* Cost differential badge */}
+        {costDiff && (
+          <span className={styles.costDiffBadge}>{costDiff}</span>
+        )}
       </div>
+
+      {/* Problem-solved highlight */}
+      {solveHighlight && (
+        <div className={styles.solveHighlight}>
+          <Lightning size={14} weight="fill" />
+          <span>{solveHighlight}</span>
+        </div>
+      )}
 
       {/* Stats row */}
       <div className={styles.statsRow}>
@@ -69,14 +81,14 @@ function PlanCard({ product, reason, isBest, onExplore }) {
           className={isBest ? styles.btnPrimary : styles.btnSecondary}
           onClick={() => onExplore(product, 'plan', reason)}
         >
-          Explore More
+          {isBest ? 'Upgrade Now' : 'Learn More'}
         </button>
       </div>
     </motion.div>
   );
 }
 
-function PhoneCard({ product, reason, isBest, onExplore }) {
+function PhoneCard({ product, reason, isBest, onExplore, costDiff, solveHighlight }) {
   return (
     <motion.div
       className={`${styles.card} ${isBest ? styles.best : styles.alt}`}
@@ -98,7 +110,19 @@ function PhoneCard({ product, reason, isBest, onExplore }) {
           <span className={styles.priceDollar}>$</span>
           <span className={styles.priceAmount}>{product.price}</span>
         </div>
+        {/* Cost differential badge */}
+        {costDiff && (
+          <span className={styles.costDiffBadge}>{costDiff}</span>
+        )}
       </div>
+
+      {/* Problem-solved highlight */}
+      {solveHighlight && (
+        <div className={styles.solveHighlight}>
+          <Lightning size={14} weight="fill" />
+          <span>{solveHighlight}</span>
+        </div>
+      )}
 
       {/* Phone image */}
       {product.image && (
@@ -144,7 +168,7 @@ function PhoneCard({ product, reason, isBest, onExplore }) {
           className={isBest ? styles.btnPrimary : styles.btnSecondary}
           onClick={() => onExplore(product, 'phone', reason)}
         >
-          Explore More
+          {isBest ? 'Upgrade Now' : 'Learn More'}
         </button>
       </div>
     </motion.div>
@@ -193,9 +217,9 @@ export default function RecommendationCard({ recommendations, onExplore }) {
           if (!product) return null;
 
           if (rec.type === 'plan') {
-            return <PlanCard key={i} product={product} reason={rec.reason} isBest={rec.isBest} onExplore={onExplore} />;
+            return <PlanCard key={i} product={product} reason={rec.reason} isBest={rec.isBest} onExplore={onExplore} costDiff={rec.costDiff} solveHighlight={rec.solveHighlight} />;
           }
-          return <PhoneCard key={i} product={product} reason={rec.reason} isBest={rec.isBest} onExplore={onExplore} />;
+          return <PhoneCard key={i} product={product} reason={rec.reason} isBest={rec.isBest} onExplore={onExplore} costDiff={rec.costDiff} solveHighlight={rec.solveHighlight} />;
         })}
       </div>
 

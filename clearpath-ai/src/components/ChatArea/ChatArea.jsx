@@ -1,4 +1,5 @@
 import { useEffect, useRef } from 'react';
+import { Headset } from '@phosphor-icons/react';
 import { useChat } from '../../context/ChatContext';
 import { useChatActions } from '../../hooks/useChat';
 import MessageBubble from '../MessageBubble/MessageBubble';
@@ -64,6 +65,15 @@ export default function ChatArea() {
         </div>
       ))}
       {state.isLoading && <TypingIndicator />}
+
+      {/* Persistent escape hatch — always visible during chat */}
+      <div className={styles.escapeHatch}>
+        <Headset size={16} weight="regular" />
+        <span>
+          Need a real person? Call <a href="tel:18666633633" className={styles.escapeLink}>1-866-663-3633</a> anytime.
+        </span>
+      </div>
+
       <div ref={bottomRef} />
     </div>
   );
