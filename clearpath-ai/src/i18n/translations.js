@@ -38,6 +38,14 @@ export const translations = {
         subtext: 'The $10 Global Calling Card saves up to $18/mo.',
         cta: 'Add International',
       },
+      cta: {
+        refill: 'Quick Refill',
+        upgrade: 'See Upgrade Options',
+        addon: 'Add International',
+        activate: 'Activate Now',
+        support: 'Get Help',
+        compare: 'Compare Plans',
+      },
     },
 
     transparency: {
@@ -194,6 +202,14 @@ export const translations = {
         headline: '12 llamadas a México el mes pasado',
         subtext: 'La Tarjeta Global de $10 ahorra hasta $18/mes.',
         cta: 'Agregar Internacional',
+      },
+      cta: {
+        refill: 'Recarga Rápida',
+        upgrade: 'Ver Opciones',
+        addon: 'Agregar Internacional',
+        activate: 'Activar Ahora',
+        support: 'Obtener Ayuda',
+        compare: 'Comparar Planes',
       },
     },
 

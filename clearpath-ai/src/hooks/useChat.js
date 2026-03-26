@@ -5,13 +5,6 @@ import { parseResponse } from '../utils/parseResponse';
 import { generateDemoResponse } from '../utils/demoResponses';
 import { getSystemPrompt } from '../data/systemPrompt';
 
-// Check if API is available (non-demo mode)
-const isDemoMode = () => {
-  // In production with Vercel serverless function, API is always available
-  // In dev, it depends on whether server.js is running with ANTHROPIC_API_KEY
-  return false; // We'll try API first, fall back to demo on error
-};
-
 export function useChatActions() {
   const { state, dispatch } = useChatContext();
 
@@ -24,6 +17,8 @@ export function useChatActions() {
     dispatch({ type: 'ADD_MESSAGE', payload: userMsg });
     dispatch({ type: 'SET_LOADING', payload: true });
 
+    const persona = state.persona;
+
     try {
       // Build messages array for API
       const apiMessages = [...state.messages, userMsg].map(m => ({
@@ -33,10 +28,11 @@ export function useChatActions() {
 
       let responseText;
       try {
-        responseText = await callAPI(apiMessages, getSystemPrompt());
+        // Pass persona-aware system prompt to API
+        responseText = await callAPI(apiMessages, getSystemPrompt(persona));
       } catch {
-        // Fallback to demo mode
-        responseText = generateDemoResponse(apiMessages);
+        // Fallback to persona-aware demo mode
+        responseText = generateDemoResponse(apiMessages, persona);
       }
 
       const { message, actionPills, recommendations, refillFlow, upgradeFlow, internationalFlow } = parseResponse(responseText);
@@ -67,7 +63,7 @@ export function useChatActions() {
     } finally {
       dispatch({ type: 'SET_LOADING', payload: false });
     }
-  }, [state.messages, dispatch]);
+  }, [state.messages, state.persona, dispatch]);
 
   const startChat = useCallback((intentPrompt) => {
     dispatch({ type: 'START_CHAT' });

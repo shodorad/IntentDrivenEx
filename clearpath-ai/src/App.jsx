@@ -7,6 +7,7 @@ import TrustBanner from './components/TrustBanner/TrustBanner';
 import TransparencyPanel from './components/TransparencyPanel/TransparencyPanel';
 import IPhoneSMSModal from './components/IPhoneSMSModal/IPhoneSMSModal';
 import FloatingShapes from './components/FloatingShapes/FloatingShapes';
+import PasswordGate from './components/PasswordGate/PasswordGate';
 import styles from './App.module.css';
 
 function AppContent() {
@@ -34,5 +35,9 @@ function AppContent() {
 }
 
 export default function App() {
-  return <AppContent />;
+  return (
+    <PasswordGate>
+      <AppContent />
+    </PasswordGate>
+  );
 }

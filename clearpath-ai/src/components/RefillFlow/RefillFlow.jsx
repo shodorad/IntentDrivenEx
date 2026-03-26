@@ -8,9 +8,14 @@ import styles from './RefillFlow.module.css';
 const STEPS = ['select', 'confirm', 'processing', 'success'];
 
 export default function RefillFlow() {
-  const { dispatch } = useChat();
+  const { state, dispatch } = useChat();
   const { t } = useTranslation();
   const [step, setStep] = useState(0);
+
+  // Read persona-specific card and plan info (fall back to translation defaults)
+  const account = state.persona?.account || {};
+  const savedCard = account.savedCard || t('refill.confirmCard');
+  const planName = account.plan || t('refill.selectPlan');
 
   // Processing auto-advance
   useEffect(() => {
@@ -20,11 +25,11 @@ export default function RefillFlow() {
     }
   }, [step]);
 
-  // Success → trigger SMS modal after delay
+  // Success → trigger SMS modal after delay (with transaction type for context-aware message)
   useEffect(() => {
     if (STEPS[step] === 'success') {
       const timer = setTimeout(() => {
-        dispatch({ type: 'SHOW_SMS_MODAL' });
+        dispatch({ type: 'SHOW_SMS_MODAL', payload: { transactionType: 'refill' } });
       }, 2000);
       return () => clearTimeout(timer);
     }
@@ -57,7 +62,7 @@ export default function RefillFlow() {
 
             <div className={styles.planInfo}>
               <div className={styles.planRow}>
-                <span className={styles.planLabel}>{t('refill.selectPlan')}</span>
+                <span className={styles.planLabel}>{planName}</span>
                 <span className={styles.planLine}>{t('refill.selectLine')}</span>
               </div>
               <div className={styles.divider} />
@@ -98,7 +103,7 @@ export default function RefillFlow() {
               <div className={styles.divider} />
               <div className={styles.confirmRow}>
                 <span className={styles.confirmLabel}>{t('refill.confirmCharged')}</span>
-                <span className={styles.confirmValue}>{t('refill.confirmCard')}</span>
+                <span className={styles.confirmValue}>{savedCard}</span>
               </div>
               <div className={styles.divider} />
               <div className={styles.confirmRow}>

@@ -1,5 +1,5 @@
 import { motion, AnimatePresence } from 'framer-motion';
-import { Warning, Lightning, CurrencyDollar } from '@phosphor-icons/react';
+import { Warning, Lightning, CurrencyDollar, Info } from '@phosphor-icons/react';
 import { useChat } from '../../context/ChatContext';
 import { useTranslation } from '../../i18n/useTranslation';
 import styles from './SignalBanner.module.css';
@@ -8,6 +8,7 @@ const ICONS = {
   urgent: Warning,
   'smart-tip': Lightning,
   savings: CurrencyDollar,
+  info: Info,
 };
 
 export default function SignalBanner({ onAction }) {
@@ -18,8 +19,15 @@ export default function SignalBanner({ onAction }) {
   if (!banner) return null;
 
   const Icon = ICONS[banner.type] || Warning;
-  const signalKey = banner.signalKey || 'urgent';
   const colorClass = styles[banner.color] || styles.red;
+
+  // Support direct content (from persona.signals) OR translation keys (legacy)
+  const headline = banner.headline || t(`signal.${banner.signalKey}.headline`);
+  const subtext = banner.subtext || t(`signal.${banner.signalKey}.subtext`);
+  // CTA: prefer flowId-based i18n lookup so ES toggle works; fall back to stored string
+  const ctaLabel = (banner.flowId ? t(`signal.cta.${banner.flowId}`) : null)
+    || banner.cta
+    || t(`signal.${banner.signalKey}.cta`);
 
   return (
     <AnimatePresence>
@@ -34,11 +42,11 @@ export default function SignalBanner({ onAction }) {
           <Icon size={16} weight="bold" className={styles.icon} />
         </div>
         <div className={styles.body}>
-          <div className={styles.title}>{t(`signal.${signalKey}.headline`)}</div>
-          <div className={styles.meta}>{t(`signal.${signalKey}.subtext`)}</div>
+          <div className={styles.title}>{headline}</div>
+          <div className={styles.meta}>{subtext}</div>
         </div>
         <button className={`${styles.cta} ${colorClass}`} onClick={() => onAction?.(banner)}>
-          {t(`signal.${signalKey}.cta`)}
+          {ctaLabel}
         </button>
       </motion.div>
     </AnimatePresence>

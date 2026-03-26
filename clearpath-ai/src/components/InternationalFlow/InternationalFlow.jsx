@@ -1,13 +1,19 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { CheckCircle, Globe, Star, CreditCard } from '@phosphor-icons/react';
+import { useChat } from '../../context/ChatContext';
 import { useTranslation } from '../../i18n/useTranslation';
 import styles from './InternationalFlow.module.css';
 
 const STEPS = ['catalog', 'confirm', 'processing', 'success'];
 
 export default function InternationalFlow() {
+  const { state, dispatch } = useChat();
   const { t } = useTranslation();
+
+  // Derive top country from persona (e.g. Colombia for Ana) — falls back to "international"
+  const intlCalls = state.persona?.account?.internationalCallsThisMonth || [];
+  const topCountry = intlCalls[0]?.country || null;
   const [step, setStep] = useState(0);
   const [selectedAddon, setSelectedAddon] = useState(null);
 
@@ -51,6 +57,16 @@ export default function InternationalFlow() {
     }
   }, [step]);
 
+  // Success → trigger SMS modal after short delay
+  useEffect(() => {
+    if (STEPS[step] === 'success') {
+      const timer = setTimeout(() => {
+        dispatch({ type: 'SHOW_SMS_MODAL', payload: { transactionType: 'international' } });
+      }, 2000);
+      return () => clearTimeout(timer);
+    }
+  }, [step, dispatch]);
+
   const handleSelect = (addon) => {
     setSelectedAddon(addon);
     setStep(1);
@@ -82,7 +98,11 @@ export default function InternationalFlow() {
             </div>
 
             <div className={styles.signalNote}>
-              <span>{t('intl.signalNote')}</span>
+              <span>
+                {topCountry
+                  ? `Based on your recent calls to ${topCountry}, we recommend the Global Calling Card add-on.`
+                  : t('intl.signalNote')}
+              </span>
             </div>
 
             <div className={styles.addonList}>
@@ -200,7 +220,10 @@ export default function InternationalFlow() {
             <h3 className={styles.successTitle}>{t('intl.successTitle')}</h3>
             <div className={styles.successDetails}>
               <div className={styles.successRow}>{selectedAddon.name} — {t('intl.activated')}</div>
-              <div className={styles.successRow}>{selectedAddon.price} {t('intl.charged')}</div>
+              {topCountry && (
+                <div className={styles.successRow}>Covers {topCountry} and 200+ countries</div>
+              )}
+              <div className={styles.successRow}>{selectedAddon.price} charged to {state.persona?.account?.savedCard || 'card on file'}</div>
               <div className={styles.successMeta}>{t('intl.successNote')}</div>
             </div>
           </motion.div>

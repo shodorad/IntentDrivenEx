@@ -1,29 +1,10 @@
 import { createContext, useContext, useReducer } from 'react';
-import { DEFAULT_SIGNAL } from '../data/signalBanners';
+import { PERSONAS, getPersonaFromURL } from '../data/personas';
+
+// Re-export for components that import PERSONAS from ChatContext
+export { PERSONAS };
 
 const ChatContext = createContext(null);
-
-export const PERSONAS = {
-  'maria':   { name: 'Maria R.', initials: 'MR', dataRemaining: '0.8', dataTotal: '5', planName: 'Total Base 5G', planPrice: '$25 / month', renewalDate: 'Apr 9, 2026',  addons: [] },
-  '1':       { name: 'Maria R.', initials: 'MR', dataRemaining: '0.8', dataTotal: '5', planName: 'Total Base 5G', planPrice: '$25 / month', renewalDate: 'Apr 9, 2026',  addons: [] },
-  'us-001':  { name: 'Maria R.', initials: 'MR', dataRemaining: '0.8', dataTotal: '5', planName: 'Total Base 5G', planPrice: '$25 / month', renewalDate: 'Apr 9, 2026',  addons: [] },
-  'us-006':  { name: 'James T.', initials: 'JT', dataRemaining: '0',   dataTotal: '5', planName: 'Total Base 5G', planPrice: '$25 / month', renewalDate: 'Apr 12, 2026', addons: [] },
-  'us-007':  { name: 'Ana G.',   initials: 'AG', dataRemaining: '3.2', dataTotal: '10', planName: 'Total Connect', planPrice: '$35 / month', renewalDate: 'Apr 20, 2026', addons: ['Intl. Calling'] },
-};
-
-const DEFAULT_PERSONA = { name: 'Maria R.', initials: 'MR', dataRemaining: '0.8', dataTotal: '5', planName: 'Total Base 5G', planPrice: '$25 / month', renewalDate: 'Apr 9, 2026', addons: [] };
-
-function getPersonaFromUrl() {
-  try {
-    const params = new URLSearchParams(window.location.search);
-    const key = params.get('persona') || params.get('user');
-    if (key && PERSONAS[key]) return PERSONAS[key];
-    // Also check path segments like /us-001
-    const pathKey = window.location.pathname.replace(/\//g, '').toLowerCase();
-    if (pathKey && PERSONAS[pathKey]) return PERSONAS[pathKey];
-  } catch (_) { /* ignore */ }
-  return DEFAULT_PERSONA;
-}
 
 const initialState = {
   mode: 'landing', // 'landing' | 'chatting'
@@ -31,9 +12,10 @@ const initialState = {
   isLoading: false,
   showTransparencyPanel: false,
   language: 'en',   // 'en' | 'es'
-  signalBanner: DEFAULT_SIGNAL, // { type, color, flowId, signalKey }
+  signalBanner: null, // Derived from persona.signals[0] in LandingScreen
   showSMSModal: false,
-  persona: getPersonaFromUrl(),
+  smsModalData: null, // { transactionType: 'refill' | 'upgrade' | 'international' }
+  persona: getPersonaFromURL(),
   inputFocused: false,
 };
 
@@ -48,7 +30,7 @@ function chatReducer(state, action) {
     case 'RESET_CHAT':
       return { ...initialState, language: state.language, persona: state.persona };
     case 'SET_PERSONA':
-      return { ...state, persona: action.payload };
+      return { ...state, persona: action.payload, signalBanner: null };
     case 'SET_LANGUAGE':
       return { ...state, language: action.payload };
     case 'SET_SIGNAL_BANNER':
@@ -56,9 +38,9 @@ function chatReducer(state, action) {
     case 'CLEAR_SIGNAL_BANNER':
       return { ...state, signalBanner: null };
     case 'SHOW_SMS_MODAL':
-      return { ...state, showSMSModal: true };
+      return { ...state, showSMSModal: true, smsModalData: action.payload || null };
     case 'HIDE_SMS_MODAL':
-      return { ...state, showSMSModal: false };
+      return { ...state, showSMSModal: false, smsModalData: null };
     case 'TOGGLE_TRANSPARENCY':
       return { ...state, showTransparencyPanel: !state.showTransparencyPanel };
     case 'CLOSE_TRANSPARENCY':

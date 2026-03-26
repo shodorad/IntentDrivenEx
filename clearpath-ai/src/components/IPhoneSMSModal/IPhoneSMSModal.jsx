@@ -4,11 +4,28 @@ import { useChat } from '../../context/ChatContext';
 import { useTranslation } from '../../i18n/useTranslation';
 import styles from './IPhoneSMSModal.module.css';
 
+// Expiry date ~30 days from today
+function getExpiryDate() {
+  const d = new Date();
+  d.setDate(d.getDate() + 30);
+  return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+}
+
+const SMS_MESSAGES = {
+  refill: `Your $15 data refill is confirmed. 5 GB added. New balance updated. Expires ${getExpiryDate()}. Reply STOP to opt out.`,
+  upgrade: `Your plan has been upgraded to Total 5G Unlimited. Unlimited data is now active. Disney+ activation email is on its way. Reply STOP to opt out.`,
+  international: `Your Global Calling Card has been activated. International calls are now covered. Manage add-ons anytime in your account. Reply STOP to opt out.`,
+};
+
 export default function IPhoneSMSModal() {
   const { state, dispatch } = useChat();
   const { t } = useTranslation();
 
   const dismiss = () => dispatch({ type: 'HIDE_SMS_MODAL' });
+
+  // Derive context-aware message from transaction type
+  const txType = state.smsModalData?.transactionType || 'refill';
+  const smsMessage = SMS_MESSAGES[txType] || SMS_MESSAGES.refill;
 
   return (
     <AnimatePresence>
@@ -58,7 +75,7 @@ export default function IPhoneSMSModal() {
             <div className={styles.messageArea}>
               <div className={styles.timestamp}>Today 9:41 AM</div>
               <div className={styles.smsBubble}>
-                {t('sms.message')}
+                {smsMessage}
               </div>
             </div>
 
