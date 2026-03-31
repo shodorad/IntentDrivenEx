@@ -106,13 +106,13 @@ function HalfDialGauge({ pct, color, dataRemaining, dataTotal, urgency }) {
       style={{ display: 'block', overflow: 'visible', marginTop: 2 }}
       aria-label={`Data: ${gbVal} of ${gbTot} GB`}
     >
-      {ticks.map((t, i) => (
+      {ticks.filter(t => !t.isMajor).map((t, i) => (
         <line
           key={i}
           x1={t.x1.toFixed(1)} y1={t.y1.toFixed(1)}
           x2={t.x2.toFixed(1)} y2={t.y2.toFixed(1)}
           stroke={t.color}
-          strokeWidth={t.isMajor ? 2.8 : 1.6}
+          strokeWidth={1.6}
           strokeLinecap="round"
         />
       ))}
