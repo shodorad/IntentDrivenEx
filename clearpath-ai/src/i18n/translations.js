@@ -222,7 +222,7 @@ export const translations = {
     },
 
     landing: {
-      sectionAlerts: 'Intent-Driven Alerts',
+      sectionAlerts: 'What We Noticed',
       sectionAccount: 'My Account',
     },
 

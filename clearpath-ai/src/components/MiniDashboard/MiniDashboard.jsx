@@ -67,14 +67,13 @@ function HalfDialGauge({ pct, color, dataRemaining, dataTotal, urgency }) {
     const ratio = i / (TICKS - 1);       // 0 = left/red, 1 = right/green
     const angleDeg = 180 - ratio * 180;  // 180° = 9-o'clock, 0° = 3-o'clock
     const rad = (angleDeg * Math.PI) / 180;
-    const isMajor = i % 9 === 0;
-    const innerR = isMajor ? outerR - 16 : outerR - 9;
+    const innerR = outerR - 9;
     return {
       x1: cx + innerR * Math.cos(rad),
       y1: cy - innerR * Math.sin(rad),
       x2: cx + outerR * Math.cos(rad),
       y2: cy - outerR * Math.sin(rad),
-      isMajor,
+      isMajor: false,
       color: ratio > filledRatio ? '#e5e7eb'
         : ratio < 0.25 ? '#DC3545'
         : ratio < 0.55 ? '#FFC107'
@@ -82,7 +81,7 @@ function HalfDialGauge({ pct, color, dataRemaining, dataTotal, urgency }) {
     };
   });
 
-  const gbVal = dataRemaining ? parseFloat(dataRemaining).toFixed(1) : '—';
+  const gbVal = (() => { const v = parseFloat(dataRemaining); return (!isNaN(v) && dataRemaining != null) ? v.toFixed(1) : '—'; })();
   const gbTot = dataTotal ? parseFloat(dataTotal).toFixed(0) : '—';
   const statusLabel = urgency === 'cap' ? 'At Cap'
     : urgency === 'low' ? 'Running Low'
