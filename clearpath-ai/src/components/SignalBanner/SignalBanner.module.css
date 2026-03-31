@@ -3,7 +3,7 @@
   align-items: center;
   gap: 14px;
   padding: 12px 14px 12px 16px;
-  border-radius: 28px;
+  border-radius: 8px;
   background: #1d1d1f;
   color: #fff;
   width: 100%;
@@ -37,15 +37,15 @@
   50% { opacity: 0; transform: scale(1.35); }
 }
 
-/* Color variants — icon ring */
+/* Color variants — icon ring (severity: critical=#DC3545, warning=#FFC107, info=#00B5AD, success=#28A745) */
 .iconRing.red {
-  background: rgba(255, 59, 48, 0.2);
+  background: rgba(220, 53, 69, 0.15);
 }
 .iconRing.red::before {
-  border-color: rgba(255, 59, 48, 0.4);
+  border-color: rgba(220, 53, 69, 0.35);
 }
 .iconRing.red .icon {
-  color: #ff453a;
+  color: #DC3545;
 }
 
 .iconRing.teal {
@@ -55,17 +55,27 @@
   border-color: rgba(0, 181, 173, 0.4);
 }
 .iconRing.teal .icon {
-  color: #00d4c8;
+  color: #00B5AD;
 }
 
 .iconRing.green {
-  background: rgba(48, 209, 88, 0.2);
+  background: rgba(40, 167, 69, 0.15);
 }
 .iconRing.green::before {
-  border-color: rgba(48, 209, 88, 0.4);
+  border-color: rgba(40, 167, 69, 0.35);
 }
 .iconRing.green .icon {
-  color: #30d158;
+  color: #28A745;
+}
+
+.iconRing.yellow {
+  background: rgba(255, 193, 7, 0.2);
+}
+.iconRing.yellow::before {
+  border-color: rgba(255, 193, 7, 0.4);
+}
+.iconRing.yellow .icon {
+  color: #FFC107;
 }
 
 .icon {
@@ -110,15 +120,15 @@
 }
 
 .cta.red {
-  background: #ff453a;
+  background: #DC3545;
 }
 .cta.red:hover {
-  background: #ff6259;
-  box-shadow: 0 0 16px rgba(255, 69, 58, 0.4);
+  background: #c82333;
+  box-shadow: 0 0 16px rgba(220, 53, 69, 0.4);
 }
 
 .cta.teal {
-  background: var(--tw-teal, #00B5AD);
+  background: #00B5AD;
 }
 .cta.teal:hover {
   background: #00d4c8;
@@ -126,11 +136,20 @@
 }
 
 .cta.green {
-  background: #30d158;
+  background: #28A745;
 }
 .cta.green:hover {
-  background: #4ae06e;
-  box-shadow: 0 0 16px rgba(48, 209, 88, 0.4);
+  background: #218838;
+  box-shadow: 0 0 16px rgba(40, 167, 69, 0.4);
+}
+
+.cta.yellow {
+  background: #FFC107;
+  color: #1a1a1a;
+}
+.cta.yellow:hover {
+  background: #e0a800;
+  box-shadow: 0 0 16px rgba(255, 193, 7, 0.4);
 }
 
 /* Mobile */
@@ -138,7 +157,7 @@
   .banner {
     gap: 10px;
     padding: 10px 12px 10px 14px;
-    border-radius: 22px;
+    border-radius: 8px;
   }
 
   .iconRing {

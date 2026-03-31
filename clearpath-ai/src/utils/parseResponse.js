@@ -24,15 +24,22 @@ export function parseResponse(text) {
 
   // Detect inline flow tags
   const refillFlow = text.includes('[REFILL_FLOW]');
-  const upgradeFlow = text.includes('[UPGRADE_FLOW]');
-  const internationalFlow = text.includes('[INTERNATIONAL_FLOW]');
+
+  // Extract phone order flow data
+  const phoneOrderMatch = text.match(/\[PHONE_ORDER_FLOW\](.*?)\[\/PHONE_ORDER_FLOW\]/s);
+  let phoneOrderFlow = null;
+  if (phoneOrderMatch) {
+    try { phoneOrderFlow = JSON.parse(phoneOrderMatch[1]); }
+    catch { phoneOrderFlow = {}; }
+  }
 
   // Clean message text (remove JSON blocks and flow tags)
   const message = text
     .replace(/\[ACTION_PILLS\].*?\[\/ACTION_PILLS\]/s, '')
     .replace(/\[RECOMMENDATIONS?\].*?\[\/RECOMMENDATIONS?\]/s, '')
-    .replace(/\[(REFILL|UPGRADE|INTERNATIONAL)_FLOW\]/g, '')
+    .replace(/\[REFILL_FLOW\]/g, '')
+    .replace(/\[PHONE_ORDER_FLOW\].*?\[\/PHONE_ORDER_FLOW\]/s, '')
     .trim();
 
-  return { message, actionPills, recommendations, refillFlow, upgradeFlow, internationalFlow };
+  return { message, actionPills, recommendations, refillFlow, phoneOrderFlow };
 }

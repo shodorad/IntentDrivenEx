@@ -74,6 +74,16 @@
   background: rgba(0, 181, 173, 0.08);
 }
 
+.iconBtnDisabled {
+  cursor: not-allowed;
+  opacity: 0.35;
+}
+
+.iconBtnDisabled:hover {
+  color: var(--tw-gray-400);
+  background: transparent;
+}
+
 .sendBtn {
   width: 36px;
   height: 36px;

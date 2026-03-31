@@ -1,61 +1,1009 @@
 // Persona-aware demo responses (fallback when API is unavailable)
 // R1: Never ask what the provider already knows. Reference account data directly.
+// R2: Diagnose before selling. Free fixes first.
+// R3: Ask permission before surfacing plan card / refill CTA / upsell.
+// R4: Always give an escape hatch.
+// R5: Sensible defaults everywhere.
 
-// ─── Persona-specific first responses ───
+// ─── Helpers ─────────────────────────────────────────────────────────────────
+const msg = (t, pills) =>
+  pills
+    ? `${t}\n[ACTION_PILLS]${JSON.stringify(pills)}[/ACTION_PILLS]`
+    : t;
+
+// Standard pills shown after every flow completion
+const POST_FLOW_PILLS = ['Start a new topic', 'Return to home', "That's all, thanks"];
+
+// S3-002: Detect if the user's first message came from a diagnose_usage action pill
+// (pill.prompt === pill.label === exact English label of the suggestedAction)
+function isDiagnoseAction(firstMsg, persona) {
+  if (!persona?.diagnosisFlow?.enabled) return false;
+  const lower = firstMsg.toLowerCase();
+  return (persona.suggestedActions || []).some(
+    (a) => a.action === 'diagnose_usage' && lower === a.label.toLowerCase()
+  );
+}
+
+// S3-002: Return diagnosisFlow.intro response for diagnose_usage Turn 1
+function getDiagnoseUsageResponse(persona) {
+  const flow = persona.diagnosisFlow;
+  const skipLabel =
+    persona.intentCategory === 'upgrade'
+      ? 'Skip — show upgrade options'
+      : 'Skip — just add data';
+  return msg(flow.intro, ["Let's do it", skipLabel, 'Skip — change my plan']);
+}
+
+// ─── Persona-specific opening responses (Turn 1) ─────────────────────────────
 function getPersonaOpeningResponse(persona) {
   const a = persona?.account;
   if (!a) return null;
 
-  switch (persona.intentCategory) {
-    case 'refill': {
-      // us-001 Maria or us-002 Carlos or us-003 Priya
-      if (persona.id === 'us-001') {
-        return `Hi ${persona.name.split(' ')[0]}. I can see you have ${a.dataRemaining} left — and your plan doesn't renew until ${a.renewalDate}, which is ${a.daysUntilRenewal} days away.\n\nI also noticed you've run out of data 11 of the last 12 months. So you're probably here for one of two reasons — quick fix for right now, or stop this from happening every month?\n[ACTION_PILLS]${JSON.stringify(['Quick fix — add data now', 'Change my plan', 'Both', 'Just checking'])}[/ACTION_PILLS]`;
+  switch (persona.id) {
+    case 'us-001': // Maria — recurring data problem
+      return msg(
+        `Hi Maria. I can see you have ${a.dataRemaining} left — and your plan doesn't renew until ${a.renewalDate}, which is ${a.daysUntilRenewal} days away.\n\nI also noticed you've run out of data 11 of the last 12 months. Want to figure out why and maybe fix it for free — or just get data added right now?`,
+        ['Why am I running out?', 'Quick Refill — $15', 'Change my plan', "I'm fine for now"]
+      );
+
+    case 'us-002': // Carlos — plan expiring in 2 days
+      return msg(
+        `Hey Carlos. Your plan expires in ${a.daysUntilRenewal} days — on ${a.renewalDate}. Service will pause if it's not renewed.\n\nYou're currently on ${a.plan} at ${a.planPrice}. Want to renew the same plan, or change while you're here?`,
+        [`Renew ${a.plan} — ${a.planPrice}`, 'See other plans', 'Upgrade to Unlimited', 'Remind me tomorrow']
+      );
+
+    case 'us-003': // Priya — rewards redeemable
+      return msg(
+        `Hi Priya. You're down to ${a.dataRemaining} left — and you have ${a.rewardsPoints} Rewards Points on your account, which is enough to get a free 5 GB data add-on.\n\nWould you like to use your points for the free add-on, or pay for a refill instead?`,
+        ['Redeem 1,000 pts — free 5 GB', 'Add 5 GB of data — $10', 'Renew full plan early — $40', 'Save my points for later']
+      );
+
+    case 'us-004': // James — new customer, eSIM
+      return msg(
+        `Welcome to Total Wireless, ${persona.name.split(' ')[0]}! Let's get you connected — this usually takes about 3 minutes.\n\nI can see you have an ${a.device}, so eSIM is the fastest option. Does that work for you, or would you prefer a physical SIM?`,
+        [`Activate eSIM on ${a.device}`, 'Physical SIM instead', 'Port my number from another carrier', 'Help me choose a plan first']
+      );
+
+    case 'us-005': // Angela — persistent connectivity issues
+      return msg(
+        `Hi Angela. I can see this has been a rough stretch — here's what I see on your account:\n\n📊 ${a.supportCallsThisMonth} contacts | this month | warn\n📊 ${a.avgSignalBars} / 5 bars | avg signal | critical\n📊 ${a.droppedCallsThisWeek} dropped calls | this week | critical\n\n💡 That's a pattern, not a one-off. Let me check for known network issues in your area first — that's the fastest thing to rule out.`,
+        ['Check for outages now', 'Walk me through a fix', 'Just talk to someone', 'Is there a plan with better coverage?']
+      );
+
+    case 'us-006': // Derek — hit cap 3rd month in a row
+      return msg(
+        `You've hit your data cap ${a.capHitsLast3Months} months in a row — and right now you're at 0 GB. Unlimited is only $15 more per month and ends the caps permanently.\n\nWere you thinking about upgrading, or want to understand why this keeps happening first?`,
+        ['Why do I keep hitting my cap?', 'Upgrade to Unlimited', 'Start at next renewal (no charge today)', 'Just add 5 GB for now — $10']
+      );
+
+    case 'us-007': // Ana — international caller
+      return msg(
+        `Hi Ana. I can see you called Colombia 8 times this month and Mexico twice — you're paying per-minute rates right now, around $28 this month.\n\nThe $10/mo Global Calling Card covers 200+ countries and would save you about $18/mo at your call volume.\n\nBest part — you have ${a.rewardsPoints} Rewards Points. You could actually get the Calling Card completely free (1,000 pts). Want the free one?`,
+        ['Yes — redeem 1,000 pts for free', 'Pay $10/mo instead', 'Tell me more', 'See all calling options']
+      );
+
+    case 'us-008': // Robert — 4-line family comparing plans
+      return msg(
+        `Hey Robert. You've checked Plans a few times this week — looks like you're thinking it over. Let me make it easy.\n\nYou're managing ${a.familyLines} lines, all on ${a.plan} at $${a.currentMonthlySpend}/mo total. Here's the thing: Unlimited at 4 lines is $110/mo — that's $50/mo cheaper, and each line gets unlimited data.\n\nWant to see the full side-by-side?`,
+        ['See full plan comparison', 'Upgrade to 5G Unlimited — save $50/mo', 'Calculate 4-line pricing', 'Not ready to switch']
+      );
+
+    case 'us-009': // Alex — buy a new phone
+      return msg(
+        `Hey Alex. Here's what I see on your account:\n\nAccount status:\n• Device: ${a.device} · 3 years old\n• Storage: 91% full\n• Plan: Total Unlimited\n\nGood news — you qualify for the best device deals. Several phones are completely free with your plan, no trade-in needed.\n\nWhat are you looking for?`,
+        ['Show me new phones', 'What deals do I qualify for?', 'I want an iPhone', 'I want a Samsung']
+      );
+
+    case 'us-010': // Nina — new activation with Moto G Stylus 2025
+      return msg(
+        `Hi Nina! Let's get your Moto G Stylus 2025 connected — this usually takes about 5 minutes.\n\nI can see you have a physical SIM. Before we start: are you bringing your current number from another carrier, or would you like a fresh new number?`,
+        ['Port my current number', 'Get a new number', 'Help me pick a plan first', 'What does activation involve?']
+      );
+
+    default: {
+      // Generic opening by intentCategory
+      switch (persona.intentCategory) {
+        case 'refill':
+          return msg(
+            `I can see your data is running low — ${a.dataRemaining} left with ${a.daysUntilRenewal} days until your cycle resets. Before I set anything up — does this tend to happen most months, or is this a one-time thing?`,
+            ['It happens most months', 'Just this once', 'I need data right now', "I'm not sure"]
+          );
+        case 'upgrade':
+          return msg(
+            `You've hit your data cap — and it looks like this has happened before. Upgrading to Unlimited ends the caps permanently.\n\nWant to upgrade now or just explore your options?`,
+            ['Upgrade to Unlimited', 'Start at next renewal', "Tell me what's included", 'Not right now']
+          );
+        case 'byop':
+          return msg(
+            `Let's check if your phone works on Total Wireless. Most unlocked phones do — it usually takes about 30 seconds to confirm.\n\nDo you know your phone's IMEI number, or would you like help finding it?`,
+            ['Check compatibility now', 'Help me find my IMEI', 'Tell me about BYOP plans', 'I have questions first']
+          );
+        case 'activate':
+          return msg(
+            `Great — let's get you connected. Activation usually takes about 5 minutes.\n\nFirst question: are you bringing your current phone number, or would you like a new one?`,
+            ['Port my current number', 'Get a new number', 'Help me pick a plan first', 'What do I need to activate?']
+          );
+        default:
+          return null;
       }
-      if (persona.id === 'us-002') {
-        return `Hi ${persona.name.split(' ')[0]}. Your plan expires in just ${a.daysUntilRenewal} days — on ${a.renewalDate}. You still have ${a.dataRemaining} left, but service will pause if not renewed.\n\nI've pre-selected your last plan (${a.plan} at ${a.planPrice}). Do you want to go ahead with that, or explore other options?\n[ACTION_PILLS]${JSON.stringify([`Renew ${a.plan} — ${a.planPrice}`, 'Upgrade to Unlimited', `Enable AutoPay & save $5/mo`, 'Show me options'])}[/ACTION_PILLS]`;
-      }
-      if (persona.id === 'us-003') {
-        return `Hi ${persona.name.split(' ')[0]}. You're down to ${a.dataRemaining} left — and you have ${a.rewardsPoints} Rewards Points on your account, which is enough to get a free 5 GB data add-on.\n\nWould you like to use your points for the free add-on, or pay for a refill instead?\n[ACTION_PILLS]${JSON.stringify(['Redeem 1,000 pts — free 5 GB', 'Pay $15 for data add-on', 'Renew full plan early — $40', 'Show me all options'])}[/ACTION_PILLS]`;
-      }
-      // Generic refill
-      return `I can see your data is running low — ${a.dataRemaining} left with ${a.daysUntilRenewal} days until your cycle resets. Before I set anything up, quick question: does this tend to happen most months, or is this more of a one-time thing?\n[ACTION_PILLS]${JSON.stringify(['It happens most months', 'Just this once', 'I need data right now', "I'm not sure"])}[/ACTION_PILLS]`;
     }
-
-    case 'activate': {
-      // us-004 James — new customer
-      return `Welcome to Total Wireless, ${persona.name.split(' ')[0]}! I can see you have an ${a.simType || 'eSIM'} for your ${a.device}.\n\nActivating takes about 3 minutes. Would you like to set up eSIM on your ${a.device}, scan a physical SIM, or port your number from another carrier?\n[ACTION_PILLS]${JSON.stringify([`Activate eSIM on ${a.device}`, 'Scan physical SIM', 'Port my number from another carrier', 'Tell me about plans first'])}[/ACTION_PILLS]`;
-    }
-
-    case 'support': {
-      // us-005 Angela — persistent connectivity issues
-      return `Hi ${persona.name.split(' ')[0]}. I can see you've called support ${a.supportCallsThisMonth} times this month — and we're showing ${a.droppedCallsThisWeek} dropped calls this week and an average signal of ${a.avgSignalBars} bars. I'm sorry you're dealing with this.\n\nLet me check a couple of things first. Is this happening at a specific location — like at home or work — or is it everywhere?\n[ACTION_PILLS]${JSON.stringify(['At home or one specific place', 'Everywhere I go', 'Mostly indoors', 'It comes and goes'])}[/ACTION_PILLS]`;
-    }
-
-    case 'upgrade': {
-      // us-006 Derek — hits data cap repeatedly
-      return `You've hit your data cap ${a.capHitsLast3Months} months in a row — and right now you're at 0 GB. Unlimited is only $15 more per month and ends the caps permanently.\n\nWere you thinking about upgrading now, or just exploring options?\n[ACTION_PILLS]${JSON.stringify(['Upgrade to Unlimited — $55/mo', 'Start at next renewal (no charge today)', 'Add 5 GB for now — $10', "Tell me what's included"])}[/ACTION_PILLS]`;
-    }
-
-    case 'addon': {
-      // us-007 Ana — international caller
-      const intlCalls = a.internationalCallsThisMonth || [];
-      const topCountry = intlCalls[0]?.country || 'Colombia';
-      const callCount = intlCalls[0]?.callCount || 8;
-      return `Hi ${persona.name.split(' ')[0]}. I noticed you called ${topCountry} ${callCount} times this month — the $10 Global Calling Card could save you up to $18/mo on those calls.\n\nAnd I see you have ${a.rewardsPoints} Rewards Points — that's enough to get it for free. Want to redeem your points, or would you prefer to pay?\n[ACTION_PILLS]${JSON.stringify([`Redeem 1,000 pts — free Calling Card`, 'Add Calling Card — $10/mo', 'See all add-ons', "How much am I spending now?"])}[/ACTION_PILLS]`;
-    }
-
-    case 'compare': {
-      // us-008 Robert — comparing plans, 4-line family
-      return `Hi ${persona.name.split(' ')[0]}. I can see you manage ${a.familyLines} lines and you've visited the Plans page ${a.planPageVisitsThisWeek} times this week — looks like you're doing some comparison shopping.\n\nRight now all 4 lines are on ${a.plan} at $${a.currentMonthlySpend}/mo total. Unlimited at 4 lines would be $110/mo — $50 cheaper per month.\n\nWant to see a full side-by-side comparison?\n[ACTION_PILLS]${JSON.stringify(['See side-by-side comparison', 'Calculate family pricing', 'What does Unlimited include?', 'How does the price guarantee work?'])}[/ACTION_PILLS]`;
-    }
-
-    default:
-      return null;
   }
 }
 
-// ─── Generic multi-turn flows (fallback for non-persona or later turns) ───
+// ─── Per-persona multi-turn flow handlers ────────────────────────────────────
+
+function getMariaTurnResponse(userMsgs, turn) {
+  const first  = userMsgs[0]?.content?.toLowerCase() || '';
+  const prev   = userMsgs[turn - 2]?.content?.toLowerCase() || '';
+  const latest = userMsgs[turn - 1]?.content?.toLowerCase() || '';
+
+  const onDiagnose = first.includes('why') || first.includes('running out') || first.includes('keep happening');
+  const onRefill   = first.includes('quick refill') || first.includes('$15') || first.includes('add data');
+  const onPlan     = first.includes('change my plan') || first.includes('plan options');
+
+  // S3-002/S3-005: New diagnosis flow — Turn 1 was the landing pill "Why am I running out?"
+  // and Turn 2 is "Let's do it". Steps are shifted 1 turn earlier vs the old flow.
+  const isNewDiagFlow = onDiagnose &&
+    userMsgs[1]?.content?.toLowerCase().includes("let's do it");
+
+  // ── NEW Diagnosis path (S3-002/S3-005) ─────────────────────────
+  if (isNewDiagFlow) {
+    if (turn === 2) {
+      // Step 1: Wi-Fi connection question
+      return msg(
+        `Are you connected to Wi-Fi when you're at home or at work?`,
+        ['Yes, always', 'Sometimes', "I'm not sure"]
+      );
+    }
+    if (turn === 3) {
+      // latest = answer to Step 1 Wi-Fi question
+      if (latest.includes('sometimes') || latest.includes('not sure')) {
+        return msg(
+          `That could be it. When Wi-Fi is slow, your phone automatically switches to cellular — burning through data without you noticing.\n\nDo you stream video or music on cellular — not just on Wi-Fi?`,
+          ['Yes, often', 'Occasionally', 'Rarely']
+        );
+      }
+      if (latest.includes('always')) {
+        return msg(
+          `Good, that's not the issue then. One more: do you have apps set to auto-update or sync in the background on cellular?`,
+          ['Probably yes', "I've disabled it", 'Not sure']
+        );
+      }
+      return msg(
+        `Do you stream video or music on cellular — not just on Wi-Fi?`,
+        ['Yes, often', 'Occasionally', 'Rarely']
+      );
+    }
+    if (turn === 4) {
+      const step1Ans = userMsgs[2]?.content?.toLowerCase() || '';
+      if (step1Ans.includes('always')) {
+        // User took "always on Wi-Fi" shortcut at Step 1 — latest is background apps answer
+        return msg(
+          `Here are three free fixes that could make a real difference:\n\n✅ Turn off "Wi-Fi Assist" in Settings — stops your phone from silently switching to cellular when Wi-Fi slows down\n✅ Set streaming apps to "Wi-Fi only" — YouTube and Netflix can each burn 1–3 GB per hour on HD over cellular\n✅ Disable Background App Refresh — go to Settings → General → Background App Refresh and turn it off for apps you don't need syncing constantly\n\nWant to try those first, or would you rather add data or change your plan now?`,
+          ["I'll try those", 'Add data for now — $15', 'Show plan options']
+        );
+      }
+      // latest = streaming answer (Step 2) → Step 3: background apps
+      return msg(
+        `${latest.includes('yes') || latest.includes('often') || latest.includes('occasionally') ? 'That can use 1–3 GB per hour on HD.\n\n' : ''}Last one: do you have apps set to auto-update or sync in the background on cellular?`,
+        ['Probably yes', "I've disabled it", 'Not sure']
+      );
+    }
+    if (turn === 5) {
+      // latest = background apps answer → free fixes + escalation
+      if (latest.includes('add data') || latest.includes('$15')) return `Got it — adding 5 GB right now.\n[REFILL_FLOW]`;
+      if (latest.includes('plan') || latest.includes('options')) return msg(
+        `Here's what would stop this from happening:\n\n**Total 5G Unlimited** — $50/mo\n✓ Unlimited data (no more running out)\n✓ 10 GB hotspot\n✓ Wi-Fi Calling\n\nThat's $10 more than your current plan. Want to switch?`,
+        ['Yes, switch to Unlimited', 'How much more per month?', 'No thanks — keep my plan']
+      );
+      return msg(
+        `Here are three free fixes that could make a real difference:\n\n✅ Turn off "Wi-Fi Assist" in Settings — stops your phone from silently switching to cellular when Wi-Fi slows down\n✅ Set streaming apps to "Wi-Fi only" — YouTube and Netflix can each burn 1–3 GB per hour on HD over cellular\n✅ Disable Background App Refresh — go to Settings → General → Background App Refresh and turn it off for apps you don't need syncing constantly\n\nWant to try those first, or would you rather add data or change your plan now?`,
+        ["I'll try those", 'Add data for now — $15', 'Show plan options']
+      );
+    }
+    if (turn === 6) {
+      if (latest.includes('add data') || latest.includes('$15')) return `Got it — adding 5 GB right now.\n[REFILL_FLOW]`;
+      if (latest.includes('plan') || latest.includes('options')) return msg(
+        `Here's what would stop this from happening:\n\n**Total 5G Unlimited** — $50/mo\n✓ Unlimited data (no more running out)\n✓ 10 GB hotspot\n✓ Wi-Fi Calling\n\nThat's $10 more than your current plan. Want to switch?`,
+        ['Yes, switch to Unlimited', 'How much more per month?', 'No thanks — keep my plan']
+      );
+      return msg(
+        `Got it — trying those fixes is a great first step. If you run out before Apr 9, just come back and I can add data instantly or switch your plan.\n\nAnything else I can help with?`,
+        POST_FLOW_PILLS
+      );
+    }
+    if (turn > 6) {
+      if (latest.includes('add data') || latest.includes('$15')) return `Got it.\n[REFILL_FLOW]`;
+      if (latest.includes('plan') || latest.includes('options')) return msg(
+        `Here's what would stop this from happening:\n\n**Total 5G Unlimited** — $50/mo\n✓ Unlimited data (no more running out)\n✓ 10 GB hotspot\n✓ Wi-Fi Calling\n\nThat's $10 more than your current plan. Want to switch?`,
+        ['Yes, switch to Unlimited', 'How much more per month?', 'No thanks — keep my plan']
+      );
+    }
+    return null;
+  }
+
+  // ── OLD Diagnosis path (Turn 1 was generic opening, Turn 2+ is "why" pill from AI response) ──
+  if (onDiagnose) {
+    if (turn === 2) {
+      // R11: Escape hatch — handle skip actions from diagnosisFlow.intro (new flow, non-"Let's do it")
+      if (latest.includes('skip') && (latest.includes('add data') || latest.includes('just add') || latest.includes('$15'))) {
+        return `Got it — I'll set that up right now.\n[REFILL_FLOW]`;
+      }
+      if (latest.includes('skip') && (latest.includes('plan') || latest.includes('change'))) {
+        return msg(
+          `Here's what would stop this from happening:\n\n**Total 5G Unlimited** — $50/mo\n✓ Unlimited data (no more running out)\n✓ 10 GB hotspot\n✓ Wi-Fi Calling\n\nThat's $10 more than your current plan. Want to switch?`,
+          ['Yes, switch to Unlimited', 'How much more per month?', 'No thanks — keep my plan']
+        );
+      }
+      return msg(
+        `We can also see that only 22% of your usage is going through Wi-Fi — which means most of your data is being used on cellular, even when you might not need to.\n\nWant me to walk through a couple of free fixes, or would you rather skip straight to adding data or changing your plan?`,
+        ["Let's figure it out", 'Skip — add data for $15', 'Skip — change my plan']
+      );
+    }
+    if (turn === 3) {
+      if (prev.includes("let's") || prev.includes('figure') || prev.includes('let me')) {
+        return msg(
+          `Are you connected to Wi-Fi when you're at home or at work?`,
+          ['Yes, always', 'Sometimes', "I'm not sure"]
+        );
+      }
+      if (prev.includes('add data') || prev.includes('$15') || prev.includes('skip')) {
+        return `Got it — I'll set that up right now.\n[REFILL_FLOW]`;
+      }
+      if (prev.includes('change') || prev.includes('plan')) {
+        return msg(
+          `Here's what would stop this from happening:\n\n**Total 5G Unlimited** — $50/mo\n✓ Unlimited data (no more running out)\n✓ 10 GB hotspot\n✓ Wi-Fi Calling\n\nThat's $10 more than your current plan. Want to switch?`,
+          ['Yes, switch to Unlimited', 'How much more per month?', 'No thanks — keep my plan']
+        );
+      }
+    }
+    if (turn === 4) {
+      if (prev.includes('sometimes') || prev.includes('not sure')) {
+        return msg(
+          `That could be it. When Wi-Fi is slow, your phone automatically switches to cellular — burning through data without you noticing.\n\nDo you stream video or music on cellular — not just on Wi-Fi?`,
+          ['Yes, often', 'Occasionally', 'Rarely']
+        );
+      }
+      if (prev.includes('always')) {
+        return msg(
+          `Good, that's not the issue then. One more: do you have apps set to auto-update or sync in the background on cellular?`,
+          ['Probably yes', "I've disabled it", 'Not sure']
+        );
+      }
+    }
+    if (turn === 5) {
+      if (prev.includes('yes') || prev.includes('often') || prev.includes('occasionally')) {
+        return msg(
+          `That can use 1–3 GB per hour on HD. One more: do you have apps set to auto-update or sync in the background on cellular?`,
+          ['Probably yes', "I've disabled it", 'Not sure']
+        );
+      }
+      // From "always connected to Wi-Fi" path, answering background apps
+      return msg(
+        `Here are three free fixes that could make a real difference:\n\n✅ Turn off "Wi-Fi Assist" in Settings — stops your phone from silently switching to cellular when Wi-Fi slows down\n✅ Set streaming apps to "Wi-Fi only" — YouTube and Netflix can each burn 1–3 GB per hour on HD over cellular\n✅ Disable Background App Refresh — go to Settings → General → Background App Refresh and turn it off for apps you don't need syncing constantly\n\nWant to try those first, or would you rather add data or change your plan now?`,
+        ["I'll try those", 'Add data for now — $15', 'Show plan options']
+      );
+    }
+    if (turn === 6) {
+      if (prev.includes('probably') || prev.includes('not sure') || prev.includes('disabled')) {
+        return msg(
+          `Here are three free fixes that could make a real difference:\n\n✅ Turn off "Wi-Fi Assist" in Settings — stops your phone from silently switching to cellular when Wi-Fi slows down\n✅ Set streaming apps to "Wi-Fi only" — YouTube and Netflix can each burn 1–3 GB per hour on HD over cellular\n✅ Disable Background App Refresh — go to Settings → General → Background App Refresh and turn it off for apps you don't need syncing constantly\n\nWant to try those first, or would you rather add data or change your plan now?`,
+          ["I'll try those", 'Add data for now — $15', 'Show plan options']
+        );
+      }
+      if (prev.includes('add data') || prev.includes('$15')) {
+        return `Got it — adding 5 GB right now.\n[REFILL_FLOW]`;
+      }
+      if (prev.includes('plan') || prev.includes('options')) {
+        return msg(
+          `Here's what would stop this from happening:\n\n**Total 5G Unlimited** — $50/mo\n✓ Unlimited data (no more running out)\n✓ 10 GB hotspot\n✓ Wi-Fi Calling\n\nThat's $10 more than your current plan. Want to switch?`,
+          ['Yes, switch to Unlimited', 'How much more per month?', 'No thanks — keep my plan']
+        );
+      }
+      return msg(
+        `Got it — trying those fixes is a great first step. If you run out before Apr 9, just come back and I can add data instantly or switch your plan.\n\nAnything else I can help with?`,
+        POST_FLOW_PILLS
+      );
+    }
+    // Late turns after free fixes shown
+    if (turn > 6) {
+      if (prev.includes('add data') || prev.includes('$15')) {
+        return `Got it.\n[REFILL_FLOW]`;
+      }
+      if (prev.includes('plan') || prev.includes('options')) {
+        return msg(
+          `Here's what would stop this from happening:\n\n**Total 5G Unlimited** — $50/mo\n✓ Unlimited data (no more running out)\n✓ 10 GB hotspot\n✓ Wi-Fi Calling\n\nThat's $10 more than your current plan. Want to switch?`,
+          ['Yes, switch to Unlimited', 'How much more per month?', 'No thanks — keep my plan']
+        );
+      }
+    }
+  }
+
+  // ── Quick Refill direct path ─────────────────────────────────────
+  if (onRefill) {
+    if (turn === 2) {
+      return msg(
+        `Sure. Want to add 5 GB right now for $15? I'll charge your Visa ••••4291. Takes about 2 seconds.`,
+        ['Yes — do it', 'Show other options', 'Cancel']
+      );
+    }
+    if (turn === 3) {
+      if (prev.includes('yes') || prev.includes('do it')) {
+        return `Got it — processing now.\n[REFILL_FLOW]`;
+      }
+      if (prev.includes('other options') || prev.includes('show')) {
+        return msg(
+          `Here are your options:\n\n• $10 — 5 GB add-on (instant, plan unchanged)\n• Total 5G Unlimited — ends the caps permanently (see current price)\n• Wait it out until Apr 9`,
+          ['Add 5 GB — $10', 'Switch to Unlimited', "I'll wait"]
+        );
+      }
+    }
+    if (turn === 4) {
+      if (prev.includes('add') || prev.includes('$15')) {
+        return `Got it.\n[REFILL_FLOW]`;
+      }
+      if (prev.includes('unlimited') || prev.includes('switch')) {
+        return msg(
+          `Here's what would stop this from happening:\n\n**Total 5G Unlimited** — $50/mo\n✓ Unlimited data (no more running out)\n✓ 10 GB hotspot\n✓ Wi-Fi Calling\n\nThat's $10 more than your current plan. Want to switch?`,
+          ['Yes, switch to Unlimited', 'How much more per month?', 'No thanks — keep my plan']
+        );
+      }
+    }
+  }
+
+  // ── Change plan direct path ──────────────────────────────────────
+  if (onPlan) {
+    if (turn === 2) {
+      return msg(
+        `Here's what would stop this from happening:\n\n**Total 5G Unlimited** — $50/mo\n✓ Unlimited data (no more running out)\n✓ 10 GB hotspot\n✓ Wi-Fi Calling\n\nThat's $10 more than your current plan. Want to switch?`,
+        ['Yes, switch to Unlimited', 'How much more per month?', 'No thanks — keep my plan']
+      );
+    }
+  }
+
+  // ── Generic refill fallback (turn 2+) ────────────────────────────
+  if (turn === 2) {
+    return msg(
+      `Got it. A quick $15 add-on gives you 5 GB instantly — no plan change needed. Want me to set that up?`,
+      ['Yes, refill now', 'Show me other options', "I'll wait it out"]
+    );
+  }
+  if (turn === 3) {
+    if (prev.includes('yes') || prev.includes('refill') || prev.includes('now')) {
+      return `Great — setting that up now.\n[REFILL_FLOW]`;
+    }
+    return msg(
+      `No problem! Here are some other options:`,
+      ['Add 5 GB of data — $10', 'Switch to Unlimited — see current price', 'Just help me use less data']
+    );
+  }
+  if (turn === 4 && (prev.includes('booster') || prev.includes('$15') || prev.includes('add'))) {
+    return `Got it.\n[REFILL_FLOW]`;
+  }
+  if (turn === 4 && (prev.includes('unlimited') || prev.includes('$55'))) {
+    return msg(
+      `Here's what would stop this from happening:\n\n**Total 5G Unlimited** — $50/mo\n✓ Unlimited data (no more running out)\n✓ 10 GB hotspot\n✓ Wi-Fi Calling\n\nThat's $10 more than your current plan. Want to switch?`,
+      ['Yes, switch to Unlimited', 'How much more per month?', 'No thanks — keep my plan']
+    );
+  }
+  return null;
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+
+function getCarlosTurnResponse(userMsgs, turn, persona) {
+  const a    = persona?.account || {};
+  const _first = userMsgs[0]?.content?.toLowerCase() || '';
+  const prev  = userMsgs[turn - 2]?.content?.toLowerCase() || '';
+
+  if (turn === 2) {
+    if (prev.includes('renew') && !prev.includes('unlimited')) {
+      // AutoPay upsell before confirming renewal
+      return msg(
+        `Before I confirm — you could save $5/mo ($60/year) by enabling AutoPay. Want to add that now?\n\n┌──────────────────────────────────────────┐\n│  Total Base 5G renewal                   │\n│  $40/mo  →  $35/mo with AutoPay          │\n│  Charged to: ${a.savedCard || 'Mastercard ••••8810'}          │\n└──────────────────────────────────────────┘`,
+        ['Yes — add AutoPay + save $5', 'No — just renew at $40', 'Cancel']
+      );
+    }
+    if (prev.includes('upgrade') || prev.includes('unlimited')) {
+      return msg(
+        `I have a few options that could work for you. Let me walk you through the details in a moment.`,
+        ['Show me options', 'Talk to someone', 'Return to home']
+      );
+    }
+    if (prev.includes('see other') || prev.includes('options') || prev.includes('show')) {
+      return msg(
+        `Here are your options. Your data balance looks fine (${a.dataRemaining} left), so this is really about whether you want more room going forward:\n\n• Total Base 5G  $20/mo (BYOP + Auto Pay) · Unlimited  ← Most affordable\n• 5G Unlimited   See current price · Unlimited + Disney+\n• 5G+ Unlimited  See current price · Unlimited + 50 GB hotspot\n\nWhich one feels right?`,
+        ['Stay on Base — $20/mo', 'Go Unlimited — see price', 'Go 5G+ — see price', 'Compare features']
+      );
+    }
+    if (prev.includes('remind') || prev.includes('tomorrow')) {
+      return `I'll remind you. Just note that service pauses on ${a.renewalDate} if not renewed — tomorrow you'll have about 24 hours. I'll send you a heads-up.\n\nAnything else I can help with?`;
+    }
+  }
+
+  if (turn === 3) {
+    if (prev.includes('autopay') || prev.includes('save $5') || prev.includes('just renew') || prev.includes('renew at $40')) {
+      return `Great — renewing now.\n[REFILL_FLOW]`;
+    }
+    if (prev.includes('base') || prev.includes('$40') || prev.includes('stay')) {
+      return `Renewing your Total Base 5G now.\n[REFILL_FLOW]`;
+    }
+    if (prev.includes('unlimited') || prev.includes('$55') || prev.includes('$65')) {
+      return msg(
+        `I have a few options that could work for you. Let me walk you through the details in a moment.`,
+        ['Show me options', 'Talk to someone', 'Return to home']
+      );
+    }
+  }
+
+  if (turn >= 4) {
+    if (prev.includes('confirm') || prev.includes('yes') || prev.includes('go ahead')) {
+      return `[REFILL_FLOW]`;
+    }
+  }
+
+  return null;
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+
+function getPriyaTurnResponse(userMsgs, turn, persona) {
+  const a    = persona?.account || {};
+  const _first = userMsgs[0]?.content?.toLowerCase() || '';
+  const prev  = userMsgs[turn - 2]?.content?.toLowerCase() || '';
+
+  if (turn === 2) {
+    if (prev.includes('redeem') || prev.includes('free') || prev.includes('pts')) {
+      return msg(
+        `Great timing. Redeeming 1,000 pts for a free 5 GB add-on.\n\n┌──────────────────────────────────────────────────┐\n│  5 GB Data Add-On                                │\n│  Value: $15    Your cost: $0 (1,000 pts)         │\n│  Activates instantly                             │\n│  20 pts remaining after redemption               │\n└──────────────────────────────────────────────────┘\n\nWant to go ahead?`,
+        ['Yes — redeem for free', 'Pay $15 instead', 'Save points for later']
+      );
+    }
+    if (prev.includes('pay $15') || prev.includes('data add-on')) {
+      return msg(
+        `Sure — I'll keep your points.\n\n┌─────────────────────────────────┐\n│  5 GB Data Add-On — $15         │\n│  Activates instantly             │\n│  Charged to: ${a.savedCard || 'Visa ••••3377'}   │\n└─────────────────────────────────┘\n\nConfirm?`,
+        ['Confirm — charge $15', 'Cancel']
+      );
+    }
+    if (prev.includes('renew') || prev.includes('$40') || prev.includes('early')) {
+      return msg(
+        `Renewing ${a.plan} now at ${a.planPrice}.\n\n┌─────────────────────────────────────┐\n│  ${a.plan}               │\n│  ${a.planPrice} · Charged to ${a.savedCard || 'Visa ••••3377'}  │\n└─────────────────────────────────────┘\n\nConfirm?`,
+        ['Confirm renewal', 'Cancel']
+      );
+    }
+    if (prev.includes('save') || prev.includes('later')) {
+      return msg(
+        `No problem. Do you still want to add data? You're at ${a.dataRemaining} — you may run out before ${a.renewalDate}.`,
+        ['Add 5 GB — $15', "I'll be fine"]
+      );
+    }
+  }
+
+  if (turn === 3) {
+    if (prev.includes('yes') || prev.includes('redeem') || prev.includes('confirm') || prev.includes('charge')) {
+      return `Processing now.\n[REFILL_FLOW]`;
+    }
+    if (prev.includes('add 5 gb') || prev.includes('$15')) {
+      return `Got it.\n[REFILL_FLOW]`;
+    }
+    if (prev.includes("i'll be fine") || prev.includes('fine')) {
+      return msg(
+        `No problem. If you need data before ${a.renewalDate}, I'm right here.\n\nAnything else I can help with?`,
+        ['Add data later', "That's it for now"]
+      );
+    }
+  }
+
+  if (turn >= 4 && (prev.includes('yes') || prev.includes('confirm') || prev.includes('go ahead'))) {
+    return `[REFILL_FLOW]`;
+  }
+
+  return null;
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+
+function getJamesTurnResponse(userMsgs, turn, persona) {
+  const a    = persona?.account || {};
+  const _first = userMsgs[0]?.content?.toLowerCase() || '';
+  const prev  = userMsgs[turn - 2]?.content?.toLowerCase() || '';
+
+  if (turn === 2) {
+    if (prev.includes('esim') || prev.includes("let's go") || prev.includes('activate')) {
+      return msg(
+        `First, pick your plan. You can always change it later:\n\n• Total Base 5G      $20/mo with BYOP + Auto Pay · Unlimited\n• Total 5G Unlimited — See current price · Unlimited + Disney+\n• Total 5G+          — See current price · Unlimited + 50 GB hotspot`,
+        ['Total Base 5G — $20/mo', '5G Unlimited — See price', '5G+ — See price', 'Help me decide']
+      );
+    }
+    if (prev.includes('port') || prev.includes('number') || prev.includes('carrier')) {
+      return msg(
+        `I can transfer your existing number. I'll need a few things from your current carrier:\n\n• Carrier name\n• Account number\n• Account PIN or transfer PIN\n\nYour current service will stay active during the transfer — no gap in coverage.\n\nDo you have those handy?`,
+        ['Yes, I have them', 'Need to look them up', 'Get a new number instead']
+      );
+    }
+    if (prev.includes('physical') || prev.includes('sim')) {
+      return msg(
+        `Physical SIM, no problem. I'll select your plan first, then we'll get your SIM card shipped.\n\nWhich plan works for you?`,
+        ['Total Base 5G — $20/mo', '5G Unlimited — See price', 'Help me choose']
+      );
+    }
+    if (prev.includes('plan') || prev.includes('help me choose')) {
+      return msg(
+        `Here are the plans:\n\n• Total Base 5G      $20/mo (BYOP + Auto Pay) — Unlimited. Best value for BYOP.\n• Total 5G Unlimited — See current price — Unlimited + Disney+. Best if you stream or use a hotspot.\n• Total 5G+          — See current price — Unlimited + 50 GB hotspot. Best for heavy hotspot use.\n\nWhat sounds right?`,
+        ['Total Base 5G — $20/mo', '5G Unlimited — See price', '5G+ — See price']
+      );
+    }
+  }
+
+  if (turn === 3) {
+    if (prev.includes('base') || prev.includes('$40') || prev.includes('$55') || prev.includes('$65') || prev.includes('unlimited') || prev.includes('5g')) {
+      return msg(
+        `Great choice. Now for a quick identity verification — this is a one-time step required by the carrier. It takes about 30 seconds.\n\nReady?`,
+        ["Yes, let's verify", 'What do I need?']
+      );
+    }
+    if (prev.includes('yes') || prev.includes('handy') || prev.includes('have them')) {
+      return msg(
+        `Great. I'll need:\n\n• Current carrier name\n• Account number (on your bill)\n• Account PIN\n\nHave those ready and I'll start the transfer.`,
+        ['Start the transfer', 'Get a new number instead']
+      );
+    }
+  }
+
+  if (turn === 4) {
+    if (prev.includes('verify') || prev.includes('yes') || prev.includes('ready')) {
+      return msg(
+        `Verification complete ✓\n\nYour number: (555) 214-8834\nPlan: Total Base 5G · Activates instantly\n\n🎉 340 Welcome Points added to your account.\n\nHere's how to install your eSIM on ${a.device}:\n1. Go to Settings → Cellular → Add eSIM\n2. Tap "Use QR Code" and scan below\n[QR code sent to your email]\n\nYou're all set!`,
+        ['Show me how to set up hotspot', 'Check my account', "I'm done"]
+      );
+    }
+  }
+
+  return null;
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+
+function getAngelaTurnResponse(userMsgs, turn, persona) {
+  const a    = persona?.account || {};
+  const _first = userMsgs[0]?.content?.toLowerCase() || '';
+  const prev  = userMsgs[turn - 2]?.content?.toLowerCase() || '';
+
+  // Helper: check if user is in a fix-step branch
+  const _inDiagnosis = !prev.includes('talk to') && !prev.includes('speak with') && !prev.includes('just talk') && !prev.includes('support');
+
+  if (turn === 2) {
+    if (prev.includes('talk') || prev.includes('someone') || prev.includes('speak')) {
+      const hour = new Date().getHours();
+      const available = hour >= 8 && hour < 22;
+      return msg(
+        available
+          ? `Live chat is available now — wait time is about 4 minutes. Or I can request a callback within 15 minutes.\n\nWhich works better for you?`
+          : `Live chat is closed right now (closes at 10 PM). You can call 1-866-663-3633, or I can have an agent reach out to you first thing tomorrow morning.`,
+        available
+          ? ['Start live chat now', 'Request callback in 15 min', 'Call 1-866-663-3633']
+          : ['Request callback tomorrow', 'Call now — 1-866-663-3633']
+      );
+    }
+    // Outage check / walk through a fix / general
+    return msg(
+      `Network check complete:\n• Active outages in your area: None ✓\n• Root cause: Likely a device or settings issue\n\nI'll walk you through 4 quick fixes that resolve this 90% of the time. Step 1: have you restarted your ${a.device || 'phone'} recently?`,
+      ['Yes, still the same', 'No — let me try now', 'I restart it often']
+    );
+  }
+
+  if (turn === 3) {
+    if (prev.includes('no') || prev.includes('let me try')) {
+      return msg(
+        `Try it now and let me know how it goes — I'll wait.\n\nDid a restart help at all?`,
+        ['Yes, that helped!', 'Still having issues', 'Helped briefly, came back']
+      );
+    }
+    if (prev.includes('helped') && !prev.includes('still') && !prev.includes('briefly')) {
+      return msg(
+        `Great — sometimes all it takes is a fresh connection. Keep an eye on it over the next hour.\n\nIf it comes back, we can run through a few more steps. Anything else I can help with?`,
+        ['It came back — keep going', "I'm good, thanks"]
+      );
+    }
+    // Still having issues → Step 2
+    return msg(
+      `OK. Step 2: Is the issue worse indoors, or about the same everywhere?`,
+      ['Worse indoors', 'Same everywhere', 'Not sure']
+    );
+  }
+
+  if (turn === 4) {
+    if (prev.includes('indoors') || prev.includes('worse')) {
+      return msg(
+        `Building materials can block 1–2 bars of signal — that may explain it.\n\nQuick test:\n• Move to a window or step outside briefly\n• Check if signal improves (top bar on your screen)\n• This tells us: coverage gap vs device issue\n\nStep 3 while you test: toggle Airplane Mode on for 10 seconds, then off — this forces your phone to re-register with the nearest tower.\n\nHow does it look?`,
+        ['Signal improves outside', 'Same outside too', 'Airplane mode helped!', 'Still the same']
+      );
+    }
+    if (prev.includes('same everywhere') || prev.includes('same')) {
+      return msg(
+        `Step 3 — Airplane Mode reset:\n• Toggle Airplane Mode on for 10 seconds\n• Then toggle it back off\n• This forces your phone to re-register with the nearest tower\n\nDid that help?`,
+        ['Yes, that helped!', 'Done — still not working', 'Already tried that']
+      );
+    }
+  }
+
+  if (turn === 5) {
+    if (prev.includes('helped') && !prev.includes('still') && !prev.includes('not')) {
+      return msg(
+        `That's a good sign. The issue may clear up on its own as you move around. I'd suggest keeping an eye on it for the rest of the day.\n\nIf it comes back consistently, we can escalate to our network team who can run deeper diagnostics.\n\nAnything else I can help with?`,
+        ['It keeps coming back', "I'm good, thanks"]
+      );
+    }
+    // Step 4: SIM reseat
+    return msg(
+      `Step 4 — SIM card reseat:\n• Power off your ${a.device || 'phone'}\n• Remove the SIM tray and reseat the card firmly\n• Power back on — this forces a fresh network registration\n• Have eSIM? Skip this and tap "Already tried" below\n\nCan you try that?`,
+      ['Done — still the same', 'Fixed it!', 'How do I do that?', 'Already tried / eSIM']
+    );
+  }
+
+  if (turn === 6) {
+    if (prev.includes('fixed') || prev.includes('worked')) {
+      return msg(
+        `Glad that did it! If you have any more issues, I'm right here.\n\nAnything else I can help with today?`,
+        POST_FLOW_PILLS
+      );
+    }
+    if (prev.includes('how') || prev.includes('how do i')) {
+      return msg(
+        `On Samsung Galaxy devices:\n\n✅ Power off your phone completely\n✅ Use a SIM ejector or paperclip to open the tray\n✅ Remove the SIM — check for dirt or damage\n✅ Place it back firmly in the tray\n✅ Reinsert the tray and power back on\n\nThat forces a fresh network registration. Did that help?`,
+        ['Yes, fixed it!', 'Still the same']
+      );
+    }
+    // All steps done, still not working
+    return msg(
+      `We've tried all four standard fixes — none of them resolved it.\n\nDiagnosis summary:\n• Device restart: No effect\n• Airplane Mode reset: No effect\n• SIM reseat: No effect\n• Likely cause: Deeper coverage gap or hardware issue\n\nOur network team can run deeper diagnostics on your account directly. What would you prefer?`,
+      ['Start live chat', 'Schedule a callback', 'Show plans with Wi-Fi Calling', 'Call 1-866-663-3633']
+    );
+  }
+
+  if (turn === 7) {
+    if (prev.includes('wifi calling') || prev.includes('plans')) {
+      return msg(
+        `Total 5G Unlimited at $50/mo includes Wi-Fi Calling — your phone uses your home Wi-Fi for calls even when cellular is weak. That would solve most of your dropped call issues.\n\nWant me to switch your plan? I'll apply the change immediately and your billing stays the same until next cycle.`,
+        ['Yes, switch to Unlimited', 'How much more is that?', 'Let me think about it', 'No thanks — just connect me to support']
+      );
+    }
+    return msg(
+      `I'll connect you with our network team right away — they can run deeper diagnostics and resolve this faster than anything else.\n\nLive chat wait time: ~4 minutes.`,
+      ['Start live chat now', 'Schedule callback', 'Call 1-866-663-3633']
+    );
+  }
+
+  return null;
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+
+function getDerekTurnResponse(userMsgs, turn, persona) {
+  const a      = persona?.account || {};
+  const first  = userMsgs[0]?.content?.toLowerCase() || '';
+  const prev   = userMsgs[turn - 2]?.content?.toLowerCase() || '';
+  const latest = userMsgs[turn - 1]?.content?.toLowerCase() || '';
+
+  const onDiagnose = first.includes('why') || first.includes('cap') || first.includes('keep hitting') || first.includes('keep running');
+  const onUpgrade  = first.includes('upgrade') || first.includes('unlimited');
+  const onAddData  = first.includes('add 5 gb') || first.includes('just add') || first.includes('$10');
+  const onRenewal  = first.includes('renewal') || first.includes('no charge');
+
+  // S3-002/S3-006: New diagnosis flow — Turn 1 was "Why do I keep hitting my cap?" landing pill.
+  const isNewDiagFlow = onDiagnose &&
+    userMsgs[1]?.content?.toLowerCase().includes("let's do it");
+
+  // ── Diagnosis path ────────────────────────────────────────────────
+  if (onDiagnose) {
+    if (turn === 2) {
+      // R11: Escape hatches for skip actions after diagnosisFlow.intro
+      if (latest.includes('skip') && (latest.includes('upgrade') || latest.includes('options'))) {
+        return msg(
+          `I have a few options that could work for you. Let me walk you through the details in a moment.`,
+          ['Show me options', 'Talk to someone', 'Return to home']
+        );
+      }
+      if (latest.includes('skip') && (latest.includes('plan') || latest.includes('change'))) {
+        return msg(
+          `I have a few options that could work for you. Let me walk you through the details in a moment.`,
+          ['Show me options', 'Talk to someone', 'Return to home']
+        );
+      }
+      // Step 1: streaming question (same in old and new flow at Turn 2)
+      return msg(
+        `Let's check. Do you stream video often on cellular — YouTube, TikTok, Netflix — not just on Wi-Fi?`,
+        ['Yes, a lot', 'Sometimes', 'Rarely']
+      );
+    }
+    if (turn === 3) {
+      if (isNewDiagFlow) {
+        // New flow: latest = streaming answer (Turn 3 user message)
+        if (latest.includes('yes') || latest.includes('lot') || latest.includes('sometimes')) {
+          return msg(
+            `That can use 1–3 GB per hour on HD.\n\nDo you also use your phone as a hotspot for a laptop or other devices?`,
+            ['Yes, regularly', 'Occasionally', 'Never']
+          );
+        }
+        if (latest.includes('rarely')) {
+          return msg(
+            `Interesting — it might be background data or app syncing then. Do you use your phone as a hotspot for other devices?`,
+            ['Yes, regularly', 'Occasionally', 'Never']
+          );
+        }
+      }
+      // Old flow: prev = streaming answer
+      if (prev.includes('yes') || prev.includes('lot') || prev.includes('sometimes')) {
+        return msg(
+          `That can use 1–3 GB per hour on HD.\n\nDo you also use your phone as a hotspot for a laptop or other devices?`,
+          ['Yes, regularly', 'Occasionally', 'Never']
+        );
+      }
+      if (prev.includes('rarely')) {
+        return msg(
+          `Interesting — it might be background data or app syncing then. Do you use your phone as a hotspot for other devices?`,
+          ['Yes, regularly', 'Occasionally', 'Never']
+        );
+      }
+    }
+    if (turn === 4) {
+      return msg(
+        `Here are a few things you could try to reduce usage:\n\n✅ Set YouTube/Netflix/TikTok to Wi-Fi only in their settings\n✅ Check your top data-draining apps: Settings → Network → Data Usage\n✅ Disable background data for apps you don't need syncing constantly\n\nThat said — with 10 of 12 months at the cap, you've likely spent around $150 extra this year on data boosts that Unlimited would have prevented.\n\nWant to see your upgrade options? You can start now or schedule it for ${a.renewalDate} — no charge today.`,
+        ['Show upgrade options', "I'll try the tips first", 'Not right now']
+      );
+    }
+    if (turn === 5) {
+      if (prev.includes('upgrade') || prev.includes('options') || prev.includes('show')) {
+        return msg(
+          `I have a few options that could work for you. Let me walk you through the details in a moment.`,
+          ['Show me options', 'Talk to someone', 'Return to home']
+        );
+      }
+      return msg(
+        `No problem. If you change your mind after trying those tips, I'll be here. Upgrading is always an option at any point.\n\nAnything else I can help with?`,
+        ['Try the tips — come back later', 'Actually, show me upgrade options']
+      );
+    }
+  }
+
+  // ── Upgrade direct path ──────────────────────────────────────────
+  if (onUpgrade) {
+    if (turn === 2) {
+      if (prev.includes('upgrade') || prev.includes('unlimited') || prev.includes('now')) {
+        return msg(
+          `The Unlimited plan includes unlimited data and Disney+ ($7.99/mo value). Check the current price at totalwireless.com.\n\nYou can upgrade now (prorated for the ${a.daysUntilRenewal} days remaining) or wait until ${a.renewalDate}.\n\nWhich works better?`,
+          ['Upgrade now — prorated charge', `Upgrade at renewal ${a.renewalDate}`, 'Just add data for now — $10', "Tell me what's included"]
+        );
+      }
+      if (prev.includes('renewal') || prev.includes('no charge') || prev.includes('start at')) {
+        return msg(
+          `Scheduled. Starting ${a.renewalDate} you'll be on Total 5G Unlimited. Nothing to pay today.\n\nWant me to add 5 GB now to cover the rest of this cycle?`,
+          ['Yes — add 5 GB for $10', "I'll manage", 'Actually, upgrade now']
+        );
+      }
+    }
+    if (turn === 3) {
+      if (prev.includes('now') || prev.includes('prorated') || prev.includes('upgrade now')) {
+        return msg(
+          `I have a few options that could work for you. Let me walk you through the details in a moment.`,
+          ['Show me options', 'Talk to someone', 'Return to home']
+        );
+      }
+      if (prev.includes('included') || prev.includes("what's included") || prev.includes('tell me')) {
+        return msg(
+          `Total 5G Unlimited includes:\n\n• Unlimited high-speed 5G data — no caps, ever\n• 15 GB mobile hotspot\n• Disney+ Basic ($7.99/mo value)\n• Wi-Fi Calling\n• 5-year price guarantee\n\nAt 4 data boosts/year you'd save roughly $135/yr. Want to go ahead?`,
+          ['Upgrade now', `Upgrade at renewal ${a.renewalDate}`, 'Not right now']
+        );
+      }
+      if (prev.includes('add 5 gb') || prev.includes('$10') || prev.includes('just add')) {
+        return `Adding 5 GB to cover you until ${a.renewalDate}:\n[REFILL_FLOW]`;
+      }
+      if (prev.includes('upgrade now') || prev.includes('go ahead')) {
+        return msg(
+          `I have a few options that could work for you. Let me walk you through the details in a moment.`,
+          ['Show me options', 'Talk to someone', 'Return to home']
+        );
+      }
+    }
+    if (turn >= 4) {
+      if (prev.includes('upgrade') || prev.includes('confirm') || prev.includes('yes')) {
+        return msg(
+          `I have a few options that could work for you. Let me walk you through the details in a moment.`,
+          ['Show me options', 'Talk to someone', 'Return to home']
+        );
+      }
+    }
+  }
+
+  // ── Add data path ────────────────────────────────────────────────
+  if (onAddData) {
+    if (turn === 2) {
+      return msg(
+        `Adding 5 GB to your account now.\n\n┌─────────────────────────────────────┐\n│  5 GB Data Add-On — $10             │\n│  Activates instantly                 │\n│  Charged to: ${a.savedCard || 'card on file'}      │\n└─────────────────────────────────────┘\n\nConfirm?`,
+        ['Confirm — $10', 'Cancel']
+      );
+    }
+    if (turn === 3) {
+      if (prev.includes('confirm') || prev.includes('yes')) {
+        return `Processing.\n[REFILL_FLOW]`;
+      }
+    }
+  }
+
+  // ── Schedule at renewal path ─────────────────────────────────────
+  if (onRenewal && turn === 2) {
+    return msg(
+      `Done — your upgrade to Total 5G Unlimited is scheduled for ${a.renewalDate}. Nothing to pay today.\n\nWant me to add 5 GB now to cover the next ${a.daysUntilRenewal} days?`,
+      [`Yes — add 5 GB for $10`, "I'll manage"]
+    );
+  }
+
+  // Late turn catch-all
+  if (turn >= 5) {
+    if (prev.includes('upgrade') || prev.includes('unlimited') || prev.includes('show')) {
+      return msg(
+        `I have a few options that could work for you. Let me walk you through the details in a moment.`,
+        ['Show me options', 'Talk to someone', 'Return to home']
+      );
+    }
+    if (prev.includes('add') || prev.includes('$10') || prev.includes('data')) {
+      return `[REFILL_FLOW]`;
+    }
+  }
+
+  return null;
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+
+function getAnaTurnResponse(userMsgs, turn, persona) {
+  const a    = persona?.account || {};
+  const _first = userMsgs[0]?.content?.toLowerCase() || '';
+  const prev  = userMsgs[turn - 2]?.content?.toLowerCase() || '';
+
+  if (turn === 2) {
+    if (prev.includes('redeem') || prev.includes('free') || prev.includes('pts')) {
+      return msg(
+        `Redeeming 1,000 pts for the Global Calling Card.\n\n┌────────────────────────────────────────────────────────┐\n│  Global Calling Card — FREE (1,000 pts)                │\n│  Value: $10/mo · 200+ countries                        │\n│  Colombia: ~$0.02/min  (was ~$0.25/min)                │\n│  200 pts remaining after redemption                    │\n└────────────────────────────────────────────────────────┘\n\nConfirm?`,
+        ['Yes — get it free', 'Pay $10 instead', 'Cancel']
+      );
+    }
+    if (prev.includes('pay $10') || prev.includes('pay instead')) {
+      return msg(
+        `Sure — charging ${a.savedCard || 'Visa ••••9902'} $10/mo.\n\n┌──────────────────────────────────────────────────────┐\n│  Global Calling Card — $10/mo                        │\n│  200+ countries · Auto-renews · Cancel anytime       │\n│  Charged to: ${a.savedCard || 'Visa ••••9902'}                 │\n└──────────────────────────────────────────────────────┘\n\nConfirm?`,
+        ['Confirm — $10/mo', 'Use points instead', 'Cancel']
+      );
+    }
+    if (prev.includes('tell me more') || prev.includes('more')) {
+      return msg(
+        `The Global Calling Card is a $10/mo add-on that gives you discounted rates to 200+ countries:\n\n• Colombia: ~$0.02/min  (you're paying ~$0.25/min now)\n• Mexico: ~$0.02/min\n• Savings: ~$18/mo at your call volume\n\nYour 1,200 points cover the first month free. Auto-renews at $10/mo after that. Cancel anytime.\n\nWant to use your points or pay $10?`,
+        ['Get it free with points', 'Pay $10/mo', 'Not right now']
+      );
+    }
+    if (prev.includes('all add-on') || prev.includes('see all')) {
+      return msg(
+        `Here are all available add-ons for your account:\n\n• $0  Global Calling Card (1,000 pts — you qualify ✓)\n• $10 Global Calling Card (cash)\n• $10 · 5 GB Data Add-On\n• $20 · 15 GB Data Add-On\n• Disney+ (available with Unlimited plans)\n\nWhich one are you interested in?`,
+        ['Global Calling Card — free', '5 GB Data Add-On — $10', '15 GB Data Add-On — $20', 'Tell me about Unlimited']
+      );
+    }
+  }
+
+  if (turn === 3) {
+    if (prev.includes('yes') || prev.includes('free') || prev.includes('confirm') || prev.includes('get it free')) {
+      return msg(
+        `I have a few options that could work for you. Let me walk you through the details in a moment.`,
+        ['Show me options', 'Talk to someone', 'Return to home']
+      );
+    }
+    if (prev.includes('$10') || prev.includes('pay') || prev.includes('cash')) {
+      return msg(
+        `I have a few options that could work for you. Let me walk you through the details in a moment.`,
+        ['Show me options', 'Talk to someone', 'Return to home']
+      );
+    }
+    if (prev.includes('not right now') || prev.includes('cancel')) {
+      return msg(
+        `No problem. Your points will stay in your account. Just come back when you're ready — I'll have the same offer waiting.\n\nAnything else I can help with?`,
+        ['Check my account', "That's it for now"]
+      );
+    }
+    if (prev.includes('global') || prev.includes('calling card')) {
+      return msg(
+        `I have a few options that could work for you. Let me walk you through the details in a moment.`,
+        ['Show me options', 'Talk to someone', 'Return to home']
+      );
+    }
+    if (prev.includes('5 gb') || prev.includes('data')) {
+      return `Adding 5 GB to your account.\n[REFILL_FLOW]`;
+    }
+    if (prev.includes('unlimited')) {
+      return msg(
+        `I have a few options that could work for you. Let me walk you through the details in a moment.`,
+        ['Show me options', 'Talk to someone', 'Return to home']
+      );
+    }
+  }
+
+  if (turn >= 4) {
+    if (prev.includes('confirm') || prev.includes('yes') || prev.includes('go ahead')) {
+      return msg(
+        `I have a few options that could work for you. Let me walk you through the details in a moment.`,
+        ['Show me options', 'Talk to someone', 'Return to home']
+      );
+    }
+  }
+
+  return null;
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+
+function getRobertTurnResponse(userMsgs, turn, persona) {
+  const a    = persona?.account || {};
+  const _first = userMsgs[0]?.content?.toLowerCase() || '';
+  const prev  = userMsgs[turn - 2]?.content?.toLowerCase() || '';
+
+  if (turn === 2) {
+    if (prev.includes('comparison') || prev.includes('compare') || prev.includes('see full') || prev.includes('side-by-side')) {
+      return msg(
+        `I have a few options that could work for you. Let me walk you through the details in a moment.`,
+        ['Show me options', 'Talk to someone', 'Return to home']
+      );
+    }
+    if (prev.includes('upgrade') || prev.includes('unlimited') || prev.includes('save $50')) {
+      return msg(
+        `Switching all ${a.familyLines} lines to Total 5G Unlimited.\n\n┌──────────────────────────────────────────────────┐\n│  ${a.familyLines} lines × Total 5G Unlimited                   │\n│  $110/mo total  (was $${a.currentMonthlySpend}/mo)                    │\n│  Prorated charge today: ~$27 (${a.daysUntilRenewal} days left)  │\n│  Or: Start at renewal ${a.renewalDate} — $0 today         │\n└──────────────────────────────────────────────────┘\n\nStart now or wait until ${a.renewalDate}?`,
+        [`Start now — ~$27 today`, `Switch on ${a.renewalDate} — $0 today`, 'Cancel']
+      );
+    }
+    if (prev.includes('calculate') || prev.includes('pricing') || prev.includes('4-line')) {
+      return msg(
+        `Here's the pricing for ${a.familyLines} lines:\n\n• Total Base 5G:   $${a.currentMonthlySpend}/mo ($${a.currentMonthlySpend / a.familyLines}/line) — current\n• 5G Unlimited:    $110/mo ($27.50/line) — saves $50/mo\n• 5G+:             $130/mo ($32.50/line) — saves $30/mo\n\nAll plans include Wi-Fi Calling, 5G, and a 5-year price guarantee. Unlimited adds Disney+ per line.\n\nWant to switch?`,
+        ['Switch to 5G Unlimited — $110/mo', 'Switch on renewal — $0 today', 'Show full comparison', 'Not ready']
+      );
+    }
+    if (prev.includes('not ready') || prev.includes("thinking")) {
+      return msg(
+        `No problem — take your time. The 5-year price guarantee means the rate won't change even after you decide.\n\nAnything else I can clarify?`,
+        ['Show side-by-side comparison', 'Calculate pricing again', "I'm good, thanks"]
+      );
+    }
+  }
+
+  if (turn === 3) {
+    if (prev.includes('now') || prev.includes('$27') || prev.includes('start now')) {
+      return msg(
+        `I have a few options that could work for you. Let me walk you through the details in a moment.`,
+        ['Show me options', 'Talk to someone', 'Return to home']
+      );
+    }
+    if (prev.includes('renewal') || prev.includes(`${a.renewalDate}`) || prev.includes('$0 today') || prev.includes('switch on')) {
+      return msg(
+        `Done — all ${a.familyLines} lines will switch to Total 5G Unlimited on ${a.renewalDate}. Nothing to pay today.\n\nYou'll save $50/mo starting that date — that's $600/year.\n\nAnything else I can help with?`,
+        ['Confirm that schedule', "I'm done for now"]
+      );
+    }
+    if (prev.includes('upgrade') || prev.includes('switch') || prev.includes('unlimited')) {
+      return msg(
+        `I have a few options that could work for you. Let me walk you through the details in a moment.`,
+        ['Show me options', 'Talk to someone', 'Return to home']
+      );
+    }
+  }
+
+  if (turn >= 4) {
+    if (prev.includes('upgrade') || prev.includes('confirm') || prev.includes('go ahead') || prev.includes('yes')) {
+      return msg(
+        `I have a few options that could work for you. Let me walk you through the details in a moment.`,
+        ['Show me options', 'Talk to someone', 'Return to home']
+      );
+    }
+  }
+
+  return null;
+}
+
+// ─── Generic multi-turn flows (fallback) ─────────────────────────────────────
 const FLOWS = {
   'slow-data': [
     { text: "Got it — slow data is really frustrating. Let me help figure out what's going on. When does it feel the slowest?", pills: ["All the time", "Mostly evenings", "When I'm out and about", "It just started recently"] },
@@ -109,14 +1057,14 @@ const FLOWS = {
 
 const RECOMMENDATIONS = {
   'slow-data': [
-    { type: "plan", id: "value-40", reason: "The Value Plan gives you 15GB of high-speed 5G data for $40/mo. That's a solid upgrade that should handle your browsing and social media without throttling.", isBest: true, costDiff: "+$15/mo vs Connect", solveHighlight: "+10GB data = no more throttling" },
-    { type: "plan", id: "unlimited-50", reason: "If you want to never think about speed limits, the Unlimited Plan at $50/mo gives you unlimited high-speed data plus 10GB hotspot.", isBest: false, costDiff: "+$25/mo vs Connect", solveHighlight: "Unlimited data = zero speed limits" },
-    { type: "plan", id: "unlimited-plus-60", reason: "For the absolute fastest speeds, the Unlimited+ Plan at $60/mo includes 5G Ultra Wideband access and 25GB hotspot.", isBest: false, costDiff: "+$35/mo vs Connect", solveHighlight: "5G Ultra Wideband = fastest speeds available" },
+    { type: "plan", id: "5g-unlimited", reason: "Unlimited data ends throttling permanently — no caps, no slowdowns. Includes 15 GB hotspot.", isBest: true, solveHighlight: "Unlimited = no more throttling" },
+    { type: "plan", id: "5g-plus-unlimited", reason: "For the absolute fastest speeds — premium 5G, 25 GB hotspot, and Disney+ Premium.", isBest: false, solveHighlight: "Premium 5G speeds + 25 GB hotspot" },
+    { type: "plan", id: "base-5g", reason: "If you just need more data this month, start here — 5 GB at $20/mo, most affordable option.", isBest: false, solveHighlight: "Most affordable option" },
   ],
   'runs-out': [
-    { type: "plan", id: "unlimited-50", reason: "The Unlimited Plan at $50/mo means you'll never run out of data again. Zero cap, zero surprises, plus 10GB of hotspot included.", isBest: true, costDiff: "+$25/mo vs Connect", solveHighlight: "Unlimited = never run out again" },
-    { type: "plan", id: "value-40", reason: "If you want to save a bit, the Value Plan at $40/mo gives you 15GB — that's triple what most basic plans offer and includes 5GB hotspot.", isBest: false, costDiff: "+$15/mo vs Connect", solveHighlight: "+10GB = 3× more data" },
-    { type: "plan", id: "unlimited-plus-60", reason: "For heavy users who also hotspot a lot, the Unlimited+ Plan at $60/mo adds 25GB hotspot and premium 5G Ultra Wideband speeds.", isBest: false, costDiff: "+$35/mo vs Connect", solveHighlight: "25GB hotspot + premium 5G" },
+    { type: "plan", id: "5g-unlimited", reason: "Unlimited data means you'll never run out again. Zero cap, zero surprises, plus 15 GB hotspot.", isBest: true, solveHighlight: "Unlimited = never run out again" },
+    { type: "plan", id: "5g-plus-unlimited", reason: "For heavy users who also hotspot a lot — 25 GB hotspot and premium 5G speeds.", isBest: false, solveHighlight: "25 GB hotspot + premium 5G" },
+    { type: "plan", id: "base-5g", reason: "Most affordable at $20/mo — 5 GB of 5G data. Best if this is a one-time issue.", isBest: false, solveHighlight: "Most affordable — $20/mo" },
   ],
   'slow-phone': [
     { type: "phone", id: "samsung-a25", reason: "The Galaxy A25 at $199 has 6GB RAM — a major upgrade that'll make everything feel snappy and responsive again.", isBest: true, costDiff: "$199", solveHighlight: "6GB RAM = no more lag or freezing" },
@@ -134,9 +1082,9 @@ const RECOMMENDATIONS = {
     { type: "phone", id: "iphone-se", reason: "If you love Apple's photo processing, the iPhone SE at $249 takes incredible photos with Portrait mode and Smart HDR.", isBest: false, costDiff: "$249", solveHighlight: "Portrait mode + Smart HDR" },
   ],
   'cost': [
-    { type: "plan", id: "connect-25", reason: "At just $25/mo, the Connect Plan gives you unlimited talk & text with 1GB of data.", isBest: true, costDiff: "$25/mo", solveHighlight: "Lowest bill — just $25/mo" },
-    { type: "plan", id: "basic-30", reason: "For only $5 more at $30/mo, the Basic Plan gives you 5GB of data and a mobile hotspot.", isBest: false, costDiff: "+$5/mo vs Connect", solveHighlight: "+4GB data for just $5 more" },
-    { type: "plan", id: "value-40", reason: "The Value Plan at $40/mo is our most popular — 15GB of data, 5GB hotspot, and international texting.", isBest: false, costDiff: "+$15/mo vs Connect", solveHighlight: "15GB + hotspot = best bang for buck" },
+    { type: "plan", id: "base-5g", reason: "At just $20/mo, Total Base 5G is the most affordable option — 5 GB of 5G data, unlimited talk & text.", isBest: true, solveHighlight: "Lowest bill — just $20/mo" },
+    { type: "plan", id: "5g-unlimited", reason: "Unlimited data with no caps at see-current-price. Includes 15 GB hotspot and Disney+ Basic.", isBest: false, solveHighlight: "Unlimited = best value for heavy users" },
+    { type: "plan", id: "5g-plus-unlimited", reason: "Our top tier — premium 5G speeds, 25 GB hotspot, Disney+ Premium.", isBest: false, solveHighlight: "Premium 5G + 25 GB hotspot" },
   ],
   'new-phone': [
     { type: "phone", id: "samsung-a25", reason: "The Galaxy A25 at $199 is the best all-rounder — 50MP camera with OIS, 6GB RAM, gorgeous Super AMOLED display, and 5000mAh battery.", isBest: true, costDiff: "$199", solveHighlight: "Best all-rounder — camera, speed & battery" },
@@ -145,8 +1093,8 @@ const RECOMMENDATIONS = {
   ],
   'not-working': [
     { type: "human", reason: "Based on what you've described, I think our support specialists can help troubleshoot this faster. They can check your account, run network diagnostics, and resolve most issues on the spot.", isBest: true },
-    { type: "plan", id: "value-40", reason: "If your current plan is causing data or connectivity issues, the Value Plan at $40/mo offers 15GB of reliable 5G data.", isBest: false, costDiff: "+$15/mo vs Connect", solveHighlight: "15GB reliable 5G = fewer connectivity issues" },
-    { type: "phone", id: "moto-g-power", reason: "If your phone itself is the problem, the Moto G Power at $99 is a dependable, budget-friendly replacement.", isBest: false, costDiff: "$99", solveHighlight: "Reliable replacement with 5G support" },
+    { type: "plan", id: "5g-unlimited", reason: "If connectivity issues are plan-related, Unlimited gives you priority data and no throttling.", isBest: false, solveHighlight: "Unlimited priority data = fewer connectivity issues" },
+    { type: "phone", id: "moto-g-stylus-2025", reason: "If your phone itself is the problem, the Moto G Stylus 2025 is a dependable replacement.", isBest: false, solveHighlight: "Reliable 5G replacement" },
   ],
 };
 
@@ -162,168 +1110,471 @@ const REC_MESSAGES = {
 };
 
 function getFlowKey(firstMessage) {
-  const msg = firstMessage.toLowerCase();
-
-  // Signal-triggered flows
-  if (msg.includes('refill') || msg.includes('renew') || msg.includes('expir') || msg.includes('autopay')) return 'refill';
-  if (msg.includes('upgrade') || msg.includes('unlimited') || msg.includes('55/mo') || (msg.includes('upgrade') && msg.includes('plan'))) return 'upgrade';
-  if (msg.includes('international') || msg.includes('calling card') || msg.includes('colombia') || msg.includes('global call')) return 'international';
-  if (msg.includes('activate') && (msg.includes('sim') || msg.includes('esim'))) return 'activate';
-  if (msg.includes('connectivity') || msg.includes('support') || msg.includes('signal') || msg.includes('outage') || msg.includes('dropped')) return 'support';
-  if (msg.includes('compare') || (msg.includes('side') && msg.includes('side')) || msg.includes('family pric')) return 'compare';
-
-  if (msg.includes('slow') && (msg.includes('data') || msg.includes('internet') || msg.includes('speed'))) return 'slow-data';
-  if (msg.includes('run out') || msg.includes('runs out') || (msg.includes('data') && msg.includes('end of'))) return 'runs-out';
-  if (msg.includes('sluggish') || (msg.includes('slow') && msg.includes('phone'))) return 'slow-phone';
-  if (msg.includes('storage') || msg.includes('space') || msg.includes('full')) return 'storage';
-  if (msg.includes('photo') || msg.includes('picture') || msg.includes('camera')) return 'camera';
-  if (msg.includes('cheap') || msg.includes('cost') || msg.includes('spend less') || msg.includes('save') || msg.includes('affordable')) return 'cost';
-  if (msg.includes('new phone') || msg.includes('upgrade') || msg.includes('replace') || msg.includes('thinking about getting')) return 'new-phone';
-  if (msg.includes('not working') || msg.includes("isn't working") || msg.includes('broken') || msg.includes('dropping') || msg.includes("can't connect")) return 'not-working';
-
-  return 'cost'; // default fallback
+  const m = firstMessage.toLowerCase();
+  if (m.includes('refill') || m.includes('renew') || m.includes('expir') || m.includes('autopay')) return 'refill';
+  if (m.includes('upgrade') || m.includes('unlimited') || m.includes('55/mo') || (m.includes('upgrade') && m.includes('plan'))) return 'upgrade';
+  if (m.includes('international') || m.includes('calling card') || m.includes('colombia') || m.includes('global call')) return 'international';
+  if (m.includes('activate') && (m.includes('sim') || m.includes('esim'))) return 'activate';
+  if (m.includes('connectivity') || m.includes('support') || m.includes('outage') || m.includes('dropped') || m.includes('signal')) return 'support';
+  if (m.includes('compare') || (m.includes('side') && m.includes('side')) || m.includes('family pric')) return 'compare';
+  if (m.includes('slow') && (m.includes('data') || m.includes('internet') || m.includes('speed'))) return 'slow-data';
+  if (m.includes('run out') || m.includes('runs out') || (m.includes('data') && m.includes('end of'))) return 'runs-out';
+  if (m.includes('sluggish') || (m.includes('slow') && m.includes('phone'))) return 'slow-phone';
+  if (m.includes('storage') || m.includes('space') || m.includes('full')) return 'storage';
+  if (m.includes('photo') || m.includes('picture') || m.includes('camera')) return 'camera';
+  if (m.includes('cheap') || m.includes('cost') || m.includes('spend less') || m.includes('save') || m.includes('affordable')) return 'cost';
+  if (m.includes('new phone') || m.includes('replace') || m.includes('thinking about getting')) return 'new-phone';
+  if (m.includes('not working') || m.includes("isn't working") || m.includes('broken') || m.includes("can't connect")) return 'not-working';
+  return 'cost';
 }
 
+// ─── US-009: Alex — BYOP multi-turn flow ──────────────────────────────────────
+function getAlexPhoneTurnResponse(userMessages, persona) {
+  const msgs = userMessages.map(m => m.content?.toLowerCase() || '');
+  const last = msgs[msgs.length - 1] || '';
+  const turnCount = userMessages.length;
+
+  // Turn 1-2: Show phone options as visual cards
+  if (turnCount <= 2) {
+    if (last.includes('iphone') || last.includes('apple')) {
+      return `Great choice — with your 2,450 rewards points, the iPhone 13 drops to just $24.99. Here are your best iPhone options:\n[RECOMMENDATIONS]${JSON.stringify([
+        { type: 'phone', id: 'iphone-13',  reason: 'Just $24.99 after your 2,450 rewards points — huge upgrade from iPhone 12.', isBest: true,  costDiff: '−$25 with rewards' },
+        { type: 'phone', id: 'iphone-17e', reason: 'Newest iPhone in the lineup — A18 chip, 48MP camera, $300 in bill credits available.', isBest: false },
+      ])}[/RECOMMENDATIONS][ACTION_PILLS]${JSON.stringify(['iPhone 13 — $24.99', 'Tell me more about iPhone 17e', 'Show me Samsung too'])}[/ACTION_PILLS]`;
+    }
+    if (last.includes('samsung') || last.includes('android')) {
+      return `Both are completely free with your Unlimited plan — no trade-in required:\n[RECOMMENDATIONS]${JSON.stringify([
+        { type: 'phone', id: 'samsung-galaxy-a36-5g', reason: 'Best free option — Super AMOLED display, 50MP camera, 5G. Biggest upgrade from iPhone 12.', isBest: true },
+        { type: 'phone', id: 'samsung-galaxy-a17-5g', reason: 'Also free — reliable 5G, 50MP camera, great everyday Samsung.', isBest: false },
+      ])}[/RECOMMENDATIONS][ACTION_PILLS]${JSON.stringify(['I want the Galaxy A36', 'I want the Galaxy A17', 'Show me iPhones too'])}[/ACTION_PILLS]`;
+    }
+    // Default: show a curated mix
+    return `Here are your top picks based on your Unlimited plan. A few are completely free:\n[RECOMMENDATIONS]${JSON.stringify([
+      { type: 'phone', id: 'samsung-galaxy-a36-5g', reason: 'Best free phone — Super AMOLED, 50MP camera, 5G. No cost, no trade-in.', isBest: true },
+      { type: 'phone', id: 'iphone-13',             reason: '$24.99 after your 2,450 rewards points — perfect iPhone upgrade.', isBest: false, costDiff: '−$25 with rewards' },
+      { type: 'phone', id: 'moto-g-stylus-2025',    reason: 'Free with your plan — built-in stylus, 256GB storage, big battery.', isBest: false },
+    ])}[/RECOMMENDATIONS][ACTION_PILLS]${JSON.stringify(['I want the Galaxy A36 (free)', 'I want the iPhone 13', 'I want the Moto G Stylus', 'Show me all phones'])}[/ACTION_PILLS]`;
+  }
+
+  // Turn 3: User picks a phone — confirm specs and price
+  if (turnCount === 3 || (turnCount <= 4 && (last.includes('galaxy a36') || last.includes('iphone 13') || last.includes('moto') || last.includes('a17') || last.includes('free') || last.includes('pick') || last.includes('want')))) {
+    const isIphone = last.includes('iphone');
+    const isMoto = last.includes('moto') || last.includes('stylus');
+    const isA17 = last.includes('a17');
+
+    if (isIphone) {
+      return msg(
+        `Perfect. Here's your order summary:\n\n**iPhone 13**\n• Color: Midnight (Black)\n• Storage: 128 GB\n• Regular price: $49.99\n• Rewards discount: −$25.00 (2,450 pts)\n• You pay: $24.99\n• Ships: 2–3 business days\n• Card: Visa ••••7823\n\nReady to place the order?`,
+        ['Yes, order it — $24.99', 'Change color', 'Go back']
+      );
+    }
+    if (isMoto) {
+      return msg(
+        `Perfect. Here's your order summary:\n\n**Moto G Stylus**\n• Color: Graphite\n• Storage: 128 GB\n• Price: FREE with your Unlimited plan\n• Ships: 2–3 business days\n• Charge: None\n\nReady to place the order?`,
+        ['Yes, order it — FREE', 'Change color', 'Go back']
+      );
+    }
+    if (isA17) {
+      return msg(
+        `Perfect. Here's your order summary:\n\n**Samsung Galaxy A17**\n• Color: Black\n• Storage: 64 GB\n• Price: FREE with your Unlimited plan\n• Ships: 2–3 business days\n• Charge: None\n\nReady to place the order?`,
+        ['Yes, order it — FREE', 'Go back']
+      );
+    }
+    // Default: Galaxy A36
+    return msg(
+      `Perfect. Here's your order summary:\n\n**Samsung Galaxy A36**\n• Color: Awesome Navy\n• Storage: 128 GB\n• Price: FREE with your Unlimited plan\n• Ships: 2–3 business days\n• Charge: None\n\nReady to place the order?`,
+      ['Yes, order it — FREE', 'Change color', 'Go back']
+    );
+  }
+
+  // Turn 4+: Confirm order → trigger PhoneOrderFlow
+  if (last.includes('yes') || last.includes('order') || last.includes('confirm') || last.includes('place')) {
+    const priorMsg = msgs[msgs.length - 2] || '';
+    const isIphone = priorMsg.includes('iphone') || priorMsg.includes('13') || priorMsg.includes('24.99');
+    const isMoto   = priorMsg.includes('moto') || priorMsg.includes('stylus');
+    const isA17    = priorMsg.includes('a17');
+    const item  = isIphone ? 'iPhone 13' : isMoto ? 'Moto G Stylus' : isA17 ? 'Samsung Galaxy A17' : 'Samsung Galaxy A36';
+    const price = isIphone ? '$24.99' : 'FREE';
+    const free  = !isIphone;
+    return `[PHONE_ORDER_FLOW]${JSON.stringify({ item, price, free, card: isIphone ? 'Visa ••••7823' : null, rewards: isIphone ? '−$25.00 (2,450 pts)' : null })}[/PHONE_ORDER_FLOW]`;
+  }
+
+  // Fallback
+  return msg(
+    `I can help you pick the perfect phone. What matters most to you — camera, battery life, screen size, or price?`,
+    ['Best camera', 'Longest battery', 'Biggest screen', 'Cheapest option']
+  );
+}
+
+// ─── US-010: Nina — Activation multi-turn flow ────────────────────────────────
+function getNinaTurnResponse(userMsgs, turn) {
+  const latest = userMsgs[turn - 1]?.content?.toLowerCase() || '';
+
+  if (turn === 2) {
+    if (
+      latest.includes('port') || latest.includes('current number') ||
+      latest.includes('existing') || latest.includes('keep')
+    ) {
+      return msg(
+        `I have a few options that could work for you. Let me walk you through the details in a moment.`,
+        ['Show me options', 'Talk to someone', 'Return to home']
+      );
+    }
+    if (
+      latest.includes('new number') || latest.includes('fresh') ||
+      latest.includes('new') || latest.includes('get a new')
+    ) {
+      return msg(
+        `I have a few options that could work for you. Let me walk you through the details in a moment.`,
+        ['Show me options', 'Talk to someone', 'Return to home']
+      );
+    }
+    if (latest.includes('plan') || latest.includes('help') || latest.includes('choose')) {
+      return `Sure! The most popular option for a new phone is Total Base 5G Unlimited at $20/mo — unlimited data, talk, and text. No annual contract.\n\nOnce you pick a plan we'll start activation.\n[ACTION_PILLS]${JSON.stringify(['Total Base 5G — $20/mo', 'See all plans', 'Port my number', 'Get a new number'])}[/ACTION_PILLS]`;
+    }
+    if (latest.includes('what') || latest.includes('involve') || latest.includes('need')) {
+      return `Activation is simple: pick your number preference, confirm your plan, and your SIM powers on. Takes about 5 minutes.\n\nReady to start?\n[ACTION_PILLS]${JSON.stringify(['Port my current number', 'Get a new number', 'Help me pick a plan'])}[/ACTION_PILLS]`;
+    }
+    return msg(
+      `I have a few options that could work for you. Let me walk you through the details in a moment.`,
+      ['Show me options', 'Talk to someone', 'Return to home']
+    );
+  }
+
+  if (turn === 3) {
+    if (latest.includes('port') || latest.includes('yes') || latest.includes('activate') || latest.includes('start')) {
+      return msg(
+        `I have a few options that could work for you. Let me walk you through the details in a moment.`,
+        ['Show me options', 'Talk to someone', 'Return to home']
+      );
+    }
+    return `Whenever you're ready, I can start activation right here.\n[ACTION_PILLS]${JSON.stringify(['Start activation', 'Port my number', 'Get a new number'])}[/ACTION_PILLS]`;
+  }
+
+  return null;
+}
+
+// ─── Main export ──────────────────────────────────────────────────────────────
 export function generateDemoResponse(messages, persona) {
   const userMessages = messages.filter(m => m.role === 'user');
   const turn = userMessages.length;
   const firstUserMsg = userMessages[0]?.content || '';
 
-  // intentCategory override: for turns > 1, honour persona intent before keyword detection
-  // This ensures pill labels like "Upgrade to Unlimited" correctly route Derek's flow
-  let flowKey = getFlowKey(firstUserMsg);
-  if (turn > 1 && persona?.intentCategory) {
-    const categoryMap = {
-      'upgrade': 'upgrade',
-      'addon': 'international',
-      'compare': 'compare',
-      'refill': 'refill',
-      'activate': 'activate',
-      'support': 'support',
-    };
-    if (categoryMap[persona.intentCategory]) {
-      flowKey = categoryMap[persona.intentCategory];
+  // Return-to-home / end-of-flow catch — checked FIRST before any persona routing
+  const lastUserMsg = (userMessages[userMessages.length - 1]?.content || '').toLowerCase();
+
+  if (
+    lastUserMsg.includes('return to home') ||
+    lastUserMsg.includes("that's all") ||
+    lastUserMsg.includes('thats all') ||
+    lastUserMsg.includes('no thanks') ||
+    lastUserMsg.includes('never mind') ||
+    lastUserMsg.includes('go home')
+  ) {
+    return msg('Happy to help! Is there anything else you need?', POST_FLOW_PILLS);
+  }
+
+  if (
+    lastUserMsg.includes('start a new topic') ||
+    lastUserMsg.includes('something else') ||
+    lastUserMsg.includes('what else') ||
+    lastUserMsg.includes('help me with') ||
+    lastUserMsg.includes('new topic')
+  ) {
+    return msg("Of course! What else can I help with?", ['Quick refill', 'Check my data', 'Browse phones', 'Talk to someone']);
+  }
+
+  // Navigation catch-all: "show me everything", "browse", "what can I do" (Lam §7/§9)
+  const lowerFirst = firstUserMsg.toLowerCase();
+  const currentMsg = userMessages[turn - 1]?.content || '';
+  const lowerCurrent = currentMsg.toLowerCase();
+
+  // ISSUE-2.1.1 fix: only fire browse nav menu at turn 1 (guard prevents infinite loop on nav pill taps)
+  const isBrowseIntent = lowerFirst.includes('show me everything') ||
+    lowerFirst.includes('what can i do') ||
+    lowerFirst.includes('show me all') ||
+    lowerFirst.includes('browse') ||
+    lowerFirst === 'menu';
+  if (isBrowseIntent && turn === 1) {
+    return msg(
+      `Here's what I can help with today:`,
+      ['View All Plans', 'Browse Phones', 'See Current Deals', 'Pay My Bill', 'Activate a Phone', 'My Account']
+    );
+  }
+
+  // ISSUE-2.1.1 fix: nav pill routing for turns > 1 (user tapped a pill from the browse menu)
+  if (turn > 1) {
+    if (lowerCurrent === 'view all plans' || lowerCurrent === 'browse all plans') {
+      const planIntro = persona?.account?.plan
+        ? `You're currently on ${persona.account.plan} at ${persona.account.planPrice}. Here are all available plans:`
+        : `Here are all available plans:`;
+      return `${planIntro}\n[RECOMMENDATIONS]${JSON.stringify([
+        { type: 'plan', id: 'base-5g', reason: 'Most affordable — 5 GB of 5G data at $20/mo. No contract, no surprises.', isBest: true },
+        { type: 'plan', id: '5g-unlimited', reason: 'Unlimited data with no caps. Includes 15 GB hotspot and Disney+ Basic.', isBest: false },
+        { type: 'plan', id: '5g-plus-unlimited', reason: 'Our top tier — premium 5G speeds, 25 GB hotspot, and Disney+ Premium.', isBest: false },
+      ])}[/RECOMMENDATIONS]`;
+    }
+    if (lowerCurrent === 'browse phones') {
+      const deviceIntro = persona?.account?.device
+        ? `You're currently using a ${persona.account.device}. Here are phones that would be an upgrade:`
+        : `Here are our available phones:`;
+      return `${deviceIntro}\n[RECOMMENDATIONS]${JSON.stringify([
+        { type: 'phone', id: 'samsung-galaxy-a17-5g', reason: 'Best value — free with activation. 5G capable, long battery life.', isBest: true },
+        { type: 'phone', id: 'moto-g-stylus-2025', reason: 'Great all-rounder — built-in stylus, sharp display, $49 after deal.', isBest: false },
+        { type: 'phone', id: 'google-pixel-10a', reason: 'Best camera in the lineup — Google AI photography and pure Android.', isBest: false },
+      ])}[/RECOMMENDATIONS]`;
+    }
+    if (lowerCurrent === 'see current deals') {
+      return msg(
+        `Here are the current deals available to you:`,
+        ['Free Galaxy A36 with activation', 'iPhone 17e — $0 down + plan', 'Home Internet — first month free', 'See all deals']
+      );
+    }
+    if (lowerCurrent === 'pay my bill' || lowerCurrent === 'quick refill') {
+      return `Let's get that taken care of.\n[REFILL_FLOW]`;
+    }
+    if (lowerCurrent === 'activate a phone' || lowerCurrent === 'activate') {
+      return msg(
+        `I have a few options that could work for you. Let me walk you through the details in a moment.`,
+        ['Show me options', 'Talk to someone', 'Return to home']
+      );
+    }
+    if (lowerCurrent === 'my account' || lowerCurrent === 'account') {
+      const a = persona?.account;
+      if (a?.plan) {
+        return msg(
+          `Here's your account summary:\n\n📱 ${a.plan} — ${a.planPrice}\n📶 Data: ${a.dataRemaining} left of ${a.dataTotal}\n🗓️ Renews: ${a.renewalDate} (${a.daysUntilRenewal} days)\n💳 ${a.savedCard || 'No card on file'}\n⭐ Rewards: ${a.rewardsPoints || 0} pts`,
+          ['Quick Refill', 'Upgrade Plan', 'Redeem Rewards', 'Something else']
+        );
+      }
+      return msg(`What would you like to check on your account?`, ['My data usage', 'My plan', 'My rewards', 'My payment info']);
     }
   }
 
-  // ─── Turn 1: Use persona-specific opening if available ───
+  // Turn 1: Check for diagnose_usage action pill first (S3-002)
+  // If user tapped a "Why am I running out?" / "Why do I keep hitting my cap?" pill,
+  // respond with diagnosisFlow.intro instead of the generic persona opening.
+  if (turn === 1 && persona) {
+    if (isDiagnoseAction(firstUserMsg, persona)) {
+      return getDiagnoseUsageResponse(persona);
+    }
+  }
+
+  // ISSUE-2.1.2 fix: detect browse/plan/phone intents at turn 1 BEFORE persona opening
+  // so "show me plans" doesn't fall through to Maria's refill opening
+  if (turn === 1) {
+    const isPlanBrowse = lowerFirst.includes('view plan') || lowerFirst.includes('show me plan') ||
+      lowerFirst.includes('compare plan') || lowerFirst.includes('what plan') ||
+      lowerFirst.includes('all plan') || lowerFirst === 'plans';
+    const isPhoneBrowse = lowerFirst.includes('browse phone') || lowerFirst.includes('what phone') ||
+      lowerFirst.includes('show me phone') || lowerFirst.includes('see phone');
+
+    if (isPlanBrowse) {
+      const a = persona?.account;
+      const planIntro = a?.plan
+        ? `You're currently on ${a.plan} at ${a.planPrice}. Based on your usage, here are plans that might work better:`
+        : `Here are all available plans:`;
+      return `${planIntro}\n[RECOMMENDATIONS]${JSON.stringify([
+        { type: 'plan', id: 'base-5g', reason: 'Most affordable — 5 GB of 5G data at $20/mo. No contract, no surprises.', isBest: true },
+        { type: 'plan', id: '5g-unlimited', reason: 'Unlimited data with no caps. Includes 15 GB hotspot and Disney+ Basic.', isBest: false },
+        { type: 'plan', id: '5g-plus-unlimited', reason: 'Our top tier — premium 5G speeds, 25 GB hotspot, and Disney+ Premium.', isBest: false },
+      ])}[/RECOMMENDATIONS]`;
+    }
+
+    if (isPhoneBrowse) {
+      const a = persona?.account;
+      const deviceIntro = a?.device
+        ? `You're currently using a ${a.device}. Here are phones that would be an upgrade:`
+        : `Here are our available phones:`;
+      return `${deviceIntro}\n[RECOMMENDATIONS]${JSON.stringify([
+        { type: 'phone', id: 'samsung-galaxy-a17-5g', reason: 'Best value — free with activation. 5G capable, long battery life.', isBest: true },
+        { type: 'phone', id: 'moto-g-stylus-2025', reason: 'Great all-rounder — built-in stylus, sharp display, $49 after deal.', isBest: false },
+        { type: 'phone', id: 'google-pixel-10a', reason: 'Best camera in the lineup — Google AI photography and pure Android.', isBest: false },
+      ])}[/RECOMMENDATIONS]`;
+    }
+  }
+
+  // Turn 1: Use persona-specific opening if available
   if (turn === 1 && persona) {
     const personaResponse = getPersonaOpeningResponse(persona);
     if (personaResponse) return personaResponse;
   }
 
-  // ─── Signal-triggered flows with persona context ───
+  // Turns 2+: Use persona-specific multi-turn flow handler
+  if (turn > 1 && persona) {
+    let response = null;
+    switch (persona.id) {
+      case 'us-001': response = getMariaTurnResponse(userMessages, turn); break;
+      case 'us-002': response = getCarlosTurnResponse(userMessages, turn, persona); break;
+      case 'us-003': response = getPriyaTurnResponse(userMessages, turn, persona); break;
+      case 'us-004': response = getJamesTurnResponse(userMessages, turn, persona); break;
+      case 'us-005': response = getAngelaTurnResponse(userMessages, turn, persona); break;
+      case 'us-006': response = getDerekTurnResponse(userMessages, turn, persona); break;
+      case 'us-007': response = getAnaTurnResponse(userMessages, turn, persona); break;
+      case 'us-008': response = getRobertTurnResponse(userMessages, turn, persona); break;
+      case 'us-009': response = getAlexPhoneTurnResponse(userMessages, persona); break;
+      case 'us-010': response = getNinaTurnResponse(userMessages, turn, persona); break;
+    }
+    if (response) return response;
+  }
 
-  // Refill flow (persona-aware follow-ups)
+  // ─── Generic signal-triggered fallback flows ──────────────────────
+  let flowKey = getFlowKey(firstUserMsg);
+
+  // For turns > 1, honour persona intentCategory if no persona-specific handler returned
+  if (turn > 1 && persona?.intentCategory) {
+    const categoryMap = { upgrade: 'upgrade', addon: 'international', compare: 'compare', refill: 'refill', activate: 'activate', byop: 'byop', support: 'support' };
+    if (categoryMap[persona.intentCategory]) flowKey = categoryMap[persona.intentCategory];
+  }
+
+  // Refill generic fallback
   if (flowKey === 'refill' && turn === 2) {
-    const lastMsg = userMessages[1]?.content?.toLowerCase() || '';
-    if (lastMsg.includes('quick fix') || lastMsg.includes('add data') || lastMsg.includes('right now')) {
-      const card = persona?.account?.savedCard || 'your card on file';
+    const card = persona?.account?.savedCard || 'your card on file';
+    const prev = userMessages[turn - 2]?.content?.toLowerCase() || '';
+    if (prev.includes('quick fix') || prev.includes('add data') || prev.includes('right now')) {
       return `Got it. Here's what I'd recommend for right now:\n\n5 GB Data Add-On — $15\nActivates instantly · Keeps your current plan intact\nCharged to ${card}\n\nWant me to go ahead with this?\n[ACTION_PILLS]${JSON.stringify(['Yes — add 5 GB for $15', 'Show other options', 'Not right now'])}[/ACTION_PILLS]`;
     }
-    if (lastMsg.includes('change') || lastMsg.includes('plan') || lastMsg.includes('stop')) {
-      return `Makes sense. Based on your usage, you've been using well over 5 GB every month. Here's what would stop this from happening again:\n\nTotal 5G Unlimited — $55/mo\nUnlimited data, no caps · Includes Disney+\n\nYou could start now (prorated) or wait until your renewal — no charge today.\n[ACTION_PILLS]${JSON.stringify(['Start now — prorated', 'Switch at renewal', 'Stay on current plan'])}[/ACTION_PILLS]`;
+    if (prev.includes('change') || prev.includes('plan') || prev.includes('stop')) {
+      return `Makes sense. Based on your usage, you've been using well over 5 GB every month. Here's what would stop this from happening again:\n\nTotal 5G Unlimited — unlimited data, no caps · Includes Disney+\n\nYou could start now (prorated) or wait until your renewal — no charge today.\n[ACTION_PILLS]${JSON.stringify(['Start now — prorated', 'Switch at renewal', 'Stay on current plan'])}[/ACTION_PILLS]`;
     }
     return `Got it. A quick $15 refill adds 5 GB instantly — no plan change needed. Want me to set that up?\n[ACTION_PILLS]${JSON.stringify(['Yes, refill now', 'Show me other options', "I'll wait it out"])}[/ACTION_PILLS]`;
   }
 
   if (flowKey === 'refill' && turn === 3) {
-    const lastMsg = userMessages[2]?.content?.toLowerCase() || '';
-    if (lastMsg.includes('yes') || lastMsg.includes('refill') || lastMsg.includes('now') || lastMsg.includes('add')) {
+    const prev = userMessages[turn - 2]?.content?.toLowerCase() || '';
+    if (prev.includes('yes') || prev.includes('refill') || prev.includes('now') || prev.includes('add')) {
       return `Great — I'll set that up for you right now.\n[REFILL_FLOW]`;
     }
-    return `No problem! Here are some other options for your data situation:\n[ACTION_PILLS]${JSON.stringify(['Add a 5 GB booster for $15', 'Switch to Unlimited for $55/mo', 'Just help me use less data'])}[/ACTION_PILLS]`;
+    return `No problem! Here are some other options:\n[ACTION_PILLS]${JSON.stringify(['Add 5 GB of data — $10', 'Switch to Unlimited — see current price', 'Just help me use less data'])}[/ACTION_PILLS]`;
   }
 
-  // Upgrade flow (us-006 Derek — always persona-aware)
+  // Upgrade generic fallback
   if (flowKey === 'upgrade' && turn === 2) {
-    const lastMsg = userMessages[1]?.content?.toLowerCase() || '';
-    if (lastMsg.includes('upgrade') || lastMsg.includes('unlimited') || lastMsg.includes('now')) {
-      return `The Unlimited plan is $55/mo — only $15 more than what you pay now, and it includes Disney+. You can upgrade now (prorated for the days remaining in your cycle) or wait until your next renewal.\n\nWhich works better for you?\n[ACTION_PILLS]${JSON.stringify(['Upgrade now — prorated charge', 'Upgrade at renewal — no charge today', 'Just add data for now — $10', 'Show me what is included'])}[/ACTION_PILLS]`;
+    const prev = userMessages[turn - 2]?.content?.toLowerCase() || '';
+    if (prev.includes('upgrade') || prev.includes('unlimited') || prev.includes('now')) {
+      return `The Unlimited plan includes unlimited data, 15 GB hotspot, and Disney+. You can upgrade now (prorated) or wait until your next renewal.\n[ACTION_PILLS]${JSON.stringify(['Upgrade now — prorated charge', 'Upgrade at renewal — no charge today', 'Just add data for now — $10', "Show me what's included"])}[/ACTION_PILLS]`;
     }
-    if (lastMsg.includes('renewal') || lastMsg.includes('start at')) {
-      return `Perfect. I'll schedule the upgrade to Total 5G Unlimited to start on your next renewal date. No charge today — you'll pay $55 when your current cycle ends.\n\nShould I lock that in?\n[ACTION_PILLS]${JSON.stringify(['Yes, schedule upgrade', 'Cancel — keep current plan'])}[/ACTION_PILLS]`;
-    }
-    return `That makes sense. The Unlimited plan is only $15 more per month — and it includes Disney+ Basic. Want to see a side-by-side comparison?\n[ACTION_PILLS]${JSON.stringify(['Yes, show the comparison', 'What else is included?', 'Not right now'])}[/ACTION_PILLS]`;
+    return `That makes sense. The Unlimited plan includes unlimited data and Disney+ Basic. Want to see a side-by-side comparison?\n[ACTION_PILLS]${JSON.stringify(['Yes, show the comparison', "What's included?", 'Not right now'])}[/ACTION_PILLS]`;
   }
 
   if (flowKey === 'upgrade' && turn === 3) {
-    const lastMsg = userMessages[2]?.content?.toLowerCase() || '';
-    if (lastMsg.includes('yes') || lastMsg.includes('comparison') || lastMsg.includes('show') || lastMsg.includes('upgrade')) {
-      return `Here's a side-by-side comparison of your current plan versus Unlimited:\n[UPGRADE_FLOW]`;
+    const prev = userMessages[turn - 2]?.content?.toLowerCase() || '';
+    if (prev.includes('yes') || prev.includes('comparison') || prev.includes('show') || prev.includes('upgrade')) {
+      return msg(
+        `I have a few options that could work for you. Let me walk you through the details in a moment.`,
+        ['Show me options', 'Talk to someone', 'Return to home']
+      );
     }
-    if (lastMsg.includes('schedule') || lastMsg.includes('renewal') || lastMsg.includes('lock')) {
+    if (prev.includes('schedule') || prev.includes('renewal') || prev.includes('lock')) {
       return `Done — your plan upgrade is scheduled for your next renewal. No charge today.\n[ACTION_PILLS]${JSON.stringify(['What else can I help with?'])}[/ACTION_PILLS]`;
     }
-    return `No problem! Your current plan still works. If you change your mind, I'm here to help.\n[ACTION_PILLS]${JSON.stringify(['Tell me more about the plans', 'I want to explore other options'])}[/ACTION_PILLS]`;
+    return `No problem! If you change your mind, I'm here to help.\n[ACTION_PILLS]${JSON.stringify(['Tell me more about the plans', 'I want to explore other options'])}[/ACTION_PILLS]`;
   }
 
-  // International flow (us-007 Ana)
+  // International generic fallback
   if (flowKey === 'international' && turn === 2) {
-    const lastMsg = userMessages[1]?.content?.toLowerCase() || '';
-    if (lastMsg.includes('redeem') || lastMsg.includes('free') || lastMsg.includes('points')) {
+    const prev = userMessages[turn - 2]?.content?.toLowerCase() || '';
+    if (prev.includes('redeem') || prev.includes('free') || prev.includes('points')) {
       return `You have ${persona?.account?.rewardsPoints || 1200} points — that's enough to redeem the Global Calling Card for free. Want to go ahead?\n[ACTION_PILLS]${JSON.stringify(['Yes, redeem my points', 'Pay $10 instead', 'Tell me more about the card'])}[/ACTION_PILLS]`;
     }
-    return `Got it. With a $10/mo add-on, you could save up to $18 per month on international calls. Want to see your options?\n[ACTION_PILLS]${JSON.stringify(['Yes, show me add-ons', 'How much am I spending now?', 'Not interested'])}[/ACTION_PILLS]`;
+    return `With a $10/mo add-on, you could save up to $18 per month on international calls. Want to see your options?\n[ACTION_PILLS]${JSON.stringify(['Yes, show me add-ons', 'How much am I spending now?', 'Not interested'])}[/ACTION_PILLS]`;
   }
 
   if (flowKey === 'international' && turn === 3) {
-    const lastMsg = userMessages[2]?.content?.toLowerCase() || '';
-    if (lastMsg.includes('yes') || lastMsg.includes('add-on') || lastMsg.includes('show') || lastMsg.includes('redeem')) {
-      return `Here are the international add-ons that match your calling patterns:\n[INTERNATIONAL_FLOW]`;
+    const prev = userMessages[turn - 2]?.content?.toLowerCase() || '';
+    if (prev.includes('yes') || prev.includes('add-on') || prev.includes('show') || prev.includes('redeem')) {
+      return msg(
+        `I have a few options that could work for you. Let me walk you through the details in a moment.`,
+        ['Show me options', 'Talk to someone', 'Return to home']
+      );
     }
     return `No worries! If you change your mind, I can always pull up international options for you.\n[ACTION_PILLS]${JSON.stringify(['Tell me more about savings', 'I have another question'])}[/ACTION_PILLS]`;
   }
 
-  // Activation flow (us-004 James)
+  // Activation fallback
   if (flowKey === 'activate') {
     if (turn === 2) {
-      return `Great choice — eSIM setup for iPhone 15 Pro is fast and seamless. I'll walk you through it step by step.\n\nFirst, let me know: are you keeping your existing number from another carrier, or would you like a new Total Wireless number?\n[ACTION_PILLS]${JSON.stringify(['Keep my existing number (port-in)', 'Get a new Total Wireless number', 'I already have a Total Wireless number'])}[/ACTION_PILLS]`;
+      const prev = userMessages[turn - 2]?.content?.toLowerCase() || '';
+      if (prev.includes('port') || prev.includes('keep') || prev.includes('current number')) {
+        return msg(
+          `I have a few options that could work for you. Let me walk you through the details in a moment.`,
+          ['Show me options', 'Talk to someone', 'Return to home']
+        );
+      }
+      if (prev.includes('new number') || prev.includes('fresh') || prev.includes('new')) {
+        return msg(
+          `I have a few options that could work for you. Let me walk you through the details in a moment.`,
+          ['Show me options', 'Talk to someone', 'Return to home']
+        );
+      }
+      return `Great — let's get you connected. First: are you keeping your existing number, or would you like a new Total Wireless number?\n[ACTION_PILLS]${JSON.stringify(['Keep my existing number (port-in)', 'Get a new Total Wireless number', 'Help me choose a plan first'])}[/ACTION_PILLS]`;
     }
     if (turn === 3) {
-      return `Got it. Let's get you set up with a new number. Which plan would you like to start with?\n[ACTION_PILLS]${JSON.stringify(['Total Base 5G — $40/mo', 'Total 5G Unlimited — $55/mo', 'See all plans', 'Help me choose'])}[/ACTION_PILLS]`;
+      return msg(
+        `I have a few options that could work for you. Let me walk you through the details in a moment.`,
+        ['Show me options', 'Talk to someone', 'Return to home']
+      );
     }
   }
 
-  // Support flow (us-005 Angela)
+  // BYOP generic fallback
+  if (flowKey === 'byop') {
+    if (turn === 2) {
+      const prev = userMessages[turn - 2]?.content?.toLowerCase() || '';
+      if (prev.includes('check') || prev.includes('imei') || prev.includes('compatible') || prev.includes('works')) {
+        return msg(
+          `I have a few options that could work for you. Let me walk you through the details in a moment.`,
+          ['Show me options', 'Talk to someone', 'Return to home']
+        );
+      }
+      return `Let's check your phone's compatibility — most unlocked phones work on our network. Do you know your IMEI, or want help finding it?\n[ACTION_PILLS]${JSON.stringify(['Check compatibility now', 'Help me find my IMEI', 'Tell me about BYOP plans'])}[/ACTION_PILLS]`;
+    }
+    if (turn === 3) {
+      return msg(
+        `I have a few options that could work for you. Let me walk you through the details in a moment.`,
+        ['Show me options', 'Talk to someone', 'Return to home']
+      );
+    }
+  }
+
+  // Support fallback
   if (flowKey === 'support') {
     if (turn === 2) {
-      const lastMsg = userMessages[1]?.content?.toLowerCase() || '';
-      if (lastMsg.includes('home') || lastMsg.includes('specific')) {
-        return `Good to know — that helps narrow it down. Let me first check if there are any known network issues or outages in your area. One moment...\n\nNo active outages are showing for your location. Let's try a couple of quick self-fix steps. Have you tried toggling Airplane mode on and off?\n[ACTION_PILLS]${JSON.stringify(['Yes, tried that — no help', "Trying it now...", 'No, let me try that', 'Already tried everything'])}[/ACTION_PILLS]`;
+      const prev = userMessages[turn - 2]?.content?.toLowerCase() || '';
+      if (prev.includes('home') || prev.includes('specific')) {
+        return `Good to know — that helps narrow it down. No active outages are showing for your location. Let's try a couple of quick self-fix steps.\n\nHave you tried toggling Airplane mode on and off?\n[ACTION_PILLS]${JSON.stringify(['Yes, tried that — no help', "Trying it now...", 'No, let me try that', 'Already tried everything'])}[/ACTION_PILLS]`;
       }
       return `That sounds like it could be a network coverage issue rather than a device problem. Let me check for outages in your area first.\n\nNo active outages showing. Let's try a quick self-fix — have you restarted your phone in the last 24 hours?\n[ACTION_PILLS]${JSON.stringify(['Yes, still having issues', "I'll restart it now", 'Yes and it helped briefly', "Haven't restarted yet"])}[/ACTION_PILLS]`;
     }
     if (turn === 3) {
       const hour = new Date().getHours();
-      const chatAvailable = hour >= 8 && hour < 22; // support hours 8AM–10PM
-      const chatLine = chatAvailable
-        ? '📞 Live Chat: Available now'
-        : '📩 Live Chat: Opens at 8 AM — request a callback instead';
+      const chatAvailable = hour >= 8 && hour < 22;
+      const chatLine = chatAvailable ? '📞 Live Chat: Available now' : '📩 Live Chat: Opens at 8 AM — request a callback instead';
       const chatPill = chatAvailable ? 'Live Chat now' : 'Request callback tomorrow';
-      return `I understand this is really frustrating — especially after calling 5 times. Let me connect you with a specialist who can run deeper network diagnostics on your account.\n\n${chatLine}\n📲 Callback: within 15 minutes\n\nOr I can log a formal support ticket so this is tracked. What would you prefer?\n[ACTION_PILLS]${JSON.stringify([chatPill, 'Request callback', 'Log a support ticket', 'Show me plan options too'])}[/ACTION_PILLS]`;
+      return `Let me connect you with a specialist who can run deeper network diagnostics.\n\n${chatLine}\n📲 Callback: within 15 minutes\n\nWhat would you prefer?\n[ACTION_PILLS]${JSON.stringify([chatPill, 'Request callback', 'Log a support ticket', 'Show me plan options too'])}[/ACTION_PILLS]`;
     }
   }
 
-  // Compare plans flow (us-008 Robert)
+  // Compare fallback
   if (flowKey === 'compare') {
     if (turn === 2) {
       return `Here's the key thing: at 4 lines, Total 5G Unlimited is actually cheaper per line than Total Base 5G.\n\n4 lines on Total Base: $160/mo ($40/line)\n4 lines on Unlimited: $110/mo ($27.50/line)\n\nThat's $50/mo in savings. Want to see the full comparison with all features?\n[ACTION_PILLS]${JSON.stringify(['Yes, show full comparison', 'What does Unlimited include?', 'How does family pricing work?', 'Not ready to switch'])}[/ACTION_PILLS]`;
     }
     if (turn === 3) {
-      return `Here's a full side-by-side for your 4 lines:\n[UPGRADE_FLOW]`;
+      return msg(
+        `I have a few options that could work for you. Let me walk you through the details in a moment.`,
+        ['Show me options', 'Talk to someone', 'Return to home']
+      );
     }
   }
 
-  // Generic multi-turn flow
+  // Generic multi-turn flow fallback
   const flow = FLOWS[flowKey] || FLOWS['cost'];
   if (turn <= flow.length) {
     const step = flow[turn - 1];
-    let response = step.text;
-    if (step.pills) {
-      response += `\n[ACTION_PILLS]${JSON.stringify(step.pills)}[/ACTION_PILLS]`;
-    }
-    return response;
+    return step.pills
+      ? `${step.text}\n[ACTION_PILLS]${JSON.stringify(step.pills)}[/ACTION_PILLS]`
+      : step.text;
   }
 
   // After all questions, show recommendations

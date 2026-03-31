@@ -1,3 +1,4 @@
+import { AnimatePresence, motion } from 'framer-motion';
 import { useChat } from './context/ChatContext';
 import Header from './components/Header/Header';
 import LandingScreen from './components/LandingScreen/LandingScreen';
@@ -19,11 +20,29 @@ function AppContent() {
       <Header />
       <div className={styles.containerWrap}>
         <div className={styles.container}>
-          {state.mode === 'landing' ? (
-            <LandingScreen />
-          ) : (
-            <ChatArea />
-          )}
+          <AnimatePresence mode="wait">
+            {state.mode === 'landing' ? (
+              <motion.div
+                key="landing"
+                initial={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -48 }}
+                transition={{ duration: 0.35, ease: 'easeIn' }}
+                style={{ display: 'contents' }}
+              >
+                <LandingScreen />
+              </motion.div>
+            ) : (
+              <motion.div
+                key="chat"
+                initial={{ opacity: 0, y: 24 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.3, ease: 'easeOut' }}
+                style={{ display: 'contents' }}
+              >
+                <ChatArea />
+              </motion.div>
+            )}
+          </AnimatePresence>
           <InputBar />
         </div>
       </div>

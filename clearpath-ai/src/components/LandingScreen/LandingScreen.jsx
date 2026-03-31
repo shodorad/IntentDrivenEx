@@ -1,5 +1,4 @@
 import { useEffect } from 'react';
-import { Sparkle } from '@phosphor-icons/react';
 import * as Icons from '@phosphor-icons/react';
 import { motion } from 'framer-motion';
 import { INTENT_PILLS } from '../../data/products';
@@ -9,6 +8,7 @@ import { useTranslation } from '../../i18n/useTranslation';
 import { PERSONAS } from '../../data/personas';
 import SignalBanner from '../SignalBanner/SignalBanner';
 import MiniDashboard from '../MiniDashboard/MiniDashboard';
+import { AlertCardGrid } from '../AlertCard/AlertCard';
 import styles from './LandingScreen.module.css';
 
 const containerVariants = {
@@ -31,11 +31,17 @@ const CTA_BY_INTENT = {
   upgrade: 'See Upgrade Options',
   addon: 'Add International',
   compare: 'Compare Plans',
+  phone: 'Browse Phones',
 };
 
-// Banner type/color by signal severity
-const TYPE_BY_SEVERITY = { critical: 'urgent', warning: 'smart-tip', info: 'info' };
-const COLOR_BY_SEVERITY = { critical: 'red', warning: 'teal', info: 'teal' };
+
+// Static browse pills shown in the "Explore" category when input is focused
+const BROWSE_PILLS = [
+  { label: 'Show me all plans',         prompt: 'Show me all available plans.' },
+  { label: 'Show me the latest phones', prompt: 'Show me the latest phones available.' },
+  { label: 'Show me current deals',     prompt: 'Show me all current deals and promotions.' },
+  { label: 'My rewards & points',       prompt: 'Tell me about my rewards points and how to use them.' },
+];
 
 // Extra pills per intentCategory to fill 2×4 grid (always ends with "Show me everything")
 const EXTRA_PILLS = {
@@ -81,6 +87,13 @@ const EXTRA_PILLS = {
     { label: 'Talk to an expert',              labelEs: 'Hablar con un experto',            prompt: 'I want to speak with someone to help me choose a plan.' },
     { label: 'Show me everything',             labelEs: 'Mostrar todo',                     prompt: 'Show me all available plans and options.' },
   ],
+  phone: [
+    { label: "What's the best deal right now?", prompt: 'What is the best phone deal right now?' },
+    { label: 'Free phones available?', prompt: 'Are there any free phones available?' },
+    { label: 'Compare iPhone vs Samsung', prompt: 'Help me compare iPhone vs Samsung options.' },
+    { label: 'Talk to someone', prompt: 'I want to talk to a customer support agent.' },
+    { label: 'Show me everything', prompt: 'Show me all available plans and options.' },
+  ],
 };
 
 function getPersonaPills(persona, lang) {
@@ -103,30 +116,14 @@ export default function LandingScreen() {
   const { startChat } = useChatActions();
   const { t, lang } = useTranslation();
 
-  // Derive signal banner from persona.signals[0] whenever persona changes
+  // Clear signal banner whenever persona changes (signals are now shown in the alerts grid)
   useEffect(() => {
-    const persona = state.persona;
-    const sig = persona?.signals?.[0];
-    if (sig) {
-      dispatch({
-        type: 'SET_SIGNAL_BANNER',
-        payload: {
-          type: TYPE_BY_SEVERITY[sig.severity] || 'urgent',
-          color: COLOR_BY_SEVERITY[sig.severity] || 'red',
-          flowId: persona.intentCategory || 'refill',
-          headline: sig.headline,
-          subtext: sig.subtext,
-          cta: CTA_BY_INTENT[persona.intentCategory] || 'Get Help',
-        },
-      });
-    } else {
-      dispatch({ type: 'CLEAR_SIGNAL_BANNER' });
-    }
+    dispatch({ type: 'CLEAR_SIGNAL_BANNER' });
   }, [state.persona, dispatch]);
 
-  // Keyboard shortcuts: 1=Maria (us-001), 2=Derek (us-006), 3=Ana (us-007)
+  // Keyboard shortcuts: 1=us-001, 2=us-005, 3=us-009
   useEffect(() => {
-    const PERSONA_MAP = { '1': 'us-001', '2': 'us-006', '3': 'us-007' };
+    const PERSONA_MAP = { '1': 'us-001', '2': 'us-005', '3': 'us-009' };
     const handleKey = (e) => {
       if (e.target.tagName === 'TEXTAREA' || e.target.tagName === 'INPUT') return;
       if (!PERSONA_MAP[e.key]) return;
@@ -159,24 +156,12 @@ export default function LandingScreen() {
   const greetingLabel = hour < 12 ? 'GOOD MORNING' : hour < 17 ? 'GOOD AFTERNOON' : 'GOOD EVENING';
   const firstName = (state.persona?.name || 'there').split(' ')[0].toUpperCase();
 
-  // Get persona-specific pills (8 total), language-aware
-  const pills = getPersonaPills(state.persona, lang);
+  // Get persona-specific pills — use only first 4 as personalized; browse is static
+  const personalizedPills = getPersonaPills(state.persona, lang).slice(0, 4);
+  const browsePills = BROWSE_PILLS;
 
   return (
     <div className={styles.landing}>
-      {/* Brand */}
-      <motion.div
-        className={styles.brand}
-        initial={{ opacity: 0, scale: 0.8 }}
-        animate={{ opacity: 1, scale: 1 }}
-        transition={{ duration: 0.5, ease: 'easeOut' }}
-      >
-        <div className={styles.logoMark}>
-          <Sparkle size={26} weight="fill" />
-        </div>
-        <span className={styles.logoText}>ClearPath AI</span>
-      </motion.div>
-
       {/* Greeting */}
       <motion.div
         className={styles.greeting}
@@ -195,69 +180,101 @@ export default function LandingScreen() {
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5, delay: 0.15 }}
       >
-        Tell us what's going on{' '}
-        <span className={styles.headlineAccent}>and we'll handle the rest</span>
+        {t('headline').split('\n').map((line, i) => (
+          i === 0
+            ? <span key={i}>{line}<br /></span>
+            : <span key={i} className={styles.headlineAccent}>{line}</span>
+        ))}
       </motion.h1>
 
-      {/* Subhead */}
-      <motion.p
-        className={styles.subhead}
-        initial={{ opacity: 0, y: 16 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5, delay: 0.25 }}
-      >
-        I'll always show you the most affordable option first.
-      </motion.p>
-
       <motion.div
-        className={styles.signalWrap}
+        className={styles.sectionGroup}
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.4, delay: 0.5 }}
       >
+        <span className={styles.sectionLabel}>{t('landing.sectionAlerts')}</span>
+        <AlertCardGrid
+          signals={state.persona?.signals || []}
+          persona={state.persona}
+          onCta={(prompt) => startChat(prompt)}
+        />
         <SignalBanner onAction={handleSignalAction} />
       </motion.div>
 
       <motion.div
-        className={styles.dashboardWrap}
+        className={styles.sectionGroup}
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.4, delay: 0.6 }}
       >
+        <span className={styles.sectionLabel}>{t('landing.sectionAccount')}</span>
         <MiniDashboard />
       </motion.div>
 
-      {state.inputFocused && <div className={styles.pillsBackdrop} />}
+      {state.inputFocused && (
+        <motion.div
+          className={`${styles.pillsGrid} ${styles.pillsGridFocused}`}
+          variants={containerVariants}
+          initial="hidden"
+          animate="show"
+        >
+          {/* Category 1: Contextual — For You */}
+          <div className={styles.pillCategory}>
+            <span className={`${styles.pillCategoryLabel} ${styles.pillCategoryLabelFor}`}>For You</span>
+            <div className={styles.pillCategoryGrid}>
+              {personalizedPills.map((pill, idx) => {
+                const knownPill = INTENT_PILLS.find((ip) => ip.label === pill.label || ip.prompt === pill.prompt);
+                const IconComponent = knownPill ? Icons[knownPill.icon] : Icons['ArrowRight'];
+                return (
+                  <motion.button
+                    key={idx}
+                    className={styles.pill}
+                    onMouseDown={(e) => e.preventDefault()}
+                    onClick={() => startChat(pill.prompt)}
+                    variants={itemVariants}
+                    whileHover={{ scale: 1.03, y: -2 }}
+                    whileTap={{ scale: 0.97 }}
+                  >
+                    <span className={styles.pillIcon}>
+                      {IconComponent && <IconComponent size={18} weight="regular" />}
+                    </span>
+                    <span>{pill.label}</span>
+                  </motion.button>
+                );
+              })}
+            </div>
+          </div>
 
-      <motion.div
-        className={`${styles.pillsGrid} ${state.inputFocused ? styles.pillsGridFocused : ''}`}
-        variants={containerVariants}
-        initial="hidden"
-        animate={state.inputFocused ? 'show' : 'hidden'}
-        style={{ pointerEvents: state.inputFocused ? 'auto' : 'none' }}
-      >
-        {pills.map((pill, idx) => {
-          // Try to get icon from INTENT_PILLS for known ids, fall back to a default icon
-          const knownPill = INTENT_PILLS.find((ip) => ip.label === pill.label || ip.prompt === pill.prompt);
-          const IconComponent = knownPill ? Icons[knownPill.icon] : Icons['ArrowRight'];
-          return (
-            <motion.button
-              key={idx}
-              className={styles.pill}
-              onMouseDown={(e) => e.preventDefault()}
-              onClick={() => startChat(pill.prompt)}
-              variants={itemVariants}
-              whileHover={{ scale: 1.03, y: -2 }}
-              whileTap={{ scale: 0.97 }}
-            >
-              <span className={styles.pillIcon}>
-                {IconComponent && <IconComponent size={18} weight="regular" />}
-              </span>
-              <span>{pill.label}</span>
-            </motion.button>
-          );
-        })}
-      </motion.div>
+          {/* Divider */}
+          <div className={styles.pillDivider}>
+            <span className={styles.pillDividerText}>or explore</span>
+          </div>
+
+          {/* Category 2: Browse / Explore */}
+          <div className={styles.pillCategory}>
+            <span className={`${styles.pillCategoryLabel} ${styles.pillCategoryLabelExplore}`}>Explore</span>
+            <div className={styles.pillCategoryGrid}>
+              {browsePills.map((pill, idx) => (
+                <motion.button
+                  key={idx}
+                  className={`${styles.pill} ${styles.pillExplore}`}
+                  onMouseDown={(e) => e.preventDefault()}
+                  onClick={() => startChat(pill.prompt)}
+                  variants={itemVariants}
+                  whileHover={{ scale: 1.03, y: -2 }}
+                  whileTap={{ scale: 0.97 }}
+                >
+                  <span className={styles.pillIcon}>
+                    <Icons.MagnifyingGlass size={18} weight="regular" />
+                  </span>
+                  <span>{pill.label}</span>
+                </motion.button>
+              ))}
+            </div>
+          </div>
+        </motion.div>
+      )}
     </div>
   );
 }

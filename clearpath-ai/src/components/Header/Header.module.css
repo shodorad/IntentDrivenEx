@@ -73,33 +73,6 @@
   background: rgba(0, 0, 0, 0.1);
 }
 
-/* Persona dropdown */
-.personaSelect {
-  font-size: 0.72rem;
-  font-family: var(--font);
-  padding: 5px 10px;
-  border-radius: 8px;
-  border: 1px solid rgba(0, 0, 0, 0.12);
-  background: rgba(0, 0, 0, 0.03);
-  color: var(--tw-gray-600, #4b5563);
-  cursor: pointer;
-  outline: none;
-  max-width: 200px;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  transition: border-color 0.2s ease;
-}
-
-.personaSelect:hover {
-  border-color: var(--tw-teal, #00B5AD);
-}
-
-.personaSelect:focus {
-  border-color: var(--tw-teal, #00B5AD);
-  box-shadow: 0 0 0 2px rgba(0, 181, 173, 0.15);
-}
-
 /* Mobile */
 @media (max-width: 768px) {
   .inner {

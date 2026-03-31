@@ -1,0 +1,41 @@
+.pill {
+  display: inline-flex;
+  align-items: center;
+  padding: var(--pill-padding);
+  background: #fff;
+  border: 1.5px solid var(--tw-gray-200);
+  border-radius: var(--radius-pill);
+  font-family: var(--font);
+  font-size: var(--pill-font-size);
+  font-weight: 600;
+  color: var(--text-primary);
+  cursor: pointer;
+  transition: border-color 0.15s ease, color 0.15s ease, background 0.15s ease,
+              transform 0.15s ease, box-shadow 0.15s ease;
+  white-space: nowrap;
+}
+
+.pill:hover {
+  border-color: var(--tw-teal);
+  color: #00897B;
+  background: rgba(0, 181, 173, 0.04);
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(0, 181, 173, 0.12);
+}
+
+.pill:active {
+  transform: scale(0.96) translateY(0);
+}
+
+.active {
+  background: var(--navy);
+  color: #fff;
+  border-color: var(--navy);
+}
+
+.active:hover {
+  background: var(--navy-light);
+  border-color: var(--navy-light);
+  color: #fff;
+  box-shadow: var(--shadow-glow-navy);
+}

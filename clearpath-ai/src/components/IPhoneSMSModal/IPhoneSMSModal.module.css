@@ -125,7 +125,7 @@
 .smsBubble {
   align-self: flex-start;
   max-width: 85%;
-  background: #34c759;
+  background: #28A745;
   color: white;
   padding: 10px 14px;
   border-radius: 18px 18px 18px 6px;
@@ -170,7 +170,7 @@
   width: 28px;
   height: 28px;
   border-radius: 50%;
-  background: #34c759;
+  background: #28A745;
   color: white;
   display: flex;
   align-items: center;

@@ -48,9 +48,10 @@ export default function InputBar() {
     <div className={styles.bar}>
       <div className={styles.inner}>
         <button
-          className={styles.iconBtn}
+          className={`${styles.iconBtn} ${styles.iconBtnDisabled}`}
           aria-label="Attach file"
-          title="Attach file"
+          title="Coming soon"
+          disabled
         >
           <Paperclip size={18} weight="regular" />
         </button>
@@ -75,9 +76,10 @@ export default function InputBar() {
           disabled={state.isLoading}
         />
         <button
-          className={styles.iconBtn}
+          className={`${styles.iconBtn} ${styles.iconBtnDisabled}`}
           aria-label="Voice input"
-          title="Voice input"
+          title="Coming soon"
+          disabled
         >
           <Microphone size={18} weight="regular" />
         </button>

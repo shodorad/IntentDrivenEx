@@ -35,7 +35,15 @@ export function useChatActions() {
         responseText = generateDemoResponse(apiMessages, persona);
       }
 
-      const { message, actionPills, recommendations, refillFlow, upgradeFlow, internationalFlow } = parseResponse(responseText);
+      const { message, actionPills, recommendations, refillFlow, phoneOrderFlow, upgradeFlow, internationalFlow, activationFlow, byopFlow } = parseResponse(responseText);
+
+      // E4 guard: suppress recommendations/flows on the very first user message
+      const userMessageCount = [...state.messages, userMsg].filter(m => m.role === 'user').length;
+      const isFirstUserMessage = userMessageCount === 1;
+      const suppressFlow = isFirstUserMessage && (recommendations || refillFlow || phoneOrderFlow || upgradeFlow || internationalFlow || activationFlow || byopFlow);
+      if (suppressFlow) {
+        console.warn('[E4 guard] Suppressed premature recommendation on first user message.');
+      }
 
       dispatch({
         type: 'ADD_MESSAGE',
@@ -43,10 +51,13 @@ export function useChatActions() {
           role: 'assistant',
           content: message,
           actionPills,
-          recommendations,
-          ...(refillFlow && { refillFlow: true }),
-          ...(upgradeFlow && { upgradeFlow: true }),
-          ...(internationalFlow && { internationalFlow: true }),
+          recommendations: suppressFlow ? null : recommendations,
+          ...((!suppressFlow && refillFlow) && { refillFlow: true }),
+          ...((!suppressFlow && phoneOrderFlow) && { phoneOrderFlow }),
+          ...((!suppressFlow && upgradeFlow) && { upgradeFlow: true }),
+          ...((!suppressFlow && internationalFlow) && { internationalFlow: true }),
+          ...((!suppressFlow && activationFlow) && { activationFlow: true }),
+          ...((!suppressFlow && byopFlow) && { byopFlow: true }),
         }
       });
     } catch (err) {

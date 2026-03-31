@@ -1,6 +1,9 @@
 import { CheckCircle, Phone, Headset, Star, ArrowSquareOut, ShoppingCart, Lightning } from '@phosphor-icons/react';
 import { motion } from 'framer-motion';
 import { PLANS, PHONES } from '../../data/products';
+import Button from '../ui/Button/Button';
+import Badge from '../ui/Badge/Badge';
+import PhoneImage from '../ui/PhoneImage/PhoneImage';
 import styles from './RecommendationCard.module.css';
 
 function findProduct(type, id) {
@@ -22,19 +25,26 @@ function PlanCard({ product, reason, isBest, onExplore, costDiff, solveHighlight
         <div className={styles.cardTopRow}>
           <h3 className={styles.planName}>{product.name}</h3>
           {product.badge && (
-            <span className={styles.badgePill}>
-              {product.badge}
-            </span>
+            <Badge variant="tealDark">{product.badge}</Badge>
           )}
         </div>
         <div className={styles.priceRow}>
-          <span className={styles.priceDollar}>$</span>
-          <span className={styles.priceAmount}>{product.price}</span>
-          <div className={styles.priceMeta}>
-            <span>/line</span>
-            <span>per month</span>
-          </div>
+          {product.price !== null ? (
+            <>
+              <span className={styles.priceDollar}>$</span>
+              <span className={styles.priceAmount}>{product.price}</span>
+              <div className={styles.priceMeta}>
+                <span>/line</span>
+                <span>per month</span>
+              </div>
+            </>
+          ) : (
+            <span className={styles.priceDynamic}>See current price</span>
+          )}
         </div>
+        {product.priceNote && (
+          <div className={styles.priceNote}>{product.priceNote}</div>
+        )}
         {/* Cost differential badge */}
         {costDiff && (
           <span className={styles.costDiffBadge}>{costDiff}</span>
@@ -77,12 +87,13 @@ function PlanCard({ product, reason, isBest, onExplore, costDiff, solveHighlight
 
       {/* CTA */}
       <div className={styles.actions}>
-        <button
-          className={isBest ? styles.btnPrimary : styles.btnSecondary}
+        <Button
+          variant={isBest ? 'primary' : 'outline'}
+          size="sm"
           onClick={() => onExplore(product, 'plan', reason)}
         >
           {isBest ? 'Upgrade Now' : 'Learn More'}
-        </button>
+        </Button>
       </div>
     </motion.div>
   );
@@ -101,9 +112,7 @@ function PhoneCard({ product, reason, isBest, onExplore, costDiff, solveHighligh
         <div className={styles.cardTopRow}>
           <h3 className={styles.planName}>{product.name}</h3>
           {product.badge && (
-            <span className={styles.badgePill}>
-              {product.badge}
-            </span>
+            <Badge variant="tealDark">{product.badge}</Badge>
           )}
         </div>
         <div className={styles.priceRow}>
@@ -125,16 +134,9 @@ function PhoneCard({ product, reason, isBest, onExplore, costDiff, solveHighligh
       )}
 
       {/* Phone image */}
-      {product.image && (
-        <div className={styles.phoneImageWrap}>
-          <img
-            src={product.image}
-            alt={product.name}
-            className={styles.phoneImage}
-            onError={(e) => { e.target.style.display = 'none'; }}
-          />
-        </div>
-      )}
+      <div className={styles.phoneImageWrap}>
+        <PhoneImage src={product.image} alt={product.name} brand={product.brand} className={styles.phoneImage} />
+      </div>
 
       {/* Stats row */}
       <div className={styles.statsRow}>
@@ -164,12 +166,13 @@ function PhoneCard({ product, reason, isBest, onExplore, costDiff, solveHighligh
 
       {/* CTA */}
       <div className={styles.actions}>
-        <button
-          className={isBest ? styles.btnPrimary : styles.btnSecondary}
+        <Button
+          variant={isBest ? 'primary' : 'outline'}
+          size="sm"
           onClick={() => onExplore(product, 'phone', reason)}
         >
           {isBest ? 'Upgrade Now' : 'Learn More'}
-        </button>
+        </Button>
       </div>
     </motion.div>
   );
@@ -191,10 +194,10 @@ function HumanCard({ reason }) {
         <p className={styles.humanReason}>{reason}</p>
       </div>
       <div className={styles.actions}>
-        <button className={styles.btnSecondary}>
+        <Button variant="outline" size="sm">
           <Phone size={16} weight="bold" />
           Call 1-866-663-3633
-        </button>
+        </Button>
       </div>
     </motion.div>
   );

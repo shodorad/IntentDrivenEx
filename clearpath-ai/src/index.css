@@ -1,29 +1,87 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
 
 :root {
-  --tw-teal: #00B5AD;
-  --tw-teal-dark: #009A93;
-  --tw-teal-light: rgba(0, 181, 173, 0.08);
-  --tw-navy: #1B2A4A;
-  --tw-red: #EE0000;
-  --tw-blue: #003087;
-  --tw-yellow: #F7C948;
-  --tw-gray-900: #1A1A1A;
-  --tw-gray-700: #4A4A4A;
-  --tw-gray-600: #6B6B6B;
-  --tw-gray-400: #999999;
-  --tw-gray-200: #E8E8E8;
-  --tw-gray-100: #F5F5F5;
-  --tw-white: #FFFFFF;
-  --container-max-width: 900px;
+  /* ── Core Brand Colors ─────────────────────────────── */
+  --navy:           #0D2137;   /* Primary dark — headers, CTAs, user bubbles */
+  --navy-light:     #162e4a;   /* Hover states, gradient endpoint */
+  --tw-teal:        #00B5AD;   /* Interaction teal — accents, AI label, CTAs */
+  --tw-teal-dark:   #009d96;   /* Teal hover */
+  --tw-teal-light:  #5BEBE4;   /* Light teal — badges on dark bg, highlights */
+  --teal-subtle:    rgba(0, 181, 173, 0.08); /* Teal tint backgrounds */
+  --tw-red:         #CC0000;   /* Brand red — logo ONLY */
+
+  /* ── Semantic / State Colors ──────────────────────── */
+  --critical:   #DC3545;
+  --warning:    #FFC107;
+  --success:    #28A745;
+
+  /* ── Text ─────────────────────────────────────────── */
+  --text-primary:   #374151;
+  --text-secondary: #6b7280;
+  --text-dark:      #0D2137;
+
+  /* ── Grays (legacy aliases kept for compatibility) ── */
+  --tw-gray-900: #1a1a2e;
+  --tw-gray-700: #374151;
+  --tw-gray-600: #6b7280;
+  --tw-gray-400: #9ca3af;
+  --tw-gray-200: #e5e7eb;
+  --tw-gray-100: #F1F3F5;
+  --tw-white:    #FFFFFF;
+  --tw-navy:     #0D2137;   /* alias for legacy references */
+
+  /* ── Surfaces ─────────────────────────────────────── */
+  --bg-page:    #F1F3F5;
+  --bg-card:    #FFFFFF;
+
+  /* ── Typography ───────────────────────────────────── */
   --font: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-  --radius: 16px;
-  --radius-sm: 10px;
-  --shadow: 0 4px 24px rgba(0, 0, 0, 0.06);
-  --shadow-lg: 0 8px 40px rgba(0, 0, 0, 0.1);
-  --shadow-glow: 0 0 60px rgba(0, 181, 173, 0.15);
-  --glass-bg: rgba(255, 255, 255, 0.85);
+
+  /* ── Border Radius ────────────────────────────────── */
+  --radius-pill:   100px;  /* buttons, pills, chips */
+  --radius-bubble: 20px;   /* chat bubbles */
+  --radius-card:   16px;   /* cards, modals */
+  --radius-tile:   14px;   /* dashboard tiles */
+  --radius-icon:   12px;   /* icon containers */
+  --radius-input:  8px;    /* inputs */
+  --radius:        16px;   /* legacy alias */
+  --radius-sm:     10px;   /* legacy alias */
+
+  /* ── Shadows (compound — never single heavy shadow) ─ */
+  --shadow-xs: 0 1px 2px rgba(0,0,0,0.05);
+  --shadow-sm: 0 1px 3px rgba(0,0,0,0.06), 0 4px 12px rgba(0,0,0,0.04);
+  --shadow-md: 0 2px 6px rgba(0,0,0,0.08), 0 8px 24px rgba(0,0,0,0.06);
+  --shadow-lg: 0 4px 12px rgba(0,0,0,0.10), 0 16px 40px rgba(0,0,0,0.08);
+  --shadow-glow-teal: 0 4px 14px rgba(0,181,173,0.30);
+  --shadow-glow-navy: 0 4px 14px rgba(13,33,55,0.30);
+  --shadow-glow-red:  0 4px 14px rgba(220,53,69,0.30);
+  --shadow-glow: 0 0 60px rgba(0, 181, 173, 0.15); /* legacy */
+  --shadow: var(--shadow-sm); /* legacy */
+
+  /* ── Glass ────────────────────────────────────────── */
+  --glass-bg:     rgba(255, 255, 255, 0.85);
   --glass-border: rgba(255, 255, 255, 0.5);
+
+  /* ── Spacing ──────────────────────────────────────── */
+  --spacing-xs: 4px;
+  --spacing-sm: 8px;
+  --spacing-md: 16px;
+  --spacing-lg: 24px;
+  --spacing-xl: 32px;
+
+  /* ── Card tokens ──────────────────────────────────── */
+  --card-padding:        16px 20px;
+  --card-border-radius:  var(--radius-card);
+  --card-gap:            12px;
+  --card-border:         1px solid rgba(0,0,0,0.06);
+  --card-shadow:         var(--shadow-sm);
+
+  /* ── Pill tokens ──────────────────────────────────── */
+  --pill-padding:       8px 18px;
+  --pill-border-radius: var(--radius-pill);
+  --pill-font-size:     13px;
+
+  --container-max-width: 900px;
 }
 
 *,

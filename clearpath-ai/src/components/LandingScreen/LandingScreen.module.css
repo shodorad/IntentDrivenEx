@@ -14,36 +14,11 @@
   min-height: 0;
 }
 
-/* --- Brand --- */
+/* --- Brand --- (removed in P1-D1: brand logo + subhead JSX deleted) */
 
-.brand {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  margin-bottom: 18px;
-}
-
-.logoMark {
-  width: 40px;
-  height: 40px;
-  background: linear-gradient(135deg, var(--tw-teal) 0%, #00d4cb 100%);
-  border-radius: 12px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: white;
-  box-shadow: 0 3px 12px rgba(0, 181, 173, 0.3);
-}
-
-.logoText {
-  font-size: 1.4rem;
-  font-weight: 800;
-  background: linear-gradient(135deg, var(--tw-navy) 0%, var(--tw-teal) 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-  letter-spacing: -0.3px;
-}
+/* .brand { … } */
+/* .logoMark { … } */
+/* .logoText { … } */
 
 /* --- Typography --- */
 
@@ -66,7 +41,7 @@
   font-size: 0.72rem;
   font-weight: 700;
   letter-spacing: 0.1em;
-  color: #9ca3af;
+  color: #6b7280;
   text-transform: uppercase;
 }
 
@@ -85,14 +60,7 @@
   text-align: center;
 }
 
-.subhead {
-  font-size: 0.85rem;
-  color: var(--tw-gray-600);
-  max-width: 480px;
-  line-height: 1.6;
-  margin-bottom: 0;
-  text-align: center;
-}
+/* .subhead { … } — removed in P1-D1: subhead JSX deleted */
 
 .signalWrap {
   width: 100%;
@@ -101,19 +69,37 @@
   margin: 20px 0;
 }
 
+/* --- Section groups (Lam §5 — unified labels) --- */
+.sectionGroup {
+  width: 100%;
+  margin-bottom: var(--spacing-md, 16px);
+}
+
+.sectionLabel {
+  display: block;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: #6b7280;
+  margin-bottom: var(--spacing-xs, 4px);
+  padding-left: 4px;
+  text-align: left;
+}
+
 /* --- Pills --- */
 
 .pillsBackdrop {
   position: fixed;
-  bottom: 70px;
+  bottom: 0;
   left: 0;
   right: 0;
-  height: 180px;
-  background: linear-gradient(to top, rgba(232, 240, 248, 0.88) 30%, transparent 100%);
-  backdrop-filter: blur(14px);
-  -webkit-backdrop-filter: blur(14px);
+  background: rgba(248, 249, 250, 0.85);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
   z-index: 9;
   pointer-events: none;
+  padding-bottom: 70px; /* height of the input bar */
 }
 
 .pillsGrid {
@@ -130,32 +116,107 @@
   bottom: 82px;
   left: 50%;
   transform: translateX(-50%);
-  width: 100%;
-  max-width: 860px;
-  padding: 0 20px;
-  z-index: 10;
+  width: calc(100% - 40px);
+  max-width: var(--container-max-width, 900px);
+  padding: 18px 20px 16px;
+  z-index: 100;
   box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+
+  background: rgba(10, 26, 46, 0.93);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-bottom: none;
+  border-radius: 20px 20px 0 0;
+  box-shadow:
+    0 -8px 40px rgba(0, 0, 0, 0.22),
+    inset 0 1px 0 rgba(255, 255, 255, 0.08);
+}
+
+/* --- Pill categories (P1-D3) --- */
+
+.pillCategory {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 4px 0 12px;
+}
+
+.pillCategoryLabel {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.pillCategoryLabelFor {
+  color: var(--tw-teal, #00B5AD);
+}
+.pillCategoryLabelFor::before {
+  content: '';
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--tw-teal, #00B5AD);
+  flex-shrink: 0;
+}
+
+.pillCategoryLabelExplore {
+  color: rgba(255, 255, 255, 0.35);
+}
+
+.pillDivider {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 0 0 12px;
+}
+.pillDivider::before,
+.pillDivider::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: rgba(255, 255, 255, 0.08);
+}
+.pillDividerText {
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  color: rgba(255, 255, 255, 0.25);
+  white-space: nowrap;
+}
+
+.pillCategoryGrid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 8px;
 }
 
 .pill {
   display: flex;
   align-items: center;
-  gap: 8px;
-  padding: 10px 14px;
-  background: rgba(255, 255, 255, 0.85);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
-  border: 1px solid rgba(0, 0, 0, 0.06);
+  gap: 10px;
+  padding: 11px 14px;
+  background: rgba(255, 255, 255, 0.07);
+  border: 1px solid rgba(255, 255, 255, 0.12);
   border-radius: 12px;
   font-size: 0.8rem;
   font-weight: 500;
-  color: var(--tw-gray-700);
+  color: rgba(255, 255, 255, 0.85);
   cursor: pointer;
   text-align: left;
-  transition: all 0.2s ease;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.03);
+  transition: all 0.18s ease;
   line-height: 1.3;
-  white-space: nowrap;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .pillIcon {
@@ -164,23 +225,43 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  background: rgba(0, 181, 173, 0.08);
+  background: rgba(0, 181, 173, 0.18);
   border-radius: 8px;
-  color: var(--tw-teal);
+  color: var(--tw-teal, #00B5AD);
   flex-shrink: 0;
-  transition: all 0.2s ease;
+  transition: all 0.18s ease;
 }
 
 .pill:hover {
-  border-color: rgba(0, 181, 173, 0.3);
-  background: rgba(255, 255, 255, 1);
-  box-shadow: 0 4px 16px rgba(0, 181, 173, 0.12);
+  background: rgba(255, 255, 255, 0.13);
+  border-color: rgba(0, 181, 173, 0.4);
+  color: #ffffff;
   transform: translateY(-1px);
 }
 
 .pill:hover .pillIcon {
-  background: linear-gradient(135deg, var(--tw-teal) 0%, #00d4cb 100%);
+  background: var(--tw-teal, #00B5AD);
   color: white;
+}
+
+/* Explore pills — dimmer to signal secondary intent */
+.pillExplore {
+  background: rgba(255, 255, 255, 0.04);
+  border-color: rgba(255, 255, 255, 0.07);
+  color: rgba(255, 255, 255, 0.5);
+}
+.pillExplore .pillIcon {
+  background: rgba(255, 255, 255, 0.07);
+  color: rgba(255, 255, 255, 0.4);
+}
+.pillExplore:hover {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(0, 181, 173, 0.35);
+  color: rgba(255, 255, 255, 0.9);
+}
+.pillExplore:hover .pillIcon {
+  background: rgba(0, 181, 173, 0.2);
+  color: var(--tw-teal, #00B5AD);
 }
 
 /* --- Mobile --- */
@@ -195,9 +276,7 @@
     font-size: 1.4rem;
   }
 
-  .subhead {
-    font-size: 0.82rem;
-  }
+  /* .subhead — removed in P1-D1 */
 
   .pillsGrid {
     grid-template-columns: repeat(2, auto);
@@ -214,3 +293,134 @@
   width: 100%;
   align-self: stretch;
 }
+
+/* --- Intent Driven Alerts grid --- */
+
+/* Mesh gradient backdrop makes glassmorphism visible */
+.alertGridWrap {
+  background: linear-gradient(135deg, #e8f4f8 0%, #f0f9f8 40%, #f5f0fb 100%);
+  border-radius: 14px;
+  padding: 10px;
+  margin-bottom: 8px;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.alertGrid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+  width: 100%;
+}
+
+/* ── Base alert card (glassmorphism) ── */
+.alertCard {
+  background: rgba(255, 255, 255, 0.68);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-radius: 12px;
+  padding: 12px 14px 10px;
+  border: 1px solid rgba(255, 255, 255, 0.85);
+  box-shadow:
+    0 1px 3px rgba(0, 0, 0, 0.04),
+    0 6px 20px rgba(0, 0, 0, 0.05),
+    inset 0 1px 0 rgba(255, 255, 255, 0.9);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  text-align: left;
+  position: relative;
+  overflow: hidden;
+}
+
+/* Per-severity gradient tint */
+.alertCardCritical {
+  background: linear-gradient(140deg, rgba(255, 255, 255, 0.78) 0%, rgba(255, 245, 246, 0.72) 100%);
+}
+.alertCardWarning {
+  background: linear-gradient(140deg, rgba(255, 255, 255, 0.78) 0%, rgba(255, 252, 235, 0.72) 100%);
+}
+.alertCardInfo {
+  background: linear-gradient(140deg, rgba(255, 255, 255, 0.78) 0%, rgba(240, 255, 254, 0.72) 100%);
+}
+
+/* Icon + body row */
+.alertTop {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+}
+
+/* ── Icon ring (rounded square) ── */
+.alertIconRing {
+  width: 32px;
+  height: 32px;
+  border-radius: 9px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+.alertIconRingCritical { background: rgba(220, 53, 69, 0.10); color: #DC3545; }
+.alertIconRingWarning  { background: rgba(255, 193, 7, 0.14);  color: #9A6B00; }
+.alertIconRingInfo     { background: rgba(0, 181, 173, 0.10);  color: #007A72; }
+
+.alertBody {
+  flex: 1;
+  min-width: 0;
+}
+
+.alertHeadline {
+  font-size: 0.72rem;
+  font-weight: 700;
+  line-height: 1.3;
+}
+.alertHeadlineCritical { color: #C0202F; }
+.alertHeadlineWarning  { color: #9A6B00; }
+.alertHeadlineInfo     { color: #007A72; }
+
+.alertSubtext {
+  font-size: 0.68rem;
+  color: #6B7280;
+  margin-top: 2px;
+  line-height: 1.4;
+}
+
+/* ── CTA button (pill outline) ── */
+.alertCta {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 5px 12px;
+  border-radius: 100px;
+  border: 1.5px solid;
+  cursor: pointer;
+  background: transparent;
+  font-family: inherit;
+  line-height: 1;
+  width: fit-content;
+  transition: background 0.15s ease, transform 0.12s ease;
+}
+.alertCtaCritical { color: #C0202F; border-color: rgba(192, 32, 47, 0.28); }
+.alertCtaCritical:hover { background: rgba(192, 32, 47, 0.06); transform: translateY(-1px); }
+.alertCtaWarning  { color: #9A6B00; border-color: rgba(154, 107, 0, 0.28); }
+.alertCtaWarning:hover  { background: rgba(154, 107, 0, 0.06); transform: translateY(-1px); }
+.alertCtaInfo     { color: #007A72; border-color: rgba(0, 122, 114, 0.28); }
+.alertCtaInfo:hover     { background: rgba(0, 122, 114, 0.06); transform: translateY(-1px); }
+
+/* Concentric arc decoration (bottom-right corner) */
+.alertDeco {
+  position: absolute;
+  bottom: -8px;
+  right: -8px;
+  pointer-events: none;
+}
+
+@media (max-width: 768px) {
+  .alertGrid {
+    grid-template-columns: 1fr;
+  }
+}
+

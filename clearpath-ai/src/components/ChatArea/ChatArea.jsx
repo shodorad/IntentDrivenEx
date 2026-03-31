@@ -6,10 +6,8 @@ import MessageBubble from '../MessageBubble/MessageBubble';
 import ActionPills from '../ActionPills/ActionPills';
 import TypingIndicator from '../TypingIndicator/TypingIndicator';
 import RecommendationCard from '../RecommendationCard/RecommendationCard';
-import ExploreDetail from '../ExploreDetail/ExploreDetail';
 import RefillFlow from '../RefillFlow/RefillFlow';
-import UpgradeFlow from '../UpgradeFlow/UpgradeFlow';
-import InternationalFlow from '../InternationalFlow/InternationalFlow';
+import PhoneOrderFlow from '../PhoneOrderFlow/PhoneOrderFlow';
 import styles from './ChatArea.module.css';
 
 export default function ChatArea() {
@@ -47,17 +45,11 @@ export default function ChatArea() {
           {msg.role === 'assistant' && msg.refillFlow && (
             <RefillFlow />
           )}
-          {msg.role === 'assistant' && msg.upgradeFlow && (
-            <UpgradeFlow />
-          )}
-          {msg.role === 'assistant' && msg.internationalFlow && (
-            <InternationalFlow />
+          {msg.role === 'assistant' && msg.phoneOrderFlow && (
+            <PhoneOrderFlow orderData={msg.phoneOrderFlow} />
           )}
           {msg.role === 'assistant' && msg.recommendations && (
             <RecommendationCard recommendations={msg.recommendations} onExplore={handleExplore} />
-          )}
-          {msg.role === 'assistant' && msg.exploreData && (
-            <ExploreDetail exploreData={msg.exploreData} />
           )}
           {msg.role === 'assistant' && msg.actionPills && (
             <ActionPills pills={msg.actionPills} onSelect={handlePillSelect} />

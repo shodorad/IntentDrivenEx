@@ -1,3 +1,4 @@
+import Pill from '../ui/Pill/Pill';
 import styles from './ActionPills.module.css';
 
 export default function ActionPills({ pills, onSelect }) {
@@ -6,13 +7,9 @@ export default function ActionPills({ pills, onSelect }) {
   return (
     <div className={styles.wrapper}>
       {pills.map((pill, i) => (
-        <button
-          key={i}
-          className={styles.pill}
-          onClick={() => onSelect(pill)}
-        >
+        <Pill key={i} onClick={() => onSelect(pill)}>
           {pill}
-        </button>
+        </Pill>
       ))}
     </div>
   );

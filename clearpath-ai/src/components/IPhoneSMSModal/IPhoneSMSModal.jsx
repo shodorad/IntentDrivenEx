@@ -11,12 +11,6 @@ function getExpiryDate() {
   return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
 }
 
-const SMS_MESSAGES = {
-  refill: `Your $15 data refill is confirmed. 5 GB added. New balance updated. Expires ${getExpiryDate()}. Reply STOP to opt out.`,
-  upgrade: `Your plan has been upgraded to Total 5G Unlimited. Unlimited data is now active. Disney+ activation email is on its way. Reply STOP to opt out.`,
-  international: `Your Global Calling Card has been activated. International calls are now covered. Manage add-ons anytime in your account. Reply STOP to opt out.`,
-};
-
 export default function IPhoneSMSModal() {
   const { state, dispatch } = useChat();
   const { t } = useTranslation();
@@ -25,6 +19,16 @@ export default function IPhoneSMSModal() {
 
   // Derive context-aware message from transaction type
   const txType = state.smsModalData?.transactionType || 'refill';
+  const txItem = state.smsModalData?.item || 'your new phone';
+
+  const SMS_MESSAGES = {
+    refill: `Your $15 data refill is confirmed. 5 GB added. New balance updated. Expires ${getExpiryDate()}. Reply STOP to opt out.`,
+    phone: `Order confirmed! Your ${txItem} ships in 2–3 business days. We'll send a tracking number to your number on file when it's on the way. Reply STOP to opt out.`,
+    upgrade: `Your plan has been upgraded to Total 5G Unlimited. Unlimited data is now active. Disney+ activation email is on its way. Reply STOP to opt out.`,
+    international: `Your Global Calling Card has been activated. International calls are now covered. Manage add-ons anytime in your account. Reply STOP to opt out.`,
+    activation: `Your Total Wireless SIM is now active! Welcome to the network. Plan: Total Base 5G Unlimited — $20/mo. Expires ${getExpiryDate()}. Reply STOP to opt out.`,
+  };
+
   const smsMessage = SMS_MESSAGES[txType] || SMS_MESSAGES.refill;
 
   return (

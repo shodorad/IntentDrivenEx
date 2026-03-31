@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { CheckCircle, CreditCard, CellSignalFull, Receipt } from '@phosphor-icons/react';
 import { useChat } from '../../context/ChatContext';
@@ -11,6 +11,8 @@ export default function RefillFlow() {
   const { state, dispatch } = useChat();
   const { t } = useTranslation();
   const [step, setStep] = useState(0);
+  const [showPostFlow, setShowPostFlow] = useState(false);
+  const prevShowSMSModal = useRef(false);
 
   // Read persona-specific card and plan info (fall back to translation defaults)
   const account = state.persona?.account || {};
@@ -20,7 +22,7 @@ export default function RefillFlow() {
   // Processing auto-advance
   useEffect(() => {
     if (STEPS[step] === 'processing') {
-      const timer = setTimeout(() => setStep(3), 1800);
+      const timer = setTimeout(() => setStep(3), 1500);
       return () => clearTimeout(timer);
     }
   }, [step]);
@@ -34,6 +36,41 @@ export default function RefillFlow() {
       return () => clearTimeout(timer);
     }
   }, [step, dispatch]);
+
+  // Show post-flow actions after SMS modal is dismissed
+  useEffect(() => {
+    if (prevShowSMSModal.current && !state.showSMSModal && STEPS[step] === 'success') {
+      // Defer setState to avoid synchronous state update inside effect
+      const t = setTimeout(() => setShowPostFlow(true), 0);
+      prevShowSMSModal.current = state.showSMSModal;
+      return () => clearTimeout(t);
+    }
+    prevShowSMSModal.current = state.showSMSModal;
+  }, [state.showSMSModal, step]);
+
+  function handleReturnHome() {
+    dispatch({ type: 'RESET_CHAT' });
+  }
+
+  function handleNewQuestion() {
+    dispatch({
+      type: 'ADD_MESSAGE',
+      payload: {
+        role: 'assistant',
+        content: t('postFlow.prompt'),
+        actionPills: [t('addons.data5gb'), t('addons.seeAll'), t('postFlow.returnHome')],
+      },
+    });
+    setShowPostFlow(false);
+  }
+
+  function handleDone() {
+    dispatch({
+      type: 'ADD_MESSAGE',
+      payload: { role: 'assistant', content: t('postFlow.thankYou') },
+    });
+    setTimeout(() => dispatch({ type: 'RESET_CHAT' }), 3000);
+  }
 
   const slideVariants = {
     enter: { opacity: 0, x: 40 },
@@ -179,6 +216,17 @@ export default function RefillFlow() {
                 <span className={styles.rewardsTag}>{t('refill.successRewards')}</span>
               </div>
             </div>
+
+            {showPostFlow && (
+              <div className={styles.postFlowActions}>
+                <p className={styles.postFlowPrompt}>{t('postFlow.prompt')}</p>
+                <div className={styles.postFlowPills}>
+                  <button className={styles.postFlowPill} onClick={handleReturnHome}>{t('postFlow.returnHome')}</button>
+                  <button className={styles.postFlowPill} onClick={handleNewQuestion}>{t('postFlow.newQuestion')}</button>
+                  <button className={styles.postFlowPill} onClick={handleDone}>{t('postFlow.done')}</button>
+                </div>
+              </div>
+            )}
           </motion.div>
         )}
       </AnimatePresence>

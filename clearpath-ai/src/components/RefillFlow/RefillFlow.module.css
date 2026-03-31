@@ -244,6 +244,45 @@
   border-radius: 20px;
 }
 
+/* Post-flow exit actions (Lam §1) */
+.postFlowActions {
+  margin-top: 20px;
+  padding-top: 16px;
+  border-top: 1px solid rgba(0, 0, 0, 0.06);
+  width: 100%;
+  text-align: center;
+}
+
+.postFlowPrompt {
+  font-size: 0.82rem;
+  color: var(--tw-gray-600);
+  margin-bottom: 10px;
+}
+
+.postFlowPills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  justify-content: center;
+}
+
+.postFlowPill {
+  padding: var(--pill-padding, 8px 16px);
+  border-radius: var(--pill-border-radius, 20px);
+  font-size: var(--pill-font-size, 14px);
+  font-weight: 500;
+  border: 1.5px solid var(--tw-teal);
+  color: var(--tw-teal);
+  background: transparent;
+  cursor: pointer;
+  transition: all 0.18s ease;
+}
+
+.postFlowPill:hover {
+  background: var(--tw-teal);
+  color: white;
+}
+
 @media (max-width: 768px) {
   .flowCard {
     max-width: 100%;
