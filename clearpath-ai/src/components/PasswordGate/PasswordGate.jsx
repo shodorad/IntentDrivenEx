@@ -4,10 +4,20 @@ import styles from './PasswordGate.module.css';
 const CORRECT_PASSWORD = 'rdv@2026';
 const SESSION_KEY = 'clearpath_auth';
 
+function checkUrlPassword() {
+  const params = new URLSearchParams(window.location.search);
+  return params.get('pwd') === CORRECT_PASSWORD;
+}
+
 export default function PasswordGate({ children }) {
-  const [unlocked, setUnlocked] = useState(
-    () => sessionStorage.getItem(SESSION_KEY) === '1'
-  );
+  const [unlocked, setUnlocked] = useState(() => {
+    if (sessionStorage.getItem(SESSION_KEY) === '1') return true;
+    if (checkUrlPassword()) {
+      sessionStorage.setItem(SESSION_KEY, '1');
+      return true;
+    }
+    return false;
+  });
   const [input, setInput] = useState('');
   const [error, setError] = useState(false);
   const [shake, setShake] = useState(false);
