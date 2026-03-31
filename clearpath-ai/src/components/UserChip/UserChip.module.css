@@ -82,6 +82,19 @@
   padding: 4px;
 }
 
+.groupLabel {
+  font-size: 9px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: #9ca3af;
+  padding: 8px 14px 4px;
+}
+
+.groupLabel:first-child {
+  padding-top: 4px;
+}
+
 .dropdownItem {
   display: flex;
   flex-direction: column;

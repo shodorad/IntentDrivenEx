@@ -57,23 +57,34 @@ export default function UserChip() {
       {/* Persona dropdown */}
       {isOpen && (
         <div className={styles.dropdown} role="listbox">
-          {PERSONA_LIST.map((persona) => {
-            const [, descriptor] = persona.dropdownLabel.split(' — ');
-            const isActive = persona.id === p.id;
+          {[
+            { label: 'Primary', ids: ['us-001', 'us-005', 'us-009'] },
+            { label: 'Secondary', ids: PERSONA_LIST.map(p => p.id).filter(id => !['us-001', 'us-005', 'us-009'].includes(id)) },
+          ].map(({ label, ids }) => {
+            const group = ids.map(id => PERSONA_LIST.find(p => p.id === id)).filter(Boolean);
             return (
-              <button
-                key={persona.id}
-                role="option"
-                aria-selected={isActive}
-                className={`${styles.dropdownItem} ${isActive ? styles.dropdownItemActive : ''}`}
-                onClick={() => handleSelect(persona.id)}
-                type="button"
-              >
-                <span className={styles.dropdownName}>{persona.name}</span>
-                {descriptor && (
-                  <span className={styles.dropdownDesc}>{descriptor}</span>
-                )}
-              </button>
+              <div key={label}>
+                <div className={styles.groupLabel}>{label}</div>
+                {group.map((persona) => {
+                  const [, descriptor] = persona.dropdownLabel.split(' — ');
+                  const isActive = persona.id === p.id;
+                  return (
+                    <button
+                      key={persona.id}
+                      role="option"
+                      aria-selected={isActive}
+                      className={`${styles.dropdownItem} ${isActive ? styles.dropdownItemActive : ''}`}
+                      onClick={() => handleSelect(persona.id)}
+                      type="button"
+                    >
+                      <span className={styles.dropdownName}>{persona.name}</span>
+                      {descriptor && (
+                        <span className={styles.dropdownDesc}>{descriptor}</span>
+                      )}
+                    </button>
+                  );
+                })}
+              </div>
             );
           })}
         </div>
