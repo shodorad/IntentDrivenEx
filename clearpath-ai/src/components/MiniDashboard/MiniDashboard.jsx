@@ -172,142 +172,136 @@ function UsageTrend({ data = [], dataTotal }) {
   useEffect(() => {
     if (!data.length || !chartRef.current) return;
 
-    let root;
-    import('@amcharts/amcharts5').then(am5 => {
-      import('@amcharts/amcharts5/xy').then(am5xy => {
+    const buildChart = async () => {
+      const am5 = await import('@amcharts/amcharts5');
+      const am5xy = await import('@amcharts/amcharts5/xy');
 
-        // Dispose previous instance
-        if (rootRef.current) { rootRef.current.dispose(); }
+      // Dispose previous instance
+      if (rootRef.current) { rootRef.current.dispose(); }
 
-        root = am5.Root.new(chartRef.current);
-        rootRef.current = root;
+      const root = am5.Root.new(chartRef.current);
+      rootRef.current = root;
 
-        // Remove amcharts logo
-        root._logo?.dispose();
+      // Remove amcharts logo
+      root._logo?.dispose();
 
-        const chart = root.container.children.push(
-          am5xy.XYChart.new(root, {
-            paddingTop: 12, paddingBottom: 0, paddingLeft: 0, paddingRight: 0,
-          })
-        );
+      const chart = root.container.children.push(
+        am5xy.XYChart.new(root, {
+          paddingTop: 12, paddingBottom: 0, paddingLeft: 0, paddingRight: 0,
+        })
+      );
 
-        // X axis — category (months)
-        const xAxis = chart.xAxes.push(
-          am5xy.CategoryAxis.new(root, {
-            categoryField: 'month',
-            renderer: am5xy.AxisRendererX.new(root, { minGridDistance: 20 }),
-          })
-        );
-        xAxis.get('renderer').labels.template.setAll({
-          fontSize: 10,
-          fill: am5.color('#6B7280'),
-          fontFamily: 'Inter, -apple-system, sans-serif',
-          paddingTop: 4,
-        });
-        xAxis.get('renderer').grid.template.setAll({ stroke: am5.color('#e9ecef'), strokeOpacity: 0.6 });
-
-        // Y axis — hidden (clean look)
-        const yAxis = chart.yAxes.push(
-          am5xy.ValueAxis.new(root, {
-            min: 0,
-            max: max * 1.05,
-            strictMinMax: true,
-            renderer: am5xy.AxisRendererY.new(root, {}),
-          })
-        );
-        yAxis.get('renderer').labels.template.setAll({ visible: false });
-        yAxis.get('renderer').grid.template.setAll({ stroke: am5.color('#e9ecef'), strokeOpacity: 0.4, strokeDasharray: [3, 3] });
-
-        // Cap line — dedicated LineSeries (always visible, dashed)
-        const capSeries = chart.series.push(
-          am5xy.LineSeries.new(root, {
-            xAxis,
-            yAxis,
-            valueYField: 'cap',
-            categoryXField: 'month',
-            stroke: am5.color('#DC3545'),
-          })
-        );
-        capSeries.strokes.template.setAll({
-          strokeWidth: 1.5,
-          strokeDasharray: [5, 4],
-          strokeOpacity: 0.85,
-        });
-        capSeries.fills.template.set('visible', false);
-
-        // Cap line bullet dots — always red
-        capSeries.bullets.push(() => {
-          return am5.Bullet.new(root, {
-            sprite: am5.Circle.new(root, {
-              radius: 3,
-              fill: am5.color('#DC3545'),
-              stroke: am5.color('#ffffff'),
-              strokeWidth: 1.5,
-            }),
-          });
-        });
-
-        // Area series
-        const series = chart.series.push(
-          am5xy.SmoothedXLineSeries.new(root, {
-            xAxis,
-            yAxis,
-            valueYField: 'used',
-            categoryXField: 'month',
-            stroke: am5.color(lineColor),
-            fill: am5.color(lineColor),
-            tension: 0.6,
-          })
-        );
-        series.strokes.template.setAll({ strokeWidth: 2, strokeLinecap: 'round' });
-        series.fills.template.setAll({
-          visible: true,
-          fillOpacity: 0,
-        });
-        // Gradient fill
-        series.fills.template.set('fillGradient', am5.LinearGradient.new(root, {
-          stops: [
-            { color: am5.color(lineColor), opacity: 0.18 },
-            { color: am5.color(lineColor), opacity: 0.01 },
-          ],
-          rotation: 90,
-        }));
-        series.fills.template.set('visible', true);
-
-        // Bullet dots — red if at or above cap, otherwise line color
-        series.bullets.push((root, series, dataItem) => {
-          const used = dataItem.get('valueY') ?? 0;
-          const dotColor = used >= max ? '#DC3545' : lineColor;
-          return am5.Bullet.new(root, {
-            sprite: am5.Circle.new(root, {
-              radius: 3,
-              fill: am5.color(dotColor),
-              stroke: am5.color('#ffffff'),
-              strokeWidth: 1.5,
-            }),
-          });
-        });
-
-        // Cursor
-        chart.set('cursor', am5xy.XYCursor.new(root, {
-          behavior: 'none',
-          xAxis,
-        }));
-        chart.get('cursor').lineY.set('visible', false);
-        chart.get('cursor').lineX.setAll({
-          stroke: am5.color(lineColor),
-          strokeOpacity: 0.3,
-          strokeDasharray: [3, 3],
-        });
-
-        // Load data
-        const chartData = data.map(d => ({ month: d.month, used: d.used, cap: max }));
-        xAxis.data.setAll(chartData);
-        capSeries.data.setAll(chartData);
-        series.data.setAll(chartData);
-        series.appear(600);
+      // X axis — category (months)
+      const xAxis = chart.xAxes.push(
+        am5xy.CategoryAxis.new(root, {
+          categoryField: 'month',
+          renderer: am5xy.AxisRendererX.new(root, { minGridDistance: 20 }),
+        })
+      );
+      xAxis.get('renderer').labels.template.setAll({
+        fontSize: 10,
+        fill: am5.color('#6B7280'),
+        fontFamily: 'Inter, -apple-system, sans-serif',
+        paddingTop: 4,
       });
-    });
+      xAxis.get('renderer').grid.template.setAll({ stroke: am5.color('#e9ecef'), strokeOpacity: 0.6 });
+
+      // Y axis — hidden (clean look)
+      const yAxis = chart.yAxes.push(
+        am5xy.ValueAxis.new(root, {
+          min: 0,
+          max: max * 1.05,
+          strictMinMax: true,
+          renderer: am5xy.AxisRendererY.new(root, {}),
+        })
+      );
+      yAxis.get('renderer').labels.template.setAll({ visible: false });
+      yAxis.get('renderer').grid.template.setAll({ stroke: am5.color('#e9ecef'), strokeOpacity: 0.4, strokeDasharray: [3, 3] });
+
+      // Cap line — dedicated LineSeries (always visible, dashed)
+      const capSeries = chart.series.push(
+        am5xy.LineSeries.new(root, {
+          xAxis,
+          yAxis,
+          valueYField: 'cap',
+          categoryXField: 'month',
+          stroke: am5.color('#DC3545'),
+        })
+      );
+      capSeries.strokes.template.setAll({
+        strokeWidth: 1.5,
+        strokeDasharray: [5, 4],
+        strokeOpacity: 0.85,
+      });
+      capSeries.fills.template.set('visible', false);
+
+      // Cap line bullet dots — always red
+      capSeries.bullets.push(() => {
+        return am5.Bullet.new(root, {
+          sprite: am5.Circle.new(root, {
+            radius: 3,
+            fill: am5.color('#DC3545'),
+            stroke: am5.color('#ffffff'),
+            strokeWidth: 1.5,
+          }),
+        });
+      });
+
+      // Area series
+      const series = chart.series.push(
+        am5xy.SmoothedXLineSeries.new(root, {
+          xAxis,
+          yAxis,
+          valueYField: 'used',
+          categoryXField: 'month',
+          stroke: am5.color(lineColor),
+          fill: am5.color(lineColor),
+          tension: 0.6,
+        })
+      );
+      series.strokes.template.setAll({ strokeWidth: 2, strokeLinecap: 'round' });
+      series.fills.template.setAll({ visible: true, fillOpacity: 0 });
+      series.fills.template.set('fillGradient', am5.LinearGradient.new(root, {
+        stops: [
+          { color: am5.color(lineColor), opacity: 0.18 },
+          { color: am5.color(lineColor), opacity: 0.01 },
+        ],
+        rotation: 90,
+      }));
+      series.fills.template.set('visible', true);
+
+      // Bullet dots — red if at or above cap, otherwise line color
+      series.bullets.push((root, series, dataItem) => {
+        const used = dataItem.get('valueY') ?? 0;
+        const dotColor = used >= max ? '#DC3545' : lineColor;
+        return am5.Bullet.new(root, {
+          sprite: am5.Circle.new(root, {
+            radius: 3,
+            fill: am5.color(dotColor),
+            stroke: am5.color('#ffffff'),
+            strokeWidth: 1.5,
+          }),
+        });
+      });
+
+      // Cursor
+      chart.set('cursor', am5xy.XYCursor.new(root, { behavior: 'none', xAxis }));
+      chart.get('cursor').lineY.set('visible', false);
+      chart.get('cursor').lineX.setAll({
+        stroke: am5.color(lineColor),
+        strokeOpacity: 0.3,
+        strokeDasharray: [3, 3],
+      });
+
+      // Load data
+      const chartData = data.map(d => ({ month: d.month, used: d.used, cap: max }));
+      xAxis.data.setAll(chartData);
+      capSeries.data.setAll(chartData);
+      series.data.setAll(chartData);
+      series.appear(600);
+    };
+
+    buildChart();
 
     return () => { if (rootRef.current) { rootRef.current.dispose(); rootRef.current = null; } };
   // eslint-disable-next-line react-hooks/exhaustive-deps

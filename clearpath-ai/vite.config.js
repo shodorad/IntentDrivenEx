@@ -7,4 +7,7 @@ export default defineConfig({
   server: {
     port: parseInt(process.env.PORT) || 5173,
   },
+  optimizeDeps: {
+    include: ['@amcharts/amcharts5', '@amcharts/amcharts5/xy'],
+  },
 })
