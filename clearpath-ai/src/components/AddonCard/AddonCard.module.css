@@ -1,0 +1,145 @@
+/*
+  AddonCard — Light mint style matching Total Wireless add-on card design.
+*/
+
+/* ── Base card ── */
+.card {
+  background: #e0f7f2;
+  border-radius: 14px;
+  border: 1.5px solid transparent;
+  overflow: hidden;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  cursor: pointer;
+  transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+}
+
+.card:hover {
+  transform: translateY(-2px);
+  box-shadow:
+    0 4px 12px rgba(0, 0, 0, 0.08),
+    0 12px 28px rgba(0, 0, 0, 0.10);
+  border-color: #0D1F33;
+}
+
+/* ── Text content block (bottom, pushed down) ── */
+.body {
+  padding: 16px 16px 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-top: auto;
+  text-align: left;
+  align-items: flex-start;
+}
+
+/* ── Title ── */
+.title {
+  font-size: 13px;
+  font-weight: 800;
+  color: #0D1F33;
+  line-height: 1.25;
+  letter-spacing: -0.01em;
+}
+
+/* ── Description ── */
+.desc {
+  font-size: 12px;
+  font-weight: 400;
+  color: #374151;
+  line-height: 1.5;
+}
+
+/* ── CTA — pill button ── */
+.cta {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: #0D1F33;
+  border: none;
+  padding: 5px 12px;
+  border-radius: 100px;
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 700;
+  color: #ffffff;
+  width: fit-content;
+  transition: background 0.15s ease, transform 0.12s ease, box-shadow 0.15s ease;
+  margin-top: 4px;
+  line-height: 1;
+}
+
+.cta:hover {
+  background: #162E4A;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(13, 31, 51, 0.28);
+}
+
+/* ── Illustration container (top, centered) ── */
+.visual {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px 16px 12px;
+  height: 120px;
+  flex-shrink: 0;
+}
+
+.visual svg {
+  width: 90px;
+  height: 90px;
+  display: block;
+  flex-shrink: 0;
+}
+
+/* ── Recommended badge ── */
+.recommendedBadge {
+  display: inline-flex;
+  align-items: center;
+  font-size: 9px;
+  font-weight: 700;
+  color: #065f46;
+  background: rgba(0, 181, 173, 0.15);
+  border: 1px solid rgba(0, 181, 173, 0.3);
+  padding: 2px 8px;
+  border-radius: 100px;
+  width: fit-content;
+  margin-bottom: 2px;
+}
+
+/* ── Price ── */
+.price {
+  font-size: 17px;
+  font-weight: 800;
+  color: #0D1F33;
+  line-height: 1.1;
+  margin: 1px 0 2px;
+}
+
+/* ── Active badge ── */
+.activeBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 10px;
+  font-weight: 700;
+  color: #006B64;
+  background: rgba(0, 181, 173, 0.18);
+  border: 1px solid rgba(0, 181, 173, 0.35);
+  padding: 4px 10px;
+  border-radius: 100px;
+  width: fit-content;
+}
+
+@media (max-width: 900px) {
+  .visual {
+    height: 100px;
+    padding: 16px 12px 10px;
+  }
+  .visual svg {
+    width: 72px;
+    height: 72px;
+  }
+}
