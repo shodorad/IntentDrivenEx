@@ -24,6 +24,7 @@ export function parseResponse(text) {
 
   // Detect inline flow tags
   const refillFlow = text.includes('[REFILL_FLOW]');
+  const upgradeFlow = text.includes('[UPGRADE_FLOW]');
   const liveChatFlow = text.includes('[LIVE_CHAT_FLOW]');
 
   // Extract phone order flow data
@@ -39,9 +40,10 @@ export function parseResponse(text) {
     .replace(/\[ACTION_PILLS\].*?\[\/ACTION_PILLS\]/s, '')
     .replace(/\[RECOMMENDATIONS?\].*?\[\/RECOMMENDATIONS?\]/s, '')
     .replace(/\[REFILL_FLOW\]/g, '')
+    .replace(/\[UPGRADE_FLOW\]/g, '')
     .replace(/\[LIVE_CHAT_FLOW\]/g, '')
     .replace(/\[PHONE_ORDER_FLOW\].*?\[\/PHONE_ORDER_FLOW\]/s, '')
     .trim();
 
-  return { message, actionPills, recommendations, refillFlow, liveChatFlow, phoneOrderFlow };
+  return { message, actionPills, recommendations, refillFlow, upgradeFlow, liveChatFlow, phoneOrderFlow };
 }

@@ -7,6 +7,7 @@ import ActionPills from '../ActionPills/ActionPills';
 import TypingIndicator from '../TypingIndicator/TypingIndicator';
 import RecommendationCard from '../RecommendationCard/RecommendationCard';
 import RefillFlow from '../RefillFlow/RefillFlow';
+import UpgradeFlow from '../UpgradeFlow/UpgradeFlow';
 import LiveChatFlow from '../LiveChatFlow/LiveChatFlow';
 import PhoneOrderFlow from '../PhoneOrderFlow/PhoneOrderFlow';
 import { AlertCard } from '../AlertCard/AlertCard';
@@ -67,6 +68,9 @@ export default function ChatArea() {
             <MessageBubble role={msg.role} content={msg.content} />
             {msg.role === 'assistant' && msg.refillFlow && (
               <RefillFlow />
+            )}
+            {msg.role === 'assistant' && msg.upgradeFlow && (
+              <UpgradeFlow />
             )}
             {msg.role === 'assistant' && msg.liveChatFlow && (
               <LiveChatFlow />

@@ -196,7 +196,7 @@ function getMariaTurnResponse(userMsgs, intentTurn, activeIntent, persona) {
       return msg(
         `Switching you to Total 5G Unlimited now.\n\n┌─────────────────────────────────────────────┐\n│  Total 5G Unlimited                         │\n│  $55/mo  (was $40/mo)                       │\n│  Prorated today: ~$7.14 (14 days left)      │\n│  Charged to: ${a.savedCard || 'card on file'}                 │\n└─────────────────────────────────────────────┘\n\nConfirm?`,
         [
-          { label: 'Yes — upgrade now',         intent: 'confirm_refill'    },
+          { label: 'Yes — upgrade now',         intent: 'confirm_upgrade'   },
           { label: 'Switch at renewal instead', intent: 'upgrade_at_renewal' },
           { label: 'Cancel',                    intent: 'cancel'             },
         ]
@@ -221,6 +221,10 @@ function getMariaTurnResponse(userMsgs, intentTurn, activeIntent, persona) {
           { label: 'Go back home',       intent: 'done'          },
         ]
       );
+
+    // ── CONFIRM UPGRADE ──────────────────────────────────────────────
+    case 'confirm_upgrade':
+      return `Confirming your plan upgrade now.\n[UPGRADE_FLOW]`;
 
     // ── CONFIRM REFILL ───────────────────────────────────────────────
     case 'confirm_refill':
