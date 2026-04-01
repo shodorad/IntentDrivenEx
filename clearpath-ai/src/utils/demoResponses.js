@@ -12,7 +12,7 @@ const msg = (t, pills) =>
     : t;
 
 // Standard pills shown after every flow completion
-const POST_FLOW_PILLS = ['Start a new topic', 'Return to home', "That's all, thanks"];
+const POST_FLOW_PILLS = ['Ask something else', 'Go back home', "I'm done for now"];
 
 // S3-002: Detect if the user's first message came from a diagnose_usage action pill
 // (pill.prompt === pill.label === exact English label of the suggestedAction)
@@ -30,7 +30,7 @@ function getDiagnoseUsageResponse(persona) {
   const skipLabel =
     persona.intentCategory === 'upgrade'
       ? 'Skip — show upgrade options'
-      : 'Skip — just add data';
+      : 'Skip — add 5 GB for $15';
   return msg(flow.intro, ["Let's do it", skipLabel, 'Skip — change my plan']);
 }
 
@@ -42,7 +42,7 @@ function getPersonaOpeningResponse(persona) {
   switch (persona.id) {
     case 'us-001': // Maria — recurring data problem
       return msg(
-        `Hi Maria. I can see you have ${a.dataRemaining} left — and your plan doesn't renew until ${a.renewalDate}, which is ${a.daysUntilRenewal} days away.\n\nI also noticed you've run out of data 11 of the last 12 months. Want to figure out why and maybe fix it for free — or just get data added right now?`,
+        `Hi Maria. You have ${a.dataRemaining} left and ${a.daysUntilRenewal} days until your plan renews on ${a.renewalDate}.\n\nOne thing I noticed: only 22% of your usage goes through Wi-Fi — your phone is using cellular most of the time, even when you might not need to.\n\nThat's worth looking at before spending anything. Want me to walk you through a couple of quick fixes, or add data right now?`,
         ['Why am I running out?', 'Quick Refill — $15', 'Change my plan', "I'm fine for now"]
       );
 
@@ -179,7 +179,7 @@ function getMariaTurnResponse(userMsgs, turn) {
       if (step1Ans.includes('always')) {
         // User took "always on Wi-Fi" shortcut at Step 1 — latest is background apps answer
         return msg(
-          `Here are three free fixes that could make a real difference:\n\n✅ Turn off "Wi-Fi Assist" in Settings — stops your phone from silently switching to cellular when Wi-Fi slows down\n✅ Set streaming apps to "Wi-Fi only" — YouTube and Netflix can each burn 1–3 GB per hour on HD over cellular\n✅ Disable Background App Refresh — go to Settings → General → Background App Refresh and turn it off for apps you don't need syncing constantly\n\nWant to try those first, or would you rather add data or change your plan now?`,
+          `Here are three free fixes that could make a real difference:\n\n✅ Turn off "Wi-Fi Assist" in Settings — stops your phone from silently switching to cellular when Wi-Fi slows down\n✅ Set streaming apps to "Wi-Fi only" — YouTube and Netflix can each burn 1–3 GB per hour on HD over cellular\n✅ Disable Background App Refresh — go to Settings → General → Background App Refresh and turn it off for apps that don't need to stay current in the background\n\nWant to try these first? If they don't solve it, I can add data or change your plan in seconds.`,
           ["I'll try those", 'Add data for now — $15', 'Show plan options']
         );
       }
@@ -191,21 +191,21 @@ function getMariaTurnResponse(userMsgs, turn) {
     }
     if (turn === 5) {
       // latest = background apps answer → free fixes + escalation
-      if (latest.includes('add data') || latest.includes('$15')) return `Got it — adding 5 GB right now.\n[REFILL_FLOW]`;
+      if (latest.includes('add data') || latest.includes('$15')) return `Adding 5 GB to your account…\n[REFILL_FLOW]`;
       if (latest.includes('plan') || latest.includes('options')) return msg(
-        `Here's what would stop this from happening:\n\n**Total 5G Unlimited** — $50/mo\n✓ Unlimited data (no more running out)\n✓ 10 GB hotspot\n✓ Wi-Fi Calling\n\nThat's $10 more than your current plan. Want to switch?`,
-        ['Yes, switch to Unlimited', 'How much more per month?', 'No thanks — keep my plan']
+        `Based on your usage, you've needed more than 5 GB almost every month. Here's what would stop this from happening again:\n\n**Total 5G Unlimited** — $55/mo\n✓ Unlimited data (no more running out)\n✓ 10 GB hotspot\n✓ Disney+ included\n✓ Wi-Fi Calling\n\nThat's $15 more than your current plan.\n\nYou could start now — you'd only pay ~$7.14 today (prorated for the 14 days left in your cycle). Or switch at your next renewal on Apr 9 with no charge today.`,
+        ['Start now — ~$7 today', 'Switch on Apr 9 — free', 'Stay on my current plan']
       );
       return msg(
-        `Here are three free fixes that could make a real difference:\n\n✅ Turn off "Wi-Fi Assist" in Settings — stops your phone from silently switching to cellular when Wi-Fi slows down\n✅ Set streaming apps to "Wi-Fi only" — YouTube and Netflix can each burn 1–3 GB per hour on HD over cellular\n✅ Disable Background App Refresh — go to Settings → General → Background App Refresh and turn it off for apps you don't need syncing constantly\n\nWant to try those first, or would you rather add data or change your plan now?`,
+        `Here are three free fixes that could make a real difference:\n\n✅ Turn off "Wi-Fi Assist" in Settings — stops your phone from silently switching to cellular when Wi-Fi slows down\n✅ Set streaming apps to "Wi-Fi only" — YouTube and Netflix can each burn 1–3 GB per hour on HD over cellular\n✅ Disable Background App Refresh — go to Settings → General → Background App Refresh and turn it off for apps that don't need to stay current in the background\n\nWant to try these first? If they don't solve it, I can add data or change your plan in seconds.`,
         ["I'll try those", 'Add data for now — $15', 'Show plan options']
       );
     }
     if (turn === 6) {
-      if (latest.includes('add data') || latest.includes('$15')) return `Got it — adding 5 GB right now.\n[REFILL_FLOW]`;
+      if (latest.includes('add data') || latest.includes('$15')) return `Adding 5 GB to your account…\n[REFILL_FLOW]`;
       if (latest.includes('plan') || latest.includes('options')) return msg(
-        `Here's what would stop this from happening:\n\n**Total 5G Unlimited** — $50/mo\n✓ Unlimited data (no more running out)\n✓ 10 GB hotspot\n✓ Wi-Fi Calling\n\nThat's $10 more than your current plan. Want to switch?`,
-        ['Yes, switch to Unlimited', 'How much more per month?', 'No thanks — keep my plan']
+        `Based on your usage, you've needed more than 5 GB almost every month. Here's what would stop this from happening again:\n\n**Total 5G Unlimited** — $55/mo\n✓ Unlimited data (no more running out)\n✓ 10 GB hotspot\n✓ Disney+ included\n✓ Wi-Fi Calling\n\nThat's $15 more than your current plan.\n\nYou could start now — you'd only pay ~$7.14 today (prorated for the 14 days left in your cycle). Or switch at your next renewal on Apr 9 with no charge today.`,
+        ['Start now — ~$7 today', 'Switch on Apr 9 — free', 'Stay on my current plan']
       );
       return msg(
         `Got it — trying those fixes is a great first step. If you run out before Apr 9, just come back and I can add data instantly or switch your plan.\n\nAnything else I can help with?`,
@@ -213,10 +213,10 @@ function getMariaTurnResponse(userMsgs, turn) {
       );
     }
     if (turn > 6) {
-      if (latest.includes('add data') || latest.includes('$15')) return `Got it.\n[REFILL_FLOW]`;
+      if (latest.includes('add data') || latest.includes('$15')) return `Adding 5 GB to your account…\n[REFILL_FLOW]`;
       if (latest.includes('plan') || latest.includes('options')) return msg(
-        `Here's what would stop this from happening:\n\n**Total 5G Unlimited** — $50/mo\n✓ Unlimited data (no more running out)\n✓ 10 GB hotspot\n✓ Wi-Fi Calling\n\nThat's $10 more than your current plan. Want to switch?`,
-        ['Yes, switch to Unlimited', 'How much more per month?', 'No thanks — keep my plan']
+        `Based on your usage, you've needed more than 5 GB almost every month. Here's what would stop this from happening again:\n\n**Total 5G Unlimited** — $55/mo\n✓ Unlimited data (no more running out)\n✓ 10 GB hotspot\n✓ Disney+ included\n✓ Wi-Fi Calling\n\nThat's $15 more than your current plan.\n\nYou could start now — you'd only pay ~$7.14 today (prorated for the 14 days left in your cycle). Or switch at your next renewal on Apr 9 with no charge today.`,
+        ['Start now — ~$7 today', 'Switch on Apr 9 — free', 'Stay on my current plan']
       );
     }
     return null;
@@ -227,16 +227,16 @@ function getMariaTurnResponse(userMsgs, turn) {
     if (turn === 2) {
       // R11: Escape hatch — handle skip actions from diagnosisFlow.intro (new flow, non-"Let's do it")
       if (latest.includes('skip') && (latest.includes('add data') || latest.includes('just add') || latest.includes('$15'))) {
-        return `Got it — I'll set that up right now.\n[REFILL_FLOW]`;
+        return `Adding 5 GB to your account…\n[REFILL_FLOW]`;
       }
       if (latest.includes('skip') && (latest.includes('plan') || latest.includes('change'))) {
         return msg(
-          `Here's what would stop this from happening:\n\n**Total 5G Unlimited** — $50/mo\n✓ Unlimited data (no more running out)\n✓ 10 GB hotspot\n✓ Wi-Fi Calling\n\nThat's $10 more than your current plan. Want to switch?`,
+          `Here's what would stop this from happening:\n\n**Total 5G Unlimited** — $55/mo\n✓ Unlimited data (no more running out)\n✓ 10 GB hotspot\n✓ Wi-Fi Calling\n\nThat's $15 more than your current plan. Want to switch?`,
           ['Yes, switch to Unlimited', 'How much more per month?', 'No thanks — keep my plan']
         );
       }
       return msg(
-        `We can also see that only 22% of your usage is going through Wi-Fi — which means most of your data is being used on cellular, even when you might not need to.\n\nWant me to walk through a couple of free fixes, or would you rather skip straight to adding data or changing your plan?`,
+        `I can also see that only 22% of your usage is going through Wi-Fi — which means most of your data is being used on cellular, even when you might not need to.\n\nWant me to walk through a couple of free fixes, or would you rather skip straight to adding data or changing your plan?`,
         ["Let's figure it out", 'Skip — add data for $15', 'Skip — change my plan']
       );
     }
@@ -248,11 +248,11 @@ function getMariaTurnResponse(userMsgs, turn) {
         );
       }
       if (prev.includes('add data') || prev.includes('$15') || prev.includes('skip')) {
-        return `Got it — I'll set that up right now.\n[REFILL_FLOW]`;
+        return `Adding 5 GB to your account…\n[REFILL_FLOW]`;
       }
       if (prev.includes('change') || prev.includes('plan')) {
         return msg(
-          `Here's what would stop this from happening:\n\n**Total 5G Unlimited** — $50/mo\n✓ Unlimited data (no more running out)\n✓ 10 GB hotspot\n✓ Wi-Fi Calling\n\nThat's $10 more than your current plan. Want to switch?`,
+          `Here's what would stop this from happening:\n\n**Total 5G Unlimited** — $55/mo\n✓ Unlimited data (no more running out)\n✓ 10 GB hotspot\n✓ Wi-Fi Calling\n\nThat's $15 more than your current plan. Want to switch?`,
           ['Yes, switch to Unlimited', 'How much more per month?', 'No thanks — keep my plan']
         );
       }
@@ -280,23 +280,23 @@ function getMariaTurnResponse(userMsgs, turn) {
       }
       // From "always connected to Wi-Fi" path, answering background apps
       return msg(
-        `Here are three free fixes that could make a real difference:\n\n✅ Turn off "Wi-Fi Assist" in Settings — stops your phone from silently switching to cellular when Wi-Fi slows down\n✅ Set streaming apps to "Wi-Fi only" — YouTube and Netflix can each burn 1–3 GB per hour on HD over cellular\n✅ Disable Background App Refresh — go to Settings → General → Background App Refresh and turn it off for apps you don't need syncing constantly\n\nWant to try those first, or would you rather add data or change your plan now?`,
+        `Here are three free fixes that could make a real difference:\n\n✅ Turn off "Wi-Fi Assist" in Settings — stops your phone from silently switching to cellular when Wi-Fi slows down\n✅ Set streaming apps to "Wi-Fi only" — YouTube and Netflix can each burn 1–3 GB per hour on HD over cellular\n✅ Disable Background App Refresh — go to Settings → General → Background App Refresh and turn it off for apps that don't need to stay current in the background\n\nWant to try these first? If they don't solve it, I can add data or change your plan in seconds.`,
         ["I'll try those", 'Add data for now — $15', 'Show plan options']
       );
     }
     if (turn === 6) {
       if (prev.includes('probably') || prev.includes('not sure') || prev.includes('disabled')) {
         return msg(
-          `Here are three free fixes that could make a real difference:\n\n✅ Turn off "Wi-Fi Assist" in Settings — stops your phone from silently switching to cellular when Wi-Fi slows down\n✅ Set streaming apps to "Wi-Fi only" — YouTube and Netflix can each burn 1–3 GB per hour on HD over cellular\n✅ Disable Background App Refresh — go to Settings → General → Background App Refresh and turn it off for apps you don't need syncing constantly\n\nWant to try those first, or would you rather add data or change your plan now?`,
+          `Here are three free fixes that could make a real difference:\n\n✅ Turn off "Wi-Fi Assist" in Settings — stops your phone from silently switching to cellular when Wi-Fi slows down\n✅ Set streaming apps to "Wi-Fi only" — YouTube and Netflix can each burn 1–3 GB per hour on HD over cellular\n✅ Disable Background App Refresh — go to Settings → General → Background App Refresh and turn it off for apps that don't need to stay current in the background\n\nWant to try these first? If they don't solve it, I can add data or change your plan in seconds.`,
           ["I'll try those", 'Add data for now — $15', 'Show plan options']
         );
       }
       if (prev.includes('add data') || prev.includes('$15')) {
-        return `Got it — adding 5 GB right now.\n[REFILL_FLOW]`;
+        return `Adding 5 GB to your account…\n[REFILL_FLOW]`;
       }
       if (prev.includes('plan') || prev.includes('options')) {
         return msg(
-          `Here's what would stop this from happening:\n\n**Total 5G Unlimited** — $50/mo\n✓ Unlimited data (no more running out)\n✓ 10 GB hotspot\n✓ Wi-Fi Calling\n\nThat's $10 more than your current plan. Want to switch?`,
+          `Here's what would stop this from happening:\n\n**Total 5G Unlimited** — $55/mo\n✓ Unlimited data (no more running out)\n✓ 10 GB hotspot\n✓ Wi-Fi Calling\n\nThat's $15 more than your current plan. Want to switch?`,
           ['Yes, switch to Unlimited', 'How much more per month?', 'No thanks — keep my plan']
         );
       }
@@ -308,11 +308,11 @@ function getMariaTurnResponse(userMsgs, turn) {
     // Late turns after free fixes shown
     if (turn > 6) {
       if (prev.includes('add data') || prev.includes('$15')) {
-        return `Got it.\n[REFILL_FLOW]`;
+        return `Adding 5 GB to your account…\n[REFILL_FLOW]`;
       }
       if (prev.includes('plan') || prev.includes('options')) {
         return msg(
-          `Here's what would stop this from happening:\n\n**Total 5G Unlimited** — $50/mo\n✓ Unlimited data (no more running out)\n✓ 10 GB hotspot\n✓ Wi-Fi Calling\n\nThat's $10 more than your current plan. Want to switch?`,
+          `Here's what would stop this from happening:\n\n**Total 5G Unlimited** — $55/mo\n✓ Unlimited data (no more running out)\n✓ 10 GB hotspot\n✓ Wi-Fi Calling\n\nThat's $15 more than your current plan. Want to switch?`,
           ['Yes, switch to Unlimited', 'How much more per month?', 'No thanks — keep my plan']
         );
       }
@@ -329,22 +329,22 @@ function getMariaTurnResponse(userMsgs, turn) {
     }
     if (turn === 3) {
       if (prev.includes('yes') || prev.includes('do it')) {
-        return `Got it — processing now.\n[REFILL_FLOW]`;
+        return `Adding 5 GB to your account…\n[REFILL_FLOW]`;
       }
       if (prev.includes('other options') || prev.includes('show')) {
         return msg(
-          `Here are your options:\n\n• $10 — 5 GB add-on (instant, plan unchanged)\n• Total 5G Unlimited — ends the caps permanently (see current price)\n• Wait it out until Apr 9`,
-          ['Add 5 GB — $10', 'Switch to Unlimited', "I'll wait"]
+          `Here are your options:\n\n• Add 5 GB for $15 — activates instantly, keeps your current plan\n• Upgrade to Unlimited — $55/mo, no more caps, includes Disney+\n• Wait until Apr 9 — your plan renews in 14 days`,
+          ['Add 5 GB — $15', 'Switch to Unlimited', "I'll wait"]
         );
       }
     }
     if (turn === 4) {
       if (prev.includes('add') || prev.includes('$15')) {
-        return `Got it.\n[REFILL_FLOW]`;
+        return `Adding 5 GB to your account…\n[REFILL_FLOW]`;
       }
       if (prev.includes('unlimited') || prev.includes('switch')) {
         return msg(
-          `Here's what would stop this from happening:\n\n**Total 5G Unlimited** — $50/mo\n✓ Unlimited data (no more running out)\n✓ 10 GB hotspot\n✓ Wi-Fi Calling\n\nThat's $10 more than your current plan. Want to switch?`,
+          `Here's what would stop this from happening:\n\n**Total 5G Unlimited** — $55/mo\n✓ Unlimited data (no more running out)\n✓ 10 GB hotspot\n✓ Wi-Fi Calling\n\nThat's $15 more than your current plan. Want to switch?`,
           ['Yes, switch to Unlimited', 'How much more per month?', 'No thanks — keep my plan']
         );
       }
@@ -355,8 +355,8 @@ function getMariaTurnResponse(userMsgs, turn) {
   if (onPlan) {
     if (turn === 2) {
       return msg(
-        `Here's what would stop this from happening:\n\n**Total 5G Unlimited** — $50/mo\n✓ Unlimited data (no more running out)\n✓ 10 GB hotspot\n✓ Wi-Fi Calling\n\nThat's $10 more than your current plan. Want to switch?`,
-        ['Yes, switch to Unlimited', 'How much more per month?', 'No thanks — keep my plan']
+        `Based on your usage, you've needed more than 5 GB almost every month. Here's what would stop this from happening again:\n\n**Total 5G Unlimited** — $55/mo\n✓ Unlimited data (no more running out)\n✓ 10 GB hotspot\n✓ Disney+ included\n✓ Wi-Fi Calling\n\nThat's $15 more than your current plan.\n\nYou could start now — you'd only pay ~$7.14 today (prorated for the 14 days left in your cycle). Or switch at your next renewal on Apr 9 with no charge today.`,
+        ['Start now — ~$7 today', 'Switch on Apr 9 — free', 'Stay on my current plan']
       );
     }
   }
@@ -378,11 +378,11 @@ function getMariaTurnResponse(userMsgs, turn) {
     );
   }
   if (turn === 4 && (prev.includes('booster') || prev.includes('$15') || prev.includes('add'))) {
-    return `Got it.\n[REFILL_FLOW]`;
+    return `Adding 5 GB to your account…\n[REFILL_FLOW]`;
   }
   if (turn === 4 && (prev.includes('unlimited') || prev.includes('$55'))) {
     return msg(
-      `Here's what would stop this from happening:\n\n**Total 5G Unlimited** — $50/mo\n✓ Unlimited data (no more running out)\n✓ 10 GB hotspot\n✓ Wi-Fi Calling\n\nThat's $10 more than your current plan. Want to switch?`,
+      `Here's what would stop this from happening:\n\n**Total 5G Unlimited** — $55/mo\n✓ Unlimited data (no more running out)\n✓ 10 GB hotspot\n✓ Wi-Fi Calling\n\nThat's $15 more than your current plan. Want to switch?`,
       ['Yes, switch to Unlimited', 'How much more per month?', 'No thanks — keep my plan']
     );
   }
