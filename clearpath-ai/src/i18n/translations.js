@@ -68,14 +68,14 @@ export const translations = {
 
     refill: {
       aiIntro:
-        "I can see your data is running low — 0.8 GB left with 2 days until your cycle resets. A quick $15 refill will add 2 GB instantly. Want me to set that up?",
+        "I can see your data is running low — 0.8 GB left with 2 days until your cycle resets. A quick $15 refill will add 5 GB instantly. Want me to set that up?",
       pillYes: 'Yes, refill now',
       pillOptions: 'Show me other options',
       pillWait: "I'll wait it out",
       selectTitle: 'Quick Refill',
       selectPlan: 'Total Base 5G',
       selectLine: '(732) 555-0184',
-      selectItem: '2 GB Data Add-On',
+      selectItem: '5 GB Data Add-On',
       selectPrice: '$15.00',
       selectActivation: 'Activates instantly',
       selectCta: 'Continue — $15',
@@ -88,8 +88,8 @@ export const translations = {
       processingTitle: 'Processing your refill...',
       processingSubtext: 'Connecting to Verizon network',
       successTitle: 'Refill Complete!',
-      successPlan: 'Total Base 5G — 2 GB added',
-      successBalance: 'New balance: 2.8 GB',
+      successPlan: 'Total Base 5G — 5 GB added',
+      successBalance: 'New balance: 5.8 GB',
       successExpiry: 'Expires Apr 14, 2026',
       successReceipt: 'Receipt sent to maria@email.com',
       successRewards: '+15 Total Rewards points earned',
@@ -155,7 +155,7 @@ export const translations = {
     sms: {
       sender: 'Total Wireless',
       message:
-        'Your $15 data refill is confirmed. 2 GB added. New balance: 2.8 GB. Expires Apr 14, 2026. Reply STOP to opt out.',
+        'Your $15 data refill is confirmed. 5 GB added. New balance: 5.8 GB. Expires Apr 14, 2026. Reply STOP to opt out.',
       caption: 'Confirmation sent to your phone on file.',
     },
 
@@ -328,8 +328,8 @@ export const translations = {
       processingTitle: 'Procesando tu recarga...',
       processingSubtext: 'Conectando a la red Verizon',
       successTitle: '¡Recarga Completa!',
-      successPlan: 'Total Base 5G — 2 GB agregados',
-      successBalance: 'Nuevo saldo: 2.8 GB',
+      successPlan: 'Total Base 5G — 5 GB agregados',
+      successBalance: 'Nuevo saldo: 5.8 GB',
       successExpiry: 'Vence el 14 de abril de 2026',
       successReceipt: 'Recibo enviado a maria@email.com',
       successRewards: '+15 puntos de Total Rewards ganados',
@@ -395,7 +395,7 @@ export const translations = {
     sms: {
       sender: 'Total Wireless',
       message:
-        'Tu recarga de $15 ha sido confirmada. 2 GB agregados. Nuevo saldo: 2.8 GB. Vence el 14 de abril de 2026. Responde STOP para cancelar.',
+        'Tu recarga de $15 ha sido confirmada. 5 GB agregados. Nuevo saldo: 5.8 GB. Vence el 14 de abril de 2026. Responde STOP para cancelar.',
       caption: 'Confirmación enviada a tu teléfono registrado.',
     },
 

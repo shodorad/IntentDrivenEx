@@ -1,4 +1,6 @@
 import { useEffect, useRef } from 'react';
+import * as am5 from '@amcharts/amcharts5';
+import * as am5xy from '@amcharts/amcharts5/xy';
 import { Star, CalendarBlank, WifiHigh } from '@phosphor-icons/react';
 import { useChat } from '../../context/ChatContext';
 import { useChatActions } from '../../hooks/useChat';
@@ -13,7 +15,7 @@ const EXTRAS_CATALOG = [
     title:     'Add global calling time',
     price:     '$10',
     desc:      'More long distance minutes, one-time add-on.',
-    ctaLabel:  'Shop now',
+    ctaLabel:  'Add calling time',
     ctaPrompt: 'Tell me about international calling add-on options.',
   },
   {
@@ -31,7 +33,7 @@ const EXTRAS_CATALOG = [
     title:     'Add 5 GB of data',
     price:     '$10',
     desc:      'One-time data boost to get through the month.',
-    ctaLabel:  'Shop now',
+    ctaLabel:  'Add 5 GB now',
     ctaPrompt: 'I want to add a 5 GB data add-on to my plan.',
   },
   {
@@ -40,7 +42,7 @@ const EXTRAS_CATALOG = [
     title:     'Add 15 GB of data',
     price:     '$20',
     desc:      'Larger boost for heavy usage months.',
-    ctaLabel:  'Shop now',
+    ctaLabel:  'Add 15 GB now',
     ctaPrompt: 'I want to add a 15 GB data add-on to my plan.',
   },
 ];
@@ -85,7 +87,7 @@ function HalfDialGauge({ pct, color, dataRemaining, dataTotal, urgency }) {
   const gbTot = dataTotal ? parseFloat(dataTotal).toFixed(0) : '—';
   const statusLabel = urgency === 'cap' ? 'At Cap'
     : urgency === 'low' ? 'Running Low'
-    : (pct || 0) > 75 ? 'Healthy'
+    : (pct || 0) > 75 ? 'Good'
     : (pct || 0) > 40 ? 'Good'
     : 'Low';
   const badgeBg = color === '#DC3545' ? 'rgba(220,53,69,0.14)'
@@ -171,10 +173,7 @@ function UsageTrend({ data = [], dataTotal }) {
   useEffect(() => {
     if (!data.length || !chartRef.current) return;
 
-    const buildChart = async () => {
-      const am5 = await import('@amcharts/amcharts5');
-      const am5xy = await import('@amcharts/amcharts5/xy');
-
+    const buildChart = () => {
       // Dispose previous instance
       if (rootRef.current) { rootRef.current.dispose(); }
 
@@ -246,6 +245,9 @@ function UsageTrend({ data = [], dataTotal }) {
         });
       });
 
+      // Cap label is rendered as HTML overlay (see JSX return below).
+      // amcharts axis-range labels were unreliable for positioning.
+
       // Area series
       const series = chart.series.push(
         am5xy.SmoothedXLineSeries.new(root, {
@@ -298,6 +300,7 @@ function UsageTrend({ data = [], dataTotal }) {
       capSeries.data.setAll(chartData);
       series.data.setAll(chartData);
       series.appear(600);
+
     };
 
     buildChart();
@@ -310,7 +313,28 @@ function UsageTrend({ data = [], dataTotal }) {
 
   return (
     <>
-      <div ref={chartRef} className={styles.amChart} />
+      <div style={{ position: 'relative', width: '100%' }}>
+        <div ref={chartRef} className={styles.amChart} />
+        <span
+          style={{
+            position: 'absolute',
+            top: 6,
+            left: 2,
+            fontSize: 11,
+            fontWeight: 700,
+            color: '#DC3545',
+            fontFamily: 'Inter, -apple-system, sans-serif',
+            background: 'rgba(255,255,255,0.85)',
+            padding: '0 4px',
+            borderRadius: 2,
+            zIndex: 2,
+            pointerEvents: 'none',
+            lineHeight: 1,
+          }}
+        >
+          {max} GB
+        </span>
+      </div>
       {insight && (
         <div className={styles.trendInsight}>
           {insight.split(/(\d+(?:\.\d+)?)/).map((part, i) =>
@@ -334,7 +358,7 @@ function ExtrasGrid({ addons, urgency }) {
     : EXTRAS_CATALOG;
   return (
     <div className={styles.extrasSection}>
-      <span className={styles.extrasLabel}>Extras</span>
+      <span className={styles.extrasLabel}>Extras you can add to your account</span>
       <div className={styles.extrasGrid}>
         {sorted.map((extra) => (
           <AddonCard
@@ -408,7 +432,7 @@ export default function MiniDashboard({ onAddOnClick }) {
             <div className={styles.planBadge} style={{ background: 'rgba(0,181,173,0.12)', color: '#00B5AD' }}>NEW</div>
           </div>
           <div className={`${styles.tile} ${styles.tileNetwork}`}>
-            <div className={styles.tileLabel}>Usage Trend</div>
+            <div className={styles.tileLabel}>Data Usage Trend</div>
             <UsageTrend data={account.usageHistory || []} dataTotal={account.dataTotal} />
           </div>
           <div className={`${styles.tile} ${styles.tileRenew}`}>
@@ -427,7 +451,7 @@ export default function MiniDashboard({ onAddOnClick }) {
               <DisneyPlusBadge />
             </div>
             <div className={styles.disneySubtitle}>Included with your plan</div>
-            <span className={styles.disneyActiveBadge}><span style={{ color: '#28A745' }}>●</span> Active</span>
+            <span className={styles.disneyActiveBadge}><span style={{ color: '#28A745' }}>●</span> Extras</span>
             <div className={styles.disneyStream}>Stream now →</div>
           </div>
         </div>
@@ -473,7 +497,7 @@ export default function MiniDashboard({ onAddOnClick }) {
 
         {/* Tile C — Usage Trend */}
         <div className={`${styles.tile} ${styles.tileNetwork}`}>
-          <div className={styles.tileLabel}>Usage Trend</div>
+          <div className={styles.tileLabel}>Data Usage Trend</div>
           <UsageTrend data={account.usageHistory || []} dataTotal={account.dataTotal} />
         </div>
 
@@ -549,7 +573,7 @@ export default function MiniDashboard({ onAddOnClick }) {
             <DisneyPlusBadge />
           </div>
           <div className={styles.disneySubtitle}>Included with your plan</div>
-          <span className={styles.disneyActiveBadge}><span style={{ color: '#28A745' }}>●</span> Active</span>
+          <span className={styles.disneyActiveBadge}><span style={{ color: '#28A745' }}>●</span> Extras</span>
           <div className={styles.disneyStream}>Stream now →</div>
         </div>
       </div>

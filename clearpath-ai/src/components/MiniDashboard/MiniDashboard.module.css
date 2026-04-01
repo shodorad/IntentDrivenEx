@@ -226,6 +226,17 @@
   margin-bottom: 2px;
 }
 
+.tileCapBadge {
+  font-size: 10px;
+  font-weight: 600;
+  color: #6b7280;
+  background: rgba(107, 114, 128, 0.1);
+  border: 1px solid rgba(107, 114, 128, 0.18);
+  border-radius: 10px;
+  padding: 2px 7px;
+  white-space: nowrap;
+}
+
 .tileIconWrap {
   width: 26px;
   height: 26px;

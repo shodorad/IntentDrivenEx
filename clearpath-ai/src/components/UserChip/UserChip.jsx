@@ -59,8 +59,8 @@ export default function UserChip() {
         <div className={styles.dropdown} role="listbox">
           {[
             { label: 'Primary', ids: ['us-001', 'us-005', 'us-009'] },
-            { label: 'Secondary', ids: PERSONA_LIST.map(p => p.id).filter(id => !['us-001', 'us-005', 'us-009'].includes(id)) },
-          ].map(({ label, ids }) => {
+            // Secondary personas hidden from menu (data preserved)
+          ].filter(Boolean).map(({ label, ids }) => {
             const group = ids.map(id => PERSONA_LIST.find(p => p.id === id)).filter(Boolean);
             return (
               <div key={label}>
