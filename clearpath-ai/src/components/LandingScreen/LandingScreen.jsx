@@ -199,8 +199,9 @@ export default function LandingScreen() {
         <AlertCardGrid
           signals={state.persona?.signals || []}
           persona={state.persona}
-          onCta={(prompt, intent) => {
+          onCta={(prompt, intent, sig) => {
             if (intent) dispatch({ type: 'SET_INTENT', payload: intent });
+            if (sig) dispatch({ type: 'SET_ACTIVE_SIGNAL', payload: sig });
             startChat(prompt, intent);
           }}
         />

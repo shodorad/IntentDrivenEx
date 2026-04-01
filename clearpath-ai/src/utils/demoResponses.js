@@ -1301,15 +1301,30 @@ function getAlexPhoneTurnResponse(userMessages, persona) {
     ])}[/RECOMMENDATIONS][ACTION_PILLS]${JSON.stringify(['I want the Galaxy A36 (free)', 'I want the iPhone 13', 'I want the Moto G Stylus', 'Show me all phones'])}[/ACTION_PILLS]`;
   }
 
+  // Confirm order — must run BEFORE isPhonePick so "Yes, order it — $24.99"
+  // doesn't get re-matched as a phone selection via the '24.99' substring check.
+  if (last.includes('order it') || last.includes('confirm') || last.includes('place') ||
+      (last.includes('yes') && (last.includes('order') || last.includes('free') || last.includes('24.99')))) {
+    const priorMsg = msgs[msgs.length - 2] || '';
+    const isIphone = priorMsg.includes('iphone') || priorMsg.includes('13') || priorMsg.includes('24.99');
+    const isMotoOrder = priorMsg.includes('moto') || priorMsg.includes('stylus');
+    const isA17Order  = priorMsg.includes('a17');
+    const item  = isIphone ? 'iPhone 13' : isMotoOrder ? 'Moto G Stylus' : isA17Order ? 'Samsung Galaxy A17' : 'Samsung Galaxy A36';
+    const price = isIphone ? '$24.99' : 'FREE';
+    const free  = !isIphone;
+    return `[PHONE_ORDER_FLOW]${JSON.stringify({ item, price, free, card: 'Visa ••••7823', rewards: isIphone ? '−$25.00 (2,450 pts)' : null })}[/PHONE_ORDER_FLOW]`;
+  }
+
   // Turn 3+: User picks a specific phone — confirm specs and price
-  const isIphoneSelection = (last.includes('iphone 13') || last.includes('24.99')) && !last.includes('17e');
+  // Note: '24.99' is excluded from isIphoneSelection to avoid matching "Yes, order it — $24.99"
+  const isIphoneSelection = (last.includes('iphone 13') || last.includes('24.99')) && !last.includes('17e') && !last.includes('order it');
   const isIphone17e = last.includes('17e') || last.includes('iphone 17e');
   const isMoto = last.includes('moto') || last.includes('stylus');
   const isA17 = last.includes('a17');
   const isA36 = last.includes('a36') || last.includes('galaxy a36');
   const isPhonePick = isIphoneSelection || isIphone17e || isMoto || isA17 || isA36 ||
     last.includes('want the') || last.includes('i want') || last.includes('pick') ||
-    (last.includes('free') && !last.includes('completely'));
+    (last.includes('free') && !last.includes('completely') && !last.includes('order it'));
 
   if (isPhonePick) {
     if (isIphoneSelection) {
@@ -1335,18 +1350,6 @@ function getAlexPhoneTurnResponse(userMessages, persona) {
       `Here's your order summary:\n\n**Samsung Galaxy A36**\n• Color: Awesome Navy\n• Storage: 128 GB\n• Price: FREE with your Unlimited plan\n• Ships: 2–3 business days\n• Card: Visa ••••7823\n\nReady to place the order?`,
       ['Yes, order it — FREE', 'Go back']
     );
-  }
-
-  // Turn 4+: Confirm order → trigger PhoneOrderFlow
-  if (last.includes('yes') || last.includes('order it') || last.includes('confirm') || last.includes('place')) {
-    const priorMsg = msgs[msgs.length - 2] || '';
-    const isIphone = priorMsg.includes('iphone') || priorMsg.includes('13') || priorMsg.includes('24.99');
-    const isMotoOrder   = priorMsg.includes('moto') || priorMsg.includes('stylus');
-    const isA17Order    = priorMsg.includes('a17');
-    const item  = isIphone ? 'iPhone 13' : isMotoOrder ? 'Moto G Stylus' : isA17Order ? 'Samsung Galaxy A17' : 'Samsung Galaxy A36';
-    const price = isIphone ? '$24.99' : 'FREE';
-    const free  = !isIphone;
-    return `[PHONE_ORDER_FLOW]${JSON.stringify({ item, price, free, card: 'Visa ••••7823', rewards: isIphone ? '−$25.00 (2,450 pts)' : null })}[/PHONE_ORDER_FLOW]`;
   }
 
   // Fallback

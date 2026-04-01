@@ -167,11 +167,11 @@ function PhoneCard({ product, reason, isBest, onExplore, costDiff, solveHighligh
       {/* CTA */}
       <div className={styles.actions}>
         <Button
-          variant={isBest ? 'primary' : 'outline'}
+          variant="primary"
           size="sm"
           onClick={() => onExplore(product, 'phone', reason)}
         >
-          {isBest ? 'Upgrade Now' : 'Learn More'}
+          Upgrade Now
         </Button>
       </div>
     </motion.div>

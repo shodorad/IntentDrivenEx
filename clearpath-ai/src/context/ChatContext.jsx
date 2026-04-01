@@ -20,6 +20,7 @@ const initialState = {
   inputFocused: false,
   activeIntent: null,    // current intent driving the conversation
   intentTurn: 0,         // how many user messages sent within current intent
+  activeSignal: null,    // signal card that triggered the chat session
 };
 
 function chatReducer(state, action) {
@@ -78,6 +79,8 @@ function chatReducer(state, action) {
         activeIntent: null,
         intentTurn: 0,
       };
+    case 'SET_ACTIVE_SIGNAL':
+      return { ...state, activeSignal: action.payload };
     default:
       return state;
   }

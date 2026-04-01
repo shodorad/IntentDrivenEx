@@ -122,7 +122,7 @@ export function AlertCardGrid({ signals = [], onCta, persona }) {
               headline={sig.headline}
               subtext={sig.subtext}
               ctaLabel={cta.label}
-              onCta={() => onCta?.(cta.prompt, cta.intent)}
+              onCta={() => onCta?.(cta.prompt, cta.intent, sig)}
             />
           );
         })}
