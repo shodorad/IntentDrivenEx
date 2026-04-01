@@ -18,6 +18,8 @@ const initialState = {
   smsModalData: null, // { transactionType: 'refill' | 'upgrade' | 'international' }
   persona: getPersonaFromURL(),
   inputFocused: false,
+  activeIntent: null,    // current intent driving the conversation
+  intentTurn: 0,         // how many user messages sent within current intent
 };
 
 function chatReducer(state, action) {
@@ -59,6 +61,23 @@ function chatReducer(state, action) {
       }
       return { ...state, messages: msgs };
     }
+    case 'SET_INTENT':
+      return {
+        ...state,
+        activeIntent: action.payload,
+        intentTurn: 0,       // always reset turn counter when intent changes
+      };
+    case 'INCREMENT_INTENT_TURN':
+      return {
+        ...state,
+        intentTurn: state.intentTurn + 1,
+      };
+    case 'CLEAR_INTENT':
+      return {
+        ...state,
+        activeIntent: null,
+        intentTurn: 0,
+      };
     default:
       return state;
   }

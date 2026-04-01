@@ -1,14 +1,12 @@
 import { useCallback } from 'react';
 import { useChat as useChatContext } from '../context/ChatContext';
-import { callAPI } from '../utils/api';
 import { parseResponse } from '../utils/parseResponse';
 import { generateDemoResponse } from '../utils/demoResponses';
-import { getSystemPrompt } from '../data/systemPrompt';
 
 export function useChatActions() {
   const { state, dispatch } = useChatContext();
 
-  const sendMessage = useCallback(async (text) => {
+  const sendMessage = useCallback(async (text, intentOverride = null) => {
     // Clear any existing action pills
     dispatch({ type: 'CLEAR_ACTION_PILLS' });
 
@@ -26,16 +24,11 @@ export function useChatActions() {
         content: m.content
       }));
 
-      let responseText;
-      try {
-        // Pass persona-aware system prompt to API
-        responseText = await callAPI(apiMessages, getSystemPrompt(persona));
-      } catch {
-        // Fallback to persona-aware demo mode
-        responseText = generateDemoResponse(apiMessages, persona);
-      }
+      const resolvedIntent = intentOverride ?? state.activeIntent;
+      const resolvedTurn   = intentOverride != null ? 0 : state.intentTurn;
+      const responseText = generateDemoResponse(apiMessages, persona, resolvedIntent, resolvedTurn);
 
-      const { message, actionPills, recommendations, refillFlow, phoneOrderFlow, upgradeFlow, internationalFlow, activationFlow, byopFlow } = parseResponse(responseText);
+      const { message, actionPills, recommendations, refillFlow, liveChatFlow, phoneOrderFlow, upgradeFlow, internationalFlow, activationFlow, byopFlow } = parseResponse(responseText);
 
       // E4 guard: suppress recommendations/flows on the very first user message
       const userMessageCount = [...state.messages, userMsg].filter(m => m.role === 'user').length;
@@ -53,6 +46,7 @@ export function useChatActions() {
           actionPills,
           recommendations: suppressFlow ? null : recommendations,
           ...((!suppressFlow && refillFlow) && { refillFlow: true }),
+          ...((!suppressFlow && liveChatFlow) && { liveChatFlow: true }),
           ...((!suppressFlow && phoneOrderFlow) && { phoneOrderFlow }),
           ...((!suppressFlow && upgradeFlow) && { upgradeFlow: true }),
           ...((!suppressFlow && internationalFlow) && { internationalFlow: true }),
@@ -60,6 +54,7 @@ export function useChatActions() {
           ...((!suppressFlow && byopFlow) && { byopFlow: true }),
         }
       });
+      dispatch({ type: 'INCREMENT_INTENT_TURN' });
     } catch (err) {
       console.error('Chat error:', err);
       dispatch({
@@ -74,12 +69,14 @@ export function useChatActions() {
     } finally {
       dispatch({ type: 'SET_LOADING', payload: false });
     }
-  }, [state.messages, state.persona, dispatch]);
+  }, [state.messages, state.persona, state.activeIntent, state.intentTurn, dispatch]);
 
-  const startChat = useCallback((intentPrompt) => {
+  const startChat = useCallback((intentPrompt, intentOverride = null) => {
     dispatch({ type: 'START_CHAT' });
-    // Small delay so the chat UI renders first
-    setTimeout(() => sendMessage(intentPrompt), 100);
+    // Small delay so the chat UI renders first.
+    // Pass intentOverride through so sendMessage uses the correct intent even
+    // though state.activeIntent hasn't propagated into this closure yet.
+    setTimeout(() => sendMessage(intentPrompt, intentOverride), 100);
   }, [dispatch, sendMessage]);
 
   const resetChat = useCallback(() => {

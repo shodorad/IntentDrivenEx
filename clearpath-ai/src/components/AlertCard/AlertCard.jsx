@@ -99,18 +99,20 @@ export function AlertCardGrid({ signals = [], onCta, persona }) {
     const actions = persona?.suggestedActions || [];
     if (sig.severity === 'critical') {
       const a = actions[0];
-      return { label: a?.label || 'Act Now', prompt: a?.label || 'I need help' };
+      return { label: a?.label || 'Act Now', prompt: a?.label || 'I need help', intent: a?.action || null };
     }
     if (sig.severity === 'warning') {
       const a = actions[1] || actions[0];
-      return { label: a?.label || 'Show Options', prompt: a?.label || 'What are my options?' };
+      return { label: a?.label || 'Show Options', prompt: a?.label || 'What are my options?', intent: a?.action || null };
     }
-    return { label: 'Tell Me More', prompt: sig.headline };
+    return { label: 'Tell Me More', prompt: sig.headline, intent: 'info_inquiry' };
   }
+
+  const count = Math.min(signals.length, 3);
 
   return (
     <div className={styles.gridWrap}>
-      <div className={styles.grid}>
+      <div className={styles.grid} style={{ gridTemplateColumns: `repeat(${count}, 1fr)` }}>
         {signals.slice(0, 3).map((sig) => {
           const cta = getCtaForSignal(sig);
           return (
@@ -120,7 +122,7 @@ export function AlertCardGrid({ signals = [], onCta, persona }) {
               headline={sig.headline}
               subtext={sig.subtext}
               ctaLabel={cta.label}
-              onCta={() => onCta?.(cta.prompt)}
+              onCta={() => onCta?.(cta.prompt, cta.intent)}
             />
           );
         })}

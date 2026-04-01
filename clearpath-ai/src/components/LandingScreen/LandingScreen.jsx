@@ -37,62 +37,62 @@ const CTA_BY_INTENT = {
 
 // Static browse pills shown in the "Explore" category when input is focused
 const BROWSE_PILLS = [
-  { label: 'Show me all plans',         prompt: 'Show me all available plans.' },
-  { label: 'Show me the latest phones', prompt: 'Show me the latest phones available.' },
-  { label: 'Show me current deals',     prompt: 'Show me all current deals and promotions.' },
-  { label: 'My rewards & points',       prompt: 'Tell me about my rewards points and how to use them.' },
+  { label: 'Show me all plans',         prompt: 'Show me all available plans.',                          intent: 'browse_plans'   },
+  { label: 'Show me the latest phones', prompt: 'Show me the latest phones available.',                  intent: 'browse_phones'  },
+  { label: 'Show me current deals',     prompt: 'Show me all current deals and promotions.',             intent: 'browse_deals'   },
+  { label: 'My rewards & points',       prompt: 'Tell me about my rewards points and how to use them.',  intent: 'browse_rewards' },
 ];
 
 // Extra pills per intentCategory to fill 2×4 grid (always ends with "Show me everything")
 const EXTRA_PILLS = {
   refill: [
-    { label: 'Why does this keep happening?', labelEs: '¿Por qué sigue pasando esto?',   prompt: 'Why do I keep running out of data every month?' },
-    { label: 'What are my options?',           labelEs: '¿Cuáles son mis opciones?',       prompt: 'What options do I have for my data situation?' },
-    { label: 'I need more hotspot',            labelEs: 'Necesito más hotspot',             prompt: 'I need more mobile hotspot data.' },
-    { label: 'Talk to someone',                labelEs: 'Hablar con alguien',               prompt: 'I want to talk to a customer support agent.' },
-    { label: 'Show me everything',             labelEs: 'Mostrar todo',                     prompt: 'Show me all available plans and options.' },
+    { label: 'Why does this keep happening?', labelEs: '¿Por qué sigue pasando esto?',   prompt: 'Why do I keep running out of data every month?',           intent: 'diagnose_usage'  },
+    { label: 'What are my options?',           labelEs: '¿Cuáles son mis opciones?',       prompt: 'What options do I have for my data situation?',            intent: 'show_options'    },
+    { label: 'I need more hotspot',            labelEs: 'Necesito más hotspot',             prompt: 'I need more mobile hotspot data.',                         intent: 'hotspot_inquiry' },
+    { label: 'Talk to someone',                labelEs: 'Hablar con alguien',               prompt: 'I want to talk to a customer support agent.',              intent: 'talk_to_agent'   },
+    { label: 'Show me everything',             labelEs: 'Mostrar todo',                     prompt: 'Show me all available plans and options.',                 intent: 'browse_all'      },
   ],
   activate: [
-    { label: 'Tell me about Total Wireless',   labelEs: 'Cuéntame sobre Total Wireless',   prompt: 'What is Total Wireless and how does it work?' },
-    { label: 'What plans are available?',       labelEs: '¿Qué planes hay disponibles?',    prompt: 'Show me all available plans for a new customer.' },
-    { label: 'Can I keep my number?',           labelEs: '¿Puedo conservar mi número?',     prompt: 'Can I keep my existing phone number when I switch?' },
-    { label: 'How long does it take?',          labelEs: '¿Cuánto tiempo tarda?',           prompt: 'How long does SIM activation take?' },
-    { label: 'Show me everything',              labelEs: 'Mostrar todo',                     prompt: 'Show me all available plans and options.' },
+    { label: 'Tell me about Total Wireless',   labelEs: 'Cuéntame sobre Total Wireless',   prompt: 'What is Total Wireless and how does it work?',             intent: 'info_inquiry'    },
+    { label: 'What plans are available?',       labelEs: '¿Qué planes hay disponibles?',    prompt: 'Show me all available plans for a new customer.',          intent: 'browse_plans'    },
+    { label: 'Can I keep my number?',           labelEs: '¿Puedo conservar mi número?',     prompt: 'Can I keep my existing phone number when I switch?',       intent: 'port_inquiry'    },
+    { label: 'How long does it take?',          labelEs: '¿Cuánto tiempo tarda?',           prompt: 'How long does SIM activation take?',                      intent: 'activation_time' },
+    { label: 'Show me everything',              labelEs: 'Mostrar todo',                     prompt: 'Show me all available plans and options.',                 intent: 'browse_all'      },
   ],
   support: [
-    { label: 'Check for outages',              labelEs: 'Revisar cortes de servicio',       prompt: 'Are there any network outages in my area?' },
-    { label: 'Try a self-fix',                 labelEs: 'Intentar una solución propia',     prompt: 'Walk me through some steps to fix my connectivity issue.' },
-    { label: 'Dropped calls',                  labelEs: 'Llamadas cortadas',                prompt: 'I have been experiencing dropped calls.' },
-    { label: 'Talk to someone',                labelEs: 'Hablar con alguien',               prompt: 'I want to talk to a customer support agent.' },
-    { label: 'Show me everything',             labelEs: 'Mostrar todo',                     prompt: 'Show me all available support and plan options.' },
+    { label: 'Check for outages',              labelEs: 'Revisar cortes de servicio',       prompt: 'Are there any network outages in my area?',               intent: 'check_outages'   },
+    { label: 'Try a self-fix',                 labelEs: 'Intentar una solución propia',     prompt: 'Walk me through some steps to fix my connectivity issue.', intent: 'diagnose_usage'  },
+    { label: 'Dropped calls',                  labelEs: 'Llamadas cortadas',                prompt: 'I have been experiencing dropped calls.',                 intent: 'dropped_calls'   },
+    { label: 'Talk to someone',                labelEs: 'Hablar con alguien',               prompt: 'I want to talk to a customer support agent.',              intent: 'talk_to_agent'   },
+    { label: 'Show me everything',             labelEs: 'Mostrar todo',                     prompt: 'Show me all available support and plan options.',          intent: 'browse_all'      },
   ],
   upgrade: [
-    { label: 'Tell me about Unlimited',        labelEs: 'Cuéntame sobre Ilimitado',        prompt: 'What does the Unlimited plan include?' },
-    { label: 'Is there a cheaper option?',     labelEs: '¿Hay una opción más económica?',  prompt: 'What is the most affordable option for my situation?' },
-    { label: 'What is included?',              labelEs: '¿Qué incluye?',                   prompt: 'What features are included in each plan?' },
-    { label: 'Keep my current plan',           labelEs: 'Mantener mi plan actual',          prompt: 'I want to keep my current plan for now.' },
-    { label: 'Show me everything',             labelEs: 'Mostrar todo',                     prompt: 'Show me all available plans and options.' },
+    { label: 'Tell me about Unlimited',        labelEs: 'Cuéntame sobre Ilimitado',        prompt: 'What does the Unlimited plan include?',                   intent: 'plan_change'     },
+    { label: 'Is there a cheaper option?',     labelEs: '¿Hay una opción más económica?',  prompt: 'What is the most affordable option for my situation?',    intent: 'browse_plans'    },
+    { label: 'What is included?',              labelEs: '¿Qué incluye?',                   prompt: 'What features are included in each plan?',                intent: 'plan_features'   },
+    { label: 'Keep my current plan',           labelEs: 'Mantener mi plan actual',          prompt: 'I want to keep my current plan for now.',                 intent: 'keep_plan'       },
+    { label: 'Show me everything',             labelEs: 'Mostrar todo',                     prompt: 'Show me all available plans and options.',                 intent: 'browse_all'      },
   ],
   addon: [
-    { label: 'What other add-ons exist?',      labelEs: '¿Qué otros complementos hay?',    prompt: 'What add-ons are available for my plan?' },
-    { label: 'How does billing work?',         labelEs: '¿Cómo funciona la facturación?',  prompt: 'How is add-on billing handled?' },
-    { label: 'Is this worth it?',              labelEs: '¿Vale la pena?',                  prompt: 'Is the international calling add-on worth it for my usage?' },
-    { label: 'See all add-ons',                labelEs: 'Ver todos los complementos',       prompt: 'Show me all available add-ons.' },
-    { label: 'Show me everything',             labelEs: 'Mostrar todo',                     prompt: 'Show me all available plans and options.' },
+    { label: 'What other add-ons exist?',      labelEs: '¿Qué otros complementos hay?',    prompt: 'What add-ons are available for my plan?',                 intent: 'browse_addons'   },
+    { label: 'How does billing work?',         labelEs: '¿Cómo funciona la facturación?',  prompt: 'How is add-on billing handled?',                          intent: 'billing_inquiry' },
+    { label: 'Is this worth it?',              labelEs: '¿Vale la pena?',                  prompt: 'Is the international calling add-on worth it for my usage?', intent: 'value_inquiry' },
+    { label: 'See all add-ons',                labelEs: 'Ver todos los complementos',       prompt: 'Show me all available add-ons.',                          intent: 'browse_addons'   },
+    { label: 'Show me everything',             labelEs: 'Mostrar todo',                     prompt: 'Show me all available plans and options.',                 intent: 'browse_all'      },
   ],
   compare: [
-    { label: 'Calculate 4-line pricing',       labelEs: 'Calcular precio de 4 líneas',     prompt: 'Calculate the total price for 4 lines on each plan.' },
-    { label: 'What is the difference?',        labelEs: '¿Cuál es la diferencia?',         prompt: 'What is the difference between the plans?' },
-    { label: 'Lock in my rate',                labelEs: 'Fijar mi tarifa',                  prompt: 'How does the 5-year price guarantee work?' },
-    { label: 'Talk to an expert',              labelEs: 'Hablar con un experto',            prompt: 'I want to speak with someone to help me choose a plan.' },
-    { label: 'Show me everything',             labelEs: 'Mostrar todo',                     prompt: 'Show me all available plans and options.' },
+    { label: 'Calculate 4-line pricing',       labelEs: 'Calcular precio de 4 líneas',     prompt: 'Calculate the total price for 4 lines on each plan.',     intent: 'browse_plans'    },
+    { label: 'What is the difference?',        labelEs: '¿Cuál es la diferencia?',         prompt: 'What is the difference between the plans?',               intent: 'plan_features'   },
+    { label: 'Lock in my rate',                labelEs: 'Fijar mi tarifa',                  prompt: 'How does the 5-year price guarantee work?',               intent: 'plan_change'     },
+    { label: 'Talk to an expert',              labelEs: 'Hablar con un experto',            prompt: 'I want to speak with someone to help me choose a plan.',  intent: 'talk_to_agent'   },
+    { label: 'Show me everything',             labelEs: 'Mostrar todo',                     prompt: 'Show me all available plans and options.',                 intent: 'browse_all'      },
   ],
   phone: [
-    { label: "What's the best deal right now?", prompt: 'What is the best phone deal right now?' },
-    { label: 'Free phones available?', prompt: 'Are there any free phones available?' },
-    { label: 'Compare iPhone vs Samsung', prompt: 'Help me compare iPhone vs Samsung options.' },
-    { label: 'Talk to someone', prompt: 'I want to talk to a customer support agent.' },
-    { label: 'Show me everything', prompt: 'Show me all available plans and options.' },
+    { label: "What's the best deal right now?", prompt: 'What is the best phone deal right now?',          intent: 'browse_deals'  },
+    { label: 'Free phones available?',           prompt: 'Are there any free phones available?',            intent: 'browse_phones' },
+    { label: 'Compare iPhone vs Samsung',        prompt: 'Help me compare iPhone vs Samsung options.',      intent: 'browse_phones' },
+    { label: 'Talk to someone',                  prompt: 'I want to talk to a customer support agent.',     intent: 'talk_to_agent' },
+    { label: 'Show me everything',               prompt: 'Show me all available plans and options.',        intent: 'browse_all'    },
   ],
 };
 
@@ -101,11 +101,13 @@ function getPersonaPills(persona, lang) {
   const suggested = (persona.suggestedActions || []).map((a) => ({
     label: es && a.labelEs ? a.labelEs : a.label,
     prompt: a.label, // always English prompt so AI/flow routing works correctly
+    intent: a.action,
   }));
   const category = persona.intentCategory || 'refill';
   const extras = (EXTRA_PILLS[category] || EXTRA_PILLS.refill).map((p) => ({
     label: es && p.labelEs ? p.labelEs : p.label,
     prompt: p.prompt,
+    intent: p.intent,
   }));
   const combined = [...suggested, ...extras];
   return combined.slice(0, 8);
@@ -197,7 +199,10 @@ export default function LandingScreen() {
         <AlertCardGrid
           signals={state.persona?.signals || []}
           persona={state.persona}
-          onCta={(prompt) => startChat(prompt)}
+          onCta={(prompt, intent) => {
+            if (intent) dispatch({ type: 'SET_INTENT', payload: intent });
+            startChat(prompt, intent);
+          }}
         />
         <SignalBanner onAction={handleSignalAction} />
       </motion.div>
@@ -231,7 +236,10 @@ export default function LandingScreen() {
                     key={idx}
                     className={styles.pill}
                     onMouseDown={(e) => e.preventDefault()}
-                    onClick={() => startChat(pill.prompt)}
+                    onClick={() => {
+                      if (pill.intent) dispatch({ type: 'SET_INTENT', payload: pill.intent });
+                      startChat(pill.prompt, pill.intent);
+                    }}
                     variants={itemVariants}
                     whileHover={{ scale: 1.03, y: -2 }}
                     whileTap={{ scale: 0.97 }}
@@ -260,7 +268,10 @@ export default function LandingScreen() {
                   key={idx}
                   className={`${styles.pill} ${styles.pillExplore}`}
                   onMouseDown={(e) => e.preventDefault()}
-                  onClick={() => startChat(pill.prompt)}
+                  onClick={() => {
+                    if (pill.intent) dispatch({ type: 'SET_INTENT', payload: pill.intent });
+                    startChat(pill.prompt, pill.intent);
+                  }}
                   variants={itemVariants}
                   whileHover={{ scale: 1.03, y: -2 }}
                   whileTap={{ scale: 0.97 }}

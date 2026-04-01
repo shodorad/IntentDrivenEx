@@ -474,13 +474,6 @@ IMPORTANT RULES FOR THIS CONVERSATION:
         subtext: 'You\'ve reached out 5 times — let\'s figure this out together.',
       },
       {
-        id: 'sig-005-b',
-        severity: 'warning',
-        icon: '📉',
-        headline: 'Average signal: 2 bars',
-        subtext: 'Your connection has been consistently weak in your area.',
-      },
-      {
         id: 'sig-005-c',
         severity: 'warning',
         icon: '📵',

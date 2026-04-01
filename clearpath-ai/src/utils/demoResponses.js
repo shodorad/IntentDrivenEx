@@ -12,7 +12,35 @@ const msg = (t, pills) =>
     : t;
 
 // Standard pills shown after every flow completion
-const POST_FLOW_PILLS = ['Ask something else', 'Go back home', "I'm done for now"];
+const POST_FLOW_PILLS = [
+  { label: 'Ask something else', intent: 'show_options' },
+  { label: 'Go back home',       intent: 'done'         },
+  { label: "I'm done for now",   intent: 'done'         },
+];
+
+// Shared terminal response — shown when intent === 'done' or 'reset'
+function getGenericDoneResponse() {
+  return msg(
+    `You're all set! Come back any time.\n\nIs there anything else before you go?`,
+    [
+      { label: 'One more thing',  intent: 'show_options' },
+      { label: 'All done',        intent: 'reset'        },
+    ]
+  );
+}
+
+// Shared clarify response — shown when user types free text with no activeIntent at turn > 1
+function getGenericClarifyResponse() {
+  return msg(
+    `I want to make sure I help with the right thing. Were you looking to:`,
+    [
+      { label: 'Add data now',          intent: 'quick_refill'   },
+      { label: 'Understand my usage',   intent: 'diagnose_usage' },
+      { label: 'Change my plan',        intent: 'plan_change'    },
+      { label: 'Go back home',          intent: 'done'           },
+    ]
+  );
+}
 
 // S3-002: Detect if the user's first message came from a diagnose_usage action pill
 // (pill.prompt === pill.label === exact English label of the suggestedAction)
@@ -27,11 +55,15 @@ function isDiagnoseAction(firstMsg, persona) {
 // S3-002: Return diagnosisFlow.intro response for diagnose_usage Turn 1
 function getDiagnoseUsageResponse(persona) {
   const flow = persona.diagnosisFlow;
-  const skipLabel =
-    persona.intentCategory === 'upgrade'
-      ? 'Skip — show upgrade options'
-      : 'Skip — add 5 GB for $15';
-  return msg(flow.intro, ["Let's do it", skipLabel, 'Skip — change my plan']);
+  const skipLabel  = persona.intentCategory === 'upgrade'
+    ? 'Skip — show upgrade options'
+    : 'Skip — add 5 GB for $15';
+  const skipIntent = persona.intentCategory === 'upgrade' ? 'upgrade_now' : 'quick_refill';
+  return msg(flow.intro, [
+    { label: "Let's do it",            intent: null             },
+    { label: skipLabel,                intent: skipIntent       },
+    { label: 'Skip — change my plan',  intent: 'plan_change'   },
+  ]);
 }
 
 // ─── Persona-specific opening responses (Turn 1) ─────────────────────────────
@@ -43,7 +75,12 @@ function getPersonaOpeningResponse(persona) {
     case 'us-001': // Maria — recurring data problem
       return msg(
         `Hi Maria. You have ${a.dataRemaining} left and ${a.daysUntilRenewal} days until your plan renews on ${a.renewalDate}.\n\nOne thing I noticed: only 22% of your usage goes through Wi-Fi — your phone is using cellular most of the time, even when you might not need to.\n\nThat's worth looking at before spending anything. Want me to walk you through a couple of quick fixes, or add data right now?`,
-        ['Why am I running out?', 'Quick Refill — $15', 'Change my plan', "I'm fine for now"]
+        [
+          { label: 'Why am I running out?', intent: 'diagnose_usage' },
+          { label: 'Quick Refill — $15',   intent: 'quick_refill'   },
+          { label: 'Change my plan',        intent: 'plan_change'    },
+          { label: "I'm fine for now",      intent: 'done'           },
+        ]
       );
 
     case 'us-002': // Carlos — plan expiring in 2 days
@@ -66,7 +103,7 @@ function getPersonaOpeningResponse(persona) {
 
     case 'us-005': // Angela — persistent connectivity issues
       return msg(
-        `Hi Angela. I can see this has been a rough stretch — here's what I see on your account:\n\n📊 ${a.supportCallsThisMonth} contacts | this month | warn\n📊 ${a.avgSignalBars} / 5 bars | avg signal | critical\n📊 ${a.droppedCallsThisWeek} dropped calls | this week | critical\n\n💡 That's a pattern, not a one-off. Let me check for known network issues in your area first — that's the fastest thing to rule out.`,
+        `Hi Angela. I can see this has been a rough stretch — here's what I see on your account:\n\n📊 ${a.supportCallsThisMonth} | support calls this month | warn\n📊 ${a.avgSignalBars} / 5 bars | avg signal | critical\n📊 ${a.droppedCallsThisWeek} dropped calls | this week | critical\n\n💡 That's a pattern, not a one-off. Let me check for known network issues in your area first — that's the fastest thing to rule out.`,
         ['Check for outages now', 'Walk me through a fix', 'Just talk to someone', 'Is there a plan with better coverage?']
       );
 
@@ -132,261 +169,229 @@ function getPersonaOpeningResponse(persona) {
 
 // ─── Per-persona multi-turn flow handlers ────────────────────────────────────
 
-function getMariaTurnResponse(userMsgs, turn) {
-  const first  = userMsgs[0]?.content?.toLowerCase() || '';
-  const prev   = userMsgs[turn - 2]?.content?.toLowerCase() || '';
-  const latest = userMsgs[turn - 1]?.content?.toLowerCase() || '';
+function getMariaTurnResponse(userMsgs, intentTurn, activeIntent, persona) {
+  const a = persona?.account || {};
+  const latest = (userMsgs[userMsgs.length - 1]?.content || '').toLowerCase();
 
-  const onDiagnose = first.includes('why') || first.includes('running out') || first.includes('keep happening');
-  const onRefill   = first.includes('quick refill') || first.includes('$15') || first.includes('add data');
-  const onPlan     = first.includes('change my plan') || first.includes('plan options');
+  switch (activeIntent) {
 
-  // S3-002/S3-005: New diagnosis flow — Turn 1 was the landing pill "Why am I running out?"
-  // and Turn 2 is "Let's do it". Steps are shifted 1 turn earlier vs the old flow.
-  const isNewDiagFlow = onDiagnose &&
-    userMsgs[1]?.content?.toLowerCase().includes("let's do it");
+    // ── DIAGNOSE USAGE FLOW ──────────────────────────────────────────
+    case 'diagnose_usage':
+      return getMariaDiagnoseResponse(latest, intentTurn, a);
 
-  // ── NEW Diagnosis path (S3-002/S3-005) ─────────────────────────
-  if (isNewDiagFlow) {
-    if (turn === 2) {
-      // Step 1: Wi-Fi connection question
+    // ── QUICK REFILL FLOW ────────────────────────────────────────────
+    case 'quick_refill':
+      return getMariaRefillResponse(latest, intentTurn, a);
+
+    // ── ADD DATA FLOW ────────────────────────────────────────────────
+    case 'add_data':
+      return getMariaAddDataResponse(latest, intentTurn, a);
+
+    // ── PLAN CHANGE FLOW ─────────────────────────────────────────────
+    case 'plan_change':
+      return getMariaPlanResponse(latest, intentTurn, a);
+
+    // ── UPGRADE NOW ──────────────────────────────────────────────────
+    case 'upgrade_now':
       return msg(
-        `Are you connected to Wi-Fi when you're at home or at work?`,
-        ['Yes, always', 'Sometimes', "I'm not sure"]
+        `Switching you to Total 5G Unlimited now.\n\n┌─────────────────────────────────────────────┐\n│  Total 5G Unlimited                         │\n│  $55/mo  (was $40/mo)                       │\n│  Prorated today: ~$7.14 (14 days left)      │\n│  Charged to: ${a.savedCard || 'card on file'}                 │\n└─────────────────────────────────────────────┘\n\nConfirm?`,
+        [
+          { label: 'Yes — upgrade now',         intent: 'confirm_refill'    },
+          { label: 'Switch at renewal instead', intent: 'upgrade_at_renewal' },
+          { label: 'Cancel',                    intent: 'cancel'             },
+        ]
       );
-    }
-    if (turn === 3) {
-      // latest = answer to Step 1 Wi-Fi question
-      if (latest.includes('sometimes') || latest.includes('not sure')) {
-        return msg(
-          `That could be it. When Wi-Fi is slow, your phone automatically switches to cellular — burning through data without you noticing.\n\nDo you stream video or music on cellular — not just on Wi-Fi?`,
-          ['Yes, often', 'Occasionally', 'Rarely']
-        );
-      }
-      if (latest.includes('always')) {
-        return msg(
-          `Good, that's not the issue then. One more: do you have apps set to auto-update or sync in the background on cellular?`,
-          ['Probably yes', "I've disabled it", 'Not sure']
-        );
-      }
+
+    // ── UPGRADE AT RENEWAL ───────────────────────────────────────────
+    case 'upgrade_at_renewal':
       return msg(
-        `Do you stream video or music on cellular — not just on Wi-Fi?`,
-        ['Yes, often', 'Occasionally', 'Rarely']
+        `Done — your upgrade to Total 5G Unlimited is scheduled for ${a.renewalDate || 'your next renewal'}. Nothing to pay today.\n\nWant me to add 5 GB now to cover you until then?`,
+        [
+          { label: 'Yes — add 5 GB for $15', intent: 'quick_refill' },
+          { label: "I'll manage",             intent: 'done'          },
+        ]
       );
-    }
-    if (turn === 4) {
-      const step1Ans = userMsgs[2]?.content?.toLowerCase() || '';
-      if (step1Ans.includes('always')) {
-        // User took "always on Wi-Fi" shortcut at Step 1 — latest is background apps answer
-        return msg(
-          `Here are three free fixes that could make a real difference:\n\n✅ Turn off "Wi-Fi Assist" in Settings — stops your phone from silently switching to cellular when Wi-Fi slows down\n✅ Set streaming apps to "Wi-Fi only" — YouTube and Netflix can each burn 1–3 GB per hour on HD over cellular\n✅ Disable Background App Refresh — go to Settings → General → Background App Refresh and turn it off for apps that don't need to stay current in the background\n\nWant to try these first? If they don't solve it, I can add data or change your plan in seconds.`,
-          ["I'll try those", 'Add data for now — $15', 'Show plan options']
-        );
-      }
-      // latest = streaming answer (Step 2) → Step 3: background apps
+
+    // ── KEEP PLAN ────────────────────────────────────────────────────
+    case 'keep_plan':
       return msg(
-        `${latest.includes('yes') || latest.includes('often') || latest.includes('occasionally') ? 'That can use 1–3 GB per hour on HD.\n\n' : ''}Last one: do you have apps set to auto-update or sync in the background on cellular?`,
-        ['Probably yes', "I've disabled it", 'Not sure']
+        `No problem. You're staying on Total Base 5G. If you need data before ${a.renewalDate || 'your renewal'}, come back and I can add it in seconds.\n\nAnything else I can help with?`,
+        [
+          { label: 'Add data now — $15', intent: 'quick_refill' },
+          { label: 'Go back home',       intent: 'done'          },
+        ]
       );
-    }
-    if (turn === 5) {
-      // latest = background apps answer → free fixes + escalation
-      if (latest.includes('add data') || latest.includes('$15')) return `Adding 5 GB to your account…\n[REFILL_FLOW]`;
-      if (latest.includes('plan') || latest.includes('options')) return msg(
-        `Based on your usage, you've needed more than 5 GB almost every month. Here's what would stop this from happening again:\n\n**Total 5G Unlimited** — $55/mo\n✓ Unlimited data (no more running out)\n✓ 10 GB hotspot\n✓ Disney+ included\n✓ Wi-Fi Calling\n\nThat's $15 more than your current plan.\n\nYou could start now — you'd only pay ~$7.14 today (prorated for the 14 days left in your cycle). Or switch at your next renewal on Apr 9 with no charge today.`,
-        ['Start now — ~$7 today', 'Switch on Apr 9 — free', 'Stay on my current plan']
-      );
+
+    // ── CONFIRM REFILL ───────────────────────────────────────────────
+    case 'confirm_refill':
+      return `Confirming now.\n[REFILL_FLOW]`;
+
+    // ── SHOW OPTIONS ─────────────────────────────────────────────────
+    case 'show_options':
       return msg(
-        `Here are three free fixes that could make a real difference:\n\n✅ Turn off "Wi-Fi Assist" in Settings — stops your phone from silently switching to cellular when Wi-Fi slows down\n✅ Set streaming apps to "Wi-Fi only" — YouTube and Netflix can each burn 1–3 GB per hour on HD over cellular\n✅ Disable Background App Refresh — go to Settings → General → Background App Refresh and turn it off for apps that don't need to stay current in the background\n\nWant to try these first? If they don't solve it, I can add data or change your plan in seconds.`,
-        ["I'll try those", 'Add data for now — $15', 'Show plan options']
+        `Here are your options:\n\n• Add 5 GB for $15 — activates instantly, keeps your current plan\n• Upgrade to Unlimited — $55/mo, no more caps, includes Disney+\n• Wait until ${a.renewalDate || 'your renewal'} — your plan renews soon`,
+        [
+          { label: 'Add 5 GB — $15',      intent: 'quick_refill' },
+          { label: 'Switch to Unlimited', intent: 'plan_change'  },
+          { label: "I'll wait",            intent: 'cancel'       },
+        ]
       );
-    }
-    if (turn === 6) {
-      if (latest.includes('add data') || latest.includes('$15')) return `Adding 5 GB to your account…\n[REFILL_FLOW]`;
-      if (latest.includes('plan') || latest.includes('options')) return msg(
-        `Based on your usage, you've needed more than 5 GB almost every month. Here's what would stop this from happening again:\n\n**Total 5G Unlimited** — $55/mo\n✓ Unlimited data (no more running out)\n✓ 10 GB hotspot\n✓ Disney+ included\n✓ Wi-Fi Calling\n\nThat's $15 more than your current plan.\n\nYou could start now — you'd only pay ~$7.14 today (prorated for the 14 days left in your cycle). Or switch at your next renewal on Apr 9 with no charge today.`,
-        ['Start now — ~$7 today', 'Switch on Apr 9 — free', 'Stay on my current plan']
-      );
+
+    // ── CANCEL ───────────────────────────────────────────────────────
+    case 'cancel':
       return msg(
-        `Got it — trying those fixes is a great first step. If you run out before Apr 9, just come back and I can add data instantly or switch your plan.\n\nAnything else I can help with?`,
-        POST_FLOW_PILLS
+        `No problem. Is there anything else I can help you with?`,
+        [
+          { label: 'Why am I running out?', intent: 'diagnose_usage' },
+          { label: 'Quick Refill — $15',   intent: 'quick_refill'   },
+          { label: 'Go back home',          intent: 'done'           },
+        ]
       );
-    }
-    if (turn > 6) {
-      if (latest.includes('add data') || latest.includes('$15')) return `Adding 5 GB to your account…\n[REFILL_FLOW]`;
-      if (latest.includes('plan') || latest.includes('options')) return msg(
-        `Based on your usage, you've needed more than 5 GB almost every month. Here's what would stop this from happening again:\n\n**Total 5G Unlimited** — $55/mo\n✓ Unlimited data (no more running out)\n✓ 10 GB hotspot\n✓ Disney+ included\n✓ Wi-Fi Calling\n\nThat's $15 more than your current plan.\n\nYou could start now — you'd only pay ~$7.14 today (prorated for the 14 days left in your cycle). Or switch at your next renewal on Apr 9 with no charge today.`,
-        ['Start now — ~$7 today', 'Switch on Apr 9 — free', 'Stay on my current plan']
+
+    // ── TRY FREE FIXES ───────────────────────────────────────────────
+    case 'try_free_fixes':
+      return msg(
+        `Great call. Here's a recap of the three fixes to try:\n\n1. Settings → turn off "Wi-Fi Assist"\n2. YouTube/Netflix → set to "Wi-Fi only"\n3. Settings → General → Background App Refresh → off\n\nIf you run out before ${a.renewalDate || 'your renewal'}, come back and I can add data instantly.\n\nAnything else?`,
+        [
+          { label: 'Add data anyway — $15', intent: 'quick_refill' },
+          { label: 'Go back home',           intent: 'done'          },
+        ]
       );
-    }
-    return null;
+
+    // ── DONE ─────────────────────────────────────────────────────────
+    case 'done':
+      return msg(
+        `You're all set. Come back any time!\n\nIs there anything else before you go?`,
+        [
+          { label: 'One more thing', intent: 'show_options' },
+          { label: 'Go back home',   intent: 'reset'        },
+        ]
+      );
+
+    default:
+      return null;
   }
+}
 
-  // ── OLD Diagnosis path (Turn 1 was generic opening, Turn 2+ is "why" pill from AI response) ──
-  if (onDiagnose) {
-    if (turn === 2) {
-      // R11: Escape hatch — handle skip actions from diagnosisFlow.intro (new flow, non-"Let's do it")
-      if (latest.includes('skip') && (latest.includes('add data') || latest.includes('just add') || latest.includes('$15'))) {
-        return `Adding 5 GB to your account…\n[REFILL_FLOW]`;
-      }
-      if (latest.includes('skip') && (latest.includes('plan') || latest.includes('change'))) {
-        return msg(
-          `Here's what would stop this from happening:\n\n**Total 5G Unlimited** — $55/mo\n✓ Unlimited data (no more running out)\n✓ 10 GB hotspot\n✓ Wi-Fi Calling\n\nThat's $15 more than your current plan. Want to switch?`,
-          ['Yes, switch to Unlimited', 'How much more per month?', 'No thanks — keep my plan']
-        );
-      }
-      return msg(
-        `I can also see that only 22% of your usage is going through Wi-Fi — which means most of your data is being used on cellular, even when you might not need to.\n\nWant me to walk through a couple of free fixes, or would you rather skip straight to adding data or changing your plan?`,
-        ["Let's figure it out", 'Skip — add data for $15', 'Skip — change my plan']
-      );
-    }
-    if (turn === 3) {
-      if (prev.includes("let's") || prev.includes('figure') || prev.includes('let me')) {
-        return msg(
-          `Are you connected to Wi-Fi when you're at home or at work?`,
-          ['Yes, always', 'Sometimes', "I'm not sure"]
-        );
-      }
-      if (prev.includes('add data') || prev.includes('$15') || prev.includes('skip')) {
-        return `Adding 5 GB to your account…\n[REFILL_FLOW]`;
-      }
-      if (prev.includes('change') || prev.includes('plan')) {
-        return msg(
-          `Here's what would stop this from happening:\n\n**Total 5G Unlimited** — $55/mo\n✓ Unlimited data (no more running out)\n✓ 10 GB hotspot\n✓ Wi-Fi Calling\n\nThat's $15 more than your current plan. Want to switch?`,
-          ['Yes, switch to Unlimited', 'How much more per month?', 'No thanks — keep my plan']
-        );
-      }
-    }
-    if (turn === 4) {
-      if (prev.includes('sometimes') || prev.includes('not sure')) {
-        return msg(
-          `That could be it. When Wi-Fi is slow, your phone automatically switches to cellular — burning through data without you noticing.\n\nDo you stream video or music on cellular — not just on Wi-Fi?`,
-          ['Yes, often', 'Occasionally', 'Rarely']
-        );
-      }
-      if (prev.includes('always')) {
-        return msg(
-          `Good, that's not the issue then. One more: do you have apps set to auto-update or sync in the background on cellular?`,
-          ['Probably yes', "I've disabled it", 'Not sure']
-        );
-      }
-    }
-    if (turn === 5) {
-      if (prev.includes('yes') || prev.includes('often') || prev.includes('occasionally')) {
-        return msg(
-          `That can use 1–3 GB per hour on HD. One more: do you have apps set to auto-update or sync in the background on cellular?`,
-          ['Probably yes', "I've disabled it", 'Not sure']
-        );
-      }
-      // From "always connected to Wi-Fi" path, answering background apps
-      return msg(
-        `Here are three free fixes that could make a real difference:\n\n✅ Turn off "Wi-Fi Assist" in Settings — stops your phone from silently switching to cellular when Wi-Fi slows down\n✅ Set streaming apps to "Wi-Fi only" — YouTube and Netflix can each burn 1–3 GB per hour on HD over cellular\n✅ Disable Background App Refresh — go to Settings → General → Background App Refresh and turn it off for apps that don't need to stay current in the background\n\nWant to try these first? If they don't solve it, I can add data or change your plan in seconds.`,
-        ["I'll try those", 'Add data for now — $15', 'Show plan options']
-      );
-    }
-    if (turn === 6) {
-      if (prev.includes('probably') || prev.includes('not sure') || prev.includes('disabled')) {
-        return msg(
-          `Here are three free fixes that could make a real difference:\n\n✅ Turn off "Wi-Fi Assist" in Settings — stops your phone from silently switching to cellular when Wi-Fi slows down\n✅ Set streaming apps to "Wi-Fi only" — YouTube and Netflix can each burn 1–3 GB per hour on HD over cellular\n✅ Disable Background App Refresh — go to Settings → General → Background App Refresh and turn it off for apps that don't need to stay current in the background\n\nWant to try these first? If they don't solve it, I can add data or change your plan in seconds.`,
-          ["I'll try those", 'Add data for now — $15', 'Show plan options']
-        );
-      }
-      if (prev.includes('add data') || prev.includes('$15')) {
-        return `Adding 5 GB to your account…\n[REFILL_FLOW]`;
-      }
-      if (prev.includes('plan') || prev.includes('options')) {
-        return msg(
-          `Here's what would stop this from happening:\n\n**Total 5G Unlimited** — $55/mo\n✓ Unlimited data (no more running out)\n✓ 10 GB hotspot\n✓ Wi-Fi Calling\n\nThat's $15 more than your current plan. Want to switch?`,
-          ['Yes, switch to Unlimited', 'How much more per month?', 'No thanks — keep my plan']
-        );
-      }
-      return msg(
-        `Got it — trying those fixes is a great first step. If you run out before Apr 9, just come back and I can add data instantly or switch your plan.\n\nAnything else I can help with?`,
-        POST_FLOW_PILLS
-      );
-    }
-    // Late turns after free fixes shown
-    if (turn > 6) {
-      if (prev.includes('add data') || prev.includes('$15')) {
-        return `Adding 5 GB to your account…\n[REFILL_FLOW]`;
-      }
-      if (prev.includes('plan') || prev.includes('options')) {
-        return msg(
-          `Here's what would stop this from happening:\n\n**Total 5G Unlimited** — $55/mo\n✓ Unlimited data (no more running out)\n✓ 10 GB hotspot\n✓ Wi-Fi Calling\n\nThat's $15 more than your current plan. Want to switch?`,
-          ['Yes, switch to Unlimited', 'How much more per month?', 'No thanks — keep my plan']
-        );
-      }
-    }
-  }
-
-  // ── Quick Refill direct path ─────────────────────────────────────
-  if (onRefill) {
-    if (turn === 2) {
-      return msg(
-        `Sure. Want to add 5 GB right now for $15? I'll charge your Visa ••••4291. Takes about 2 seconds.`,
-        ['Yes — do it', 'Show other options', 'Cancel']
-      );
-    }
-    if (turn === 3) {
-      if (prev.includes('yes') || prev.includes('do it')) {
-        return `Adding 5 GB to your account…\n[REFILL_FLOW]`;
-      }
-      if (prev.includes('other options') || prev.includes('show')) {
-        return msg(
-          `Here are your options:\n\n• Add 5 GB for $15 — activates instantly, keeps your current plan\n• Upgrade to Unlimited — $55/mo, no more caps, includes Disney+\n• Wait until Apr 9 — your plan renews in 14 days`,
-          ['Add 5 GB — $15', 'Switch to Unlimited', "I'll wait"]
-        );
-      }
-    }
-    if (turn === 4) {
-      if (prev.includes('add') || prev.includes('$15')) {
-        return `Adding 5 GB to your account…\n[REFILL_FLOW]`;
-      }
-      if (prev.includes('unlimited') || prev.includes('switch')) {
-        return msg(
-          `Here's what would stop this from happening:\n\n**Total 5G Unlimited** — $55/mo\n✓ Unlimited data (no more running out)\n✓ 10 GB hotspot\n✓ Wi-Fi Calling\n\nThat's $15 more than your current plan. Want to switch?`,
-          ['Yes, switch to Unlimited', 'How much more per month?', 'No thanks — keep my plan']
-        );
-      }
-    }
-  }
-
-  // ── Change plan direct path ──────────────────────────────────────
-  if (onPlan) {
-    if (turn === 2) {
-      return msg(
-        `Based on your usage, you've needed more than 5 GB almost every month. Here's what would stop this from happening again:\n\n**Total 5G Unlimited** — $55/mo\n✓ Unlimited data (no more running out)\n✓ 10 GB hotspot\n✓ Disney+ included\n✓ Wi-Fi Calling\n\nThat's $15 more than your current plan.\n\nYou could start now — you'd only pay ~$7.14 today (prorated for the 14 days left in your cycle). Or switch at your next renewal on Apr 9 with no charge today.`,
-        ['Start now — ~$7 today', 'Switch on Apr 9 — free', 'Stay on my current plan']
-      );
-    }
-  }
-
-  // ── Generic refill fallback (turn 2+) ────────────────────────────
-  if (turn === 2) {
+// ── DIAGNOSIS SUB-FLOW ───────────────────────────────────────────────────────
+function getMariaDiagnoseResponse(latest, intentTurn, a) {
+  // intentTurn 0: Intro — surface the Wi-Fi stat
+  if (intentTurn === 0) {
     return msg(
-      `Got it. A quick $15 add-on gives you 5 GB instantly — no plan change needed. Want me to set that up?`,
-      ['Yes, refill now', 'Show me other options', "I'll wait it out"]
+      `I can see you're mostly on cellular — only ${a.wifiUsagePercent || 22}% of your usage goes through Wi-Fi. Let's see if there's a free fix first.\n\nWant me to walk you through a couple of quick checks?`,
+      [
+        { label: "Let's do it",              intent: null          },
+        { label: 'Skip — add 5 GB for $15', intent: 'quick_refill' },
+        { label: 'Skip — change my plan',   intent: 'plan_change'  },
+      ]
     );
   }
-  if (turn === 3) {
-    if (prev.includes('yes') || prev.includes('refill') || prev.includes('now')) {
-      return `Great — setting that up now.\n[REFILL_FLOW]`;
-    }
+
+  // intentTurn 1: Wi-Fi question — all answers continue the diagnose flow
+  if (intentTurn === 1) {
     return msg(
-      `No problem! Here are some other options:`,
-      ['Add 5 GB of data — $10', 'Switch to Unlimited — see current price', 'Just help me use less data']
+      `Are you connected to Wi-Fi when you're at home or at work?`,
+      [
+        { label: 'Yes, always',  intent: null },
+        { label: 'Sometimes',    intent: null },
+        { label: "I'm not sure", intent: null },
+      ]
     );
   }
-  if (turn === 4 && (prev.includes('booster') || prev.includes('$15') || prev.includes('add'))) {
-    return `Adding 5 GB to your account…\n[REFILL_FLOW]`;
-  }
-  if (turn === 4 && (prev.includes('unlimited') || prev.includes('$55'))) {
+
+  // intentTurn 2: Streaming question — all answers continue the diagnose flow
+  if (intentTurn === 2) {
+    const wifiNote = latest.includes('sometimes') || latest.includes('not sure')
+      ? `That could be it — when Wi-Fi is slow your phone silently switches to cellular.\n\n`
+      : '';
     return msg(
-      `Here's what would stop this from happening:\n\n**Total 5G Unlimited** — $55/mo\n✓ Unlimited data (no more running out)\n✓ 10 GB hotspot\n✓ Wi-Fi Calling\n\nThat's $15 more than your current plan. Want to switch?`,
-      ['Yes, switch to Unlimited', 'How much more per month?', 'No thanks — keep my plan']
+      `${wifiNote}Do you stream video or music on cellular — not just on Wi-Fi?`,
+      [
+        { label: 'Yes, often',   intent: null },
+        { label: 'Occasionally', intent: null },
+        { label: 'Rarely',       intent: null },
+      ]
     );
   }
-  return null;
+
+  // intentTurn 3: Background apps — all answers continue the diagnose flow
+  if (intentTurn === 3) {
+    const streamingNote = latest.includes('often') || latest.includes('occasionally')
+      ? `That can use 1–3 GB per hour on HD.\n\n`
+      : '';
+    return msg(
+      `${streamingNote}Last one: do you have apps set to auto-update or sync in the background on cellular?`,
+      [
+        { label: 'Probably yes',    intent: null },
+        { label: "I've disabled it", intent: null },
+        { label: 'Not sure',         intent: null },
+      ]
+    );
+  }
+
+  // intentTurn 4+: Show free fixes — exit pills leave the flow
+  return msg(
+    `Here are three free fixes that could make a real difference:\n\n✅ Turn off "Wi-Fi Assist" in Settings — stops your phone from silently switching to cellular when Wi-Fi slows down\n✅ Set streaming apps to "Wi-Fi only" — YouTube and Netflix can each burn 1–3 GB per hour on HD over cellular\n✅ Disable Background App Refresh — Settings → General → Background App Refresh and turn it off for apps that don't need to stay current in the background\n\nWant to try these first? If they don't solve it, I can add data or change your plan in seconds.`,
+    [
+      { label: "I'll try those",         intent: 'try_free_fixes' },
+      { label: 'Add data for now — $15', intent: 'quick_refill'   },
+      { label: 'Show plan options',       intent: 'plan_change'    },
+    ]
+  );
+}
+
+// ── REFILL SUB-FLOW ──────────────────────────────────────────────────────────
+function getMariaRefillResponse(latest, intentTurn, a) {
+  // intentTurn 0: Confirm details
+  if (intentTurn === 0) {
+    return msg(
+      `Want to add 5 GB right now for $15? I'll charge your ${a.savedCard || 'card on file'}. Takes about 2 seconds.`,
+      [
+        { label: 'Yes — do it',        intent: 'confirm_refill' },
+        { label: 'Show other options', intent: 'show_options'   },
+        { label: 'Cancel',             intent: 'cancel'         },
+      ]
+    );
+  }
+  // intentTurn 1+: free-text continuation → trigger flow
+  return `Adding 5 GB to your account…\n[REFILL_FLOW]`;
+}
+
+// ── ADD DATA SUB-FLOW ────────────────────────────────────────────────────────
+function getMariaAddDataResponse(latest, intentTurn, a) {
+  if (intentTurn === 0) {
+    return msg(
+      `Want to add 5 GB for $10? I'll charge your ${a.savedCard || 'card on file'}. Activates instantly.`,
+      [
+        { label: 'Yes — do it', intent: 'confirm_refill' },
+        { label: 'Cancel',      intent: 'cancel'         },
+      ]
+    );
+  }
+  return `Adding 5 GB to your account…\n[REFILL_FLOW]`;
+}
+
+// ── PLAN CHANGE SUB-FLOW ─────────────────────────────────────────────────────
+function getMariaPlanResponse(latest, intentTurn, a) {
+  if (intentTurn === 0) {
+    return msg(
+      `Based on your usage, you've needed more than 5 GB almost every month. Here's what would stop this from happening again:\n\n**Total 5G Unlimited** — $55/mo\n✓ Unlimited data (no more running out)\n✓ 10 GB hotspot\n✓ Disney+ included\n✓ Wi-Fi Calling\n\nThat's $15 more than your current plan.\n\nYou could start now — you'd only pay ~$7.14 today (prorated). Or switch at your next renewal on ${a.renewalDate || 'your renewal date'} with no charge today.`,
+      [
+        { label: 'Start now — ~$7 today',                         intent: 'upgrade_now'        },
+        { label: `Switch on ${a.renewalDate || 'renewal'} — free`, intent: 'upgrade_at_renewal' },
+        { label: 'Stay on my current plan',                        intent: 'keep_plan'          },
+      ]
+    );
+  }
+  // Free-text continuation
+  return msg(
+    `Would you like to upgrade now or wait until your renewal on ${a.renewalDate || 'your renewal date'}?`,
+    [
+      { label: 'Upgrade now — ~$7 today',   intent: 'upgrade_now'        },
+      { label: 'Wait until renewal — free', intent: 'upgrade_at_renewal' },
+      { label: 'Never mind',                intent: 'cancel'              },
+    ]
+  );
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -573,7 +578,8 @@ function getAngelaTurnResponse(userMsgs, turn, persona) {
   const _inDiagnosis = !prev.includes('talk to') && !prev.includes('speak with') && !prev.includes('just talk') && !prev.includes('support');
 
   if (turn === 2) {
-    if (prev.includes('talk') || prev.includes('someone') || prev.includes('speak')) {
+    const current = userMsgs[turn - 1]?.content?.toLowerCase() || '';
+    if (current.includes('talk') || current.includes('someone') || current.includes('speak')) {
       const hour = new Date().getHours();
       const available = hour >= 8 && hour < 22;
       return msg(
@@ -585,14 +591,25 @@ function getAngelaTurnResponse(userMsgs, turn, persona) {
           : ['Request callback tomorrow', 'Call now — 1-866-663-3633']
       );
     }
+    if (current.includes('plan') || current.includes('coverage') || current.includes('better')) {
+      return `Good question — and coverage matters a lot when you're seeing dropped calls.\n\nYou're on ${a.plan || 'Total Base 5G'} right now. Here are plans that may help with your signal situation:\n[RECOMMENDATIONS]${JSON.stringify([
+        { type: 'plan', id: '5g-unlimited',      reason: 'Includes Wi-Fi Calling — uses your home Wi-Fi for calls when cellular is weak. Best fix for dropped calls indoors.', isBest: true },
+        { type: 'plan', id: '5g-plus-unlimited', reason: 'Premium 5G speeds with the highest network priority — better performance in congested areas.', isBest: false },
+        { type: 'plan', id: 'base-5g',           reason: 'Your current plan tier — most affordable, but no Wi-Fi Calling.', isBest: false },
+      ])}[/RECOMMENDATIONS]`;
+    }
     // Outage check / walk through a fix / general
     return msg(
       `Network check complete:\n• Active outages in your area: None ✓\n• Root cause: Likely a device or settings issue\n\nI'll walk you through 4 quick fixes that resolve this 90% of the time. Step 1: have you restarted your ${a.device || 'phone'} recently?`,
-      ['Yes, still the same', 'No — let me try now', 'I restart it often']
+      ['Restarted, problem\'s still there', 'No — let me try now', 'I restart it often']
     );
   }
 
   if (turn === 3) {
+    const current3 = userMsgs[turn - 1]?.content?.toLowerCase() || '';
+    if (current3.includes('live chat') || current3.includes('start chat') || current3.includes('callback') || current3.includes('call back') || current3.includes('request callback')) {
+      return `Connecting you now — Jordan M. will be with you in about 4 minutes.\n[LIVE_CHAT_FLOW]`;
+    }
     if (prev.includes('no') || prev.includes('let me try')) {
       return msg(
         `Try it now and let me know how it goes — I'll wait.\n\nDid a restart help at all?`,
@@ -1255,7 +1272,58 @@ function getNinaTurnResponse(userMsgs, turn) {
 }
 
 // ─── Main export ──────────────────────────────────────────────────────────────
-export function generateDemoResponse(messages, persona) {
+// ─── Browse Intent Handler ─────────────────────────────────────────────────
+function handleBrowseIntent(intent, persona) {
+  const a = persona?.account;
+  switch (intent) {
+    case 'browse_plans': {
+      const intro = a?.plan
+        ? `You're currently on ${a.plan} at ${a.planPrice}. Here are all available plans:`
+        : `Here are all available plans:`;
+      return `${intro}\n[RECOMMENDATIONS]${JSON.stringify([
+        { type: 'plan', id: 'base-5g',          reason: 'Most affordable — 5 GB of 5G data at $20/mo. No contract, no surprises.', isBest: true  },
+        { type: 'plan', id: '5g-unlimited',      reason: 'Unlimited data with no caps. Includes 15 GB hotspot and Disney+ Basic.',   isBest: false },
+        { type: 'plan', id: '5g-plus-unlimited', reason: 'Our top tier — premium 5G speeds, 25 GB hotspot, and Disney+ Premium.',   isBest: false },
+      ])}[/RECOMMENDATIONS]`;
+    }
+    case 'browse_phones': {
+      const intro = a?.device
+        ? `You're currently using a ${a.device}. Here are phones that would be an upgrade:`
+        : `Here are our available phones:`;
+      return `${intro}\n[RECOMMENDATIONS]${JSON.stringify([
+        { type: 'phone', id: 'samsung-galaxy-a17-5g', reason: 'Best value — free with activation. 5G capable, long battery life.',        isBest: true  },
+        { type: 'phone', id: 'moto-g-stylus-2025',    reason: 'Great all-rounder — built-in stylus, sharp display, $49 after deal.',      isBest: false },
+        { type: 'phone', id: 'google-pixel-10a',       reason: 'Best camera in the lineup — Google AI photography and pure Android.',     isBest: false },
+      ])}[/RECOMMENDATIONS]`;
+    }
+    case 'browse_deals':
+      return msg(
+        `Here are the current deals available to you:`,
+        [
+          { label: 'Free Galaxy A36 with activation',  intent: 'deal_galaxy'   },
+          { label: 'iPhone 17e — $0 down + plan',      intent: 'deal_iphone'   },
+          { label: 'Home Internet — first month free', intent: 'deal_internet' },
+          { label: 'See all deals',                    intent: 'browse_all'    },
+        ]
+      );
+    case 'browse_rewards': {
+      const pts = a?.rewardsPoints || 0;
+      const expiring = a?.rewardsExpiring || 0;
+      return msg(
+        `You have ${pts} Rewards Points on your account.${expiring ? ` ${expiring} pts are expiring in ${a.rewardsExpiringDays} days.` : ''}\n\nYou can use your points for data add-ons, calling cards, or device discounts. Want to see what you can redeem right now?`,
+        [
+          { label: 'What can I redeem?',         intent: 'rewards_redeem' },
+          { label: 'Add 5 GB free (1,000 pts)',  intent: 'quick_refill'   },
+          { label: 'Not right now',              intent: 'cancel'          },
+        ]
+      );
+    }
+    default:
+      return null;
+  }
+}
+
+export function generateDemoResponse(messages, persona, activeIntent, intentTurn) {
   const userMessages = messages.filter(m => m.role === 'user');
   const turn = userMessages.length;
   const firstUserMsg = userMessages[0]?.content || '';
@@ -1282,6 +1350,17 @@ export function generateDemoResponse(messages, persona) {
     lastUserMsg.includes('new topic')
   ) {
     return msg("Of course! What else can I help with?", ['Quick refill', 'Check my data', 'Browse phones', 'Talk to someone']);
+  }
+
+  // Intent-first routing: if activeIntent is a browse intent, route directly
+  if (activeIntent === 'browse_plans' || activeIntent === 'browse_phones' ||
+      activeIntent === 'browse_deals' || activeIntent === 'browse_rewards') {
+    return handleBrowseIntent(activeIntent, persona);
+  }
+
+  // Terminal intents: done / reset — show a friendly wrap-up with escape hatches
+  if (activeIntent === 'done' || activeIntent === 'reset') {
+    return getGenericDoneResponse();
   }
 
   // Navigation catch-all: "show me everything", "browse", "what can I do" (Lam §7/§9)
@@ -1352,9 +1431,8 @@ export function generateDemoResponse(messages, persona) {
   }
 
   // Turn 1: Check for diagnose_usage action pill first (S3-002)
-  // If user tapped a "Why am I running out?" / "Why do I keep hitting my cap?" pill,
-  // respond with diagnosisFlow.intro instead of the generic persona opening.
-  if (turn === 1 && persona) {
+  // Skip if activeIntent is already set — intent routing handles it
+  if (!activeIntent && turn === 1 && persona) {
     if (isDiagnoseAction(firstUserMsg, persona)) {
       return getDiagnoseUsageResponse(persona);
     }
@@ -1394,8 +1472,29 @@ export function generateDemoResponse(messages, persona) {
     }
   }
 
-  // Turn 1: Use persona-specific opening if available
-  if (turn === 1 && persona) {
+  // Intent-first routing — if activeIntent is set, route to persona handler regardless of turn
+  if (activeIntent && persona) {
+    let response = null;
+    switch (persona.id) {
+      case 'us-001': response = getMariaTurnResponse(userMessages, intentTurn, activeIntent, persona); break;
+      case 'us-005':
+        // Angela's opening always runs first regardless of which intent pill was clicked;
+        // subsequent turns fall through to getAngelaTurnResponse via the turn > 1 block below
+        if (intentTurn === 0) response = getPersonaOpeningResponse(persona);
+        else response = getAngelaTurnResponse(userMessages, turn, persona);
+        break;
+    }
+    if (response) return response;
+  }
+
+  // Free-text fallback: user typed something at turn > 1 with no activeIntent
+  // (e.g. they dismissed pills and typed freehand after an earlier exchange)
+  if (!activeIntent && turn > 1) {
+    return getGenericClarifyResponse();
+  }
+
+  // Turn 1: Use persona-specific opening if available (only when no activeIntent)
+  if (!activeIntent && turn === 1 && persona) {
     const personaResponse = getPersonaOpeningResponse(persona);
     if (personaResponse) return personaResponse;
   }
@@ -1404,7 +1503,7 @@ export function generateDemoResponse(messages, persona) {
   if (turn > 1 && persona) {
     let response = null;
     switch (persona.id) {
-      case 'us-001': response = getMariaTurnResponse(userMessages, turn); break;
+      case 'us-001': response = getMariaTurnResponse(userMessages, intentTurn, activeIntent, persona); break;
       case 'us-002': response = getCarlosTurnResponse(userMessages, turn, persona); break;
       case 'us-003': response = getPriyaTurnResponse(userMessages, turn, persona); break;
       case 'us-004': response = getJamesTurnResponse(userMessages, turn, persona); break;

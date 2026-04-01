@@ -1,0 +1,210 @@
+.card {
+  background: white;
+  border-radius: 16px;
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
+  overflow: hidden;
+  margin: 8px 0 4px;
+  max-width: 420px;
+  width: 100%;
+}
+
+/* ── Header bar ── */
+.header {
+  background: linear-gradient(135deg, #00B5AD 0%, #009990 100%);
+  padding: 14px 16px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.agentAvatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.25);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  flex-shrink: 0;
+}
+
+.agentInfo {
+  flex: 1;
+  min-width: 0;
+}
+
+.agentName {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: white;
+  line-height: 1.2;
+}
+
+.agentStatus {
+  font-size: 0.75rem;
+  color: rgba(255, 255, 255, 0.85);
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.statusDot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #4ade80;
+  flex-shrink: 0;
+}
+
+.waitBadge {
+  font-size: 0.72rem;
+  color: rgba(255, 255, 255, 0.9);
+  background: rgba(0, 0, 0, 0.15);
+  padding: 3px 8px;
+  border-radius: 100px;
+  white-space: nowrap;
+}
+
+/* ── Connecting state ── */
+.connecting {
+  padding: 32px 24px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+}
+
+.spinner {
+  width: 32px;
+  height: 32px;
+  border: 3px solid rgba(0, 181, 173, 0.15);
+  border-top-color: #00B5AD;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.connectingText {
+  font-size: 0.9rem;
+  color: #6b7280;
+  text-align: center;
+}
+
+/* ── Chat body ── */
+.body {
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  min-height: 120px;
+}
+
+.agentBubble {
+  background: #f3f4f6;
+  border-radius: 4px 16px 16px 16px;
+  padding: 10px 14px;
+  font-size: 0.875rem;
+  color: #111827;
+  line-height: 1.5;
+  max-width: 88%;
+  align-self: flex-start;
+}
+
+.typingBubble {
+  background: #f3f4f6;
+  border-radius: 4px 16px 16px 16px;
+  padding: 10px 14px;
+  display: flex;
+  gap: 4px;
+  align-items: center;
+  width: fit-content;
+}
+
+.dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #9ca3af;
+  animation: bounce 1.2s ease-in-out infinite;
+}
+.dot:nth-child(2) { animation-delay: 0.2s; }
+.dot:nth-child(3) { animation-delay: 0.4s; }
+
+@keyframes bounce {
+  0%, 80%, 100% { transform: translateY(0); }
+  40% { transform: translateY(-5px); }
+}
+
+/* ── Input row ── */
+.inputRow {
+  padding: 12px 16px;
+  border-top: 1px solid #f3f4f6;
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.input {
+  flex: 1;
+  border: 1px solid #e5e7eb;
+  border-radius: 100px;
+  padding: 8px 14px;
+  font-size: 0.85rem;
+  font-family: inherit;
+  outline: none;
+  color: #111827;
+  transition: border-color 0.15s;
+}
+
+.input:focus {
+  border-color: #00B5AD;
+}
+
+.sendBtn {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: #00B5AD;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  flex-shrink: 0;
+  transition: background 0.15s, transform 0.1s;
+}
+
+.sendBtn:hover { background: #009990; transform: scale(1.05); }
+.sendBtn:active { transform: scale(0.96); }
+
+/* ── Footer actions ── */
+.footer {
+  padding: 10px 16px 14px;
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.endBtn {
+  font-family: inherit;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: #6b7280;
+  background: transparent;
+  border: 1px solid #e5e7eb;
+  border-radius: 100px;
+  padding: 5px 14px;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+}
+
+.endBtn:hover {
+  background: #f9fafb;
+  color: #374151;
+}

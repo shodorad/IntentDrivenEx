@@ -49,6 +49,7 @@ export default function RefillFlow() {
   }, [state.showSMSModal, step]);
 
   function handleReturnHome() {
+    dispatch({ type: 'CLEAR_INTENT' });
     dispatch({ type: 'RESET_CHAT' });
   }
 
@@ -69,7 +70,10 @@ export default function RefillFlow() {
       type: 'ADD_MESSAGE',
       payload: { role: 'assistant', content: t('postFlow.thankYou') },
     });
-    setTimeout(() => dispatch({ type: 'RESET_CHAT' }), 3000);
+    setTimeout(() => {
+      dispatch({ type: 'CLEAR_INTENT' });
+      dispatch({ type: 'RESET_CHAT' });
+    }, 3000);
   }
 
   const slideVariants = {

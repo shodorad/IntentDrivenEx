@@ -7,6 +7,7 @@ import ActionPills from '../ActionPills/ActionPills';
 import TypingIndicator from '../TypingIndicator/TypingIndicator';
 import RecommendationCard from '../RecommendationCard/RecommendationCard';
 import RefillFlow from '../RefillFlow/RefillFlow';
+import LiveChatFlow from '../LiveChatFlow/LiveChatFlow';
 import PhoneOrderFlow from '../PhoneOrderFlow/PhoneOrderFlow';
 import styles from './ChatArea.module.css';
 
@@ -19,8 +20,8 @@ export default function ChatArea() {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [state.messages, state.isLoading]);
 
-  const handlePillSelect = (pillText) => {
-    sendMessage(pillText);
+  const handlePillSelect = (pillText, intent) => {
+    sendMessage(pillText, intent);
   };
 
   const handleExplore = (product, type, reason) => {
@@ -44,6 +45,9 @@ export default function ChatArea() {
           <MessageBubble role={msg.role} content={msg.content} />
           {msg.role === 'assistant' && msg.refillFlow && (
             <RefillFlow />
+          )}
+          {msg.role === 'assistant' && msg.liveChatFlow && (
+            <LiveChatFlow />
           )}
           {msg.role === 'assistant' && msg.phoneOrderFlow && (
             <PhoneOrderFlow orderData={msg.phoneOrderFlow} />
