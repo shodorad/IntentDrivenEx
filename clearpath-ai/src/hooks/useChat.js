@@ -2,6 +2,8 @@ import { useCallback } from 'react';
 import { useChat as useChatContext } from '../context/ChatContext';
 import { parseResponse } from '../utils/parseResponse';
 import { generateDemoResponse } from '../utils/demoResponses';
+import { callAPI } from '../utils/api';
+import { getSystemPrompt } from '../data/systemPrompt';
 
 export function useChatActions() {
   const { state, dispatch } = useChatContext();
@@ -26,7 +28,27 @@ export function useChatActions() {
 
       const resolvedIntent = intentOverride ?? state.activeIntent;
       const resolvedTurn   = intentOverride != null ? 0 : state.intentTurn;
-      const responseText = generateDemoResponse(apiMessages, persona, resolvedIntent, resolvedTurn);
+      let responseText = generateDemoResponse(apiMessages, persona, resolvedIntent, resolvedTurn);
+
+      // ── API FALLBACK ──────────────────────────────────────────────────────────
+      // If the scripted engine returns null (unhandled path), call Claude API.
+      // Scripted flows are unaffected — they always return a non-null string.
+      if (!responseText) {
+        try {
+          const systemPrompt = getSystemPrompt(state.persona);
+          responseText = await callAPI(apiMessages, systemPrompt);
+        } catch (err) {
+          console.error('[ChatEngine] API fallback failed:', err);
+          // Hard fallback: show clarify response so conversation doesn't break
+          responseText = `I want to make sure I help with the right thing. Were you looking to:\n[ACTION_PILLS]${JSON.stringify([
+            { label: 'Add data now',        intent: 'quick_refill'   },
+            { label: 'Understand my usage', intent: 'diagnose_usage' },
+            { label: 'Change my plan',      intent: 'plan_change'    },
+            { label: 'Go back home',        intent: 'done'           },
+          ])}[/ACTION_PILLS]`;
+        }
+      }
+      // ─────────────────────────────────────────────────────────────────────────
 
       const { message, actionPills, recommendations, refillFlow, liveChatFlow, phoneOrderFlow, upgradeFlow, internationalFlow, activationFlow, byopFlow } = parseResponse(responseText);
 

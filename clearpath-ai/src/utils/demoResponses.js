@@ -1232,7 +1232,7 @@ function getFlowKey(firstMessage) {
   if (m.includes('cheap') || m.includes('cost') || m.includes('spend less') || m.includes('save') || m.includes('affordable')) return 'cost';
   if (m.includes('new phone') || m.includes('replace') || m.includes('thinking about getting')) return 'new-phone';
   if (m.includes('not working') || m.includes("isn't working") || m.includes('broken') || m.includes("can't connect")) return 'not-working';
-  return 'cost';
+  return null; // No scripted flow matched — API fallback will handle this
 }
 
 // ─── US-009: Alex — BYOP multi-turn flow ──────────────────────────────────────
@@ -1814,7 +1814,10 @@ export function generateDemoResponse(messages, persona, activeIntent, intentTurn
     }
   }
 
-  // Generic multi-turn flow fallback
+  // Generic multi-turn flow fallback — only fires when a known flowKey matched.
+  // If flowKey is null (unrecognized message), return null so the API handles it.
+  if (!flowKey) return null;
+
   const flow = FLOWS[flowKey] || FLOWS['cost'];
   if (turn <= flow.length) {
     const step = flow[turn - 1];
