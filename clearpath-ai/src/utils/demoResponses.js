@@ -415,8 +415,8 @@ function getCarlosTurnResponse(userMsgs, turn, persona) {
     }
     if (prev.includes('upgrade') || prev.includes('unlimited')) {
       return msg(
-        `I have a few options that could work for you. Let me walk you through the details in a moment.`,
-        ['Show me options', 'Talk to someone', 'Return to home']
+        `The Unlimited plan gives you unlimited data, 15 GB hotspot, and Disney+ Basic. Check the current price at totalwireless.com.\n\nYou can upgrade now (prorated) or wait until your next renewal — no charge today.\n\nWhich works better?`,
+        ['Upgrade now — prorated', `Upgrade at renewal — $0 today`, "Tell me what's included", 'Cancel']
       );
     }
     if (prev.includes('see other') || prev.includes('options') || prev.includes('show')) {
@@ -438,10 +438,7 @@ function getCarlosTurnResponse(userMsgs, turn, persona) {
       return `Renewing your Total Base 5G now.\n[REFILL_FLOW]`;
     }
     if (prev.includes('unlimited') || prev.includes('$55') || prev.includes('$65')) {
-      return msg(
-        `I have a few options that could work for you. Let me walk you through the details in a moment.`,
-        ['Show me options', 'Talk to someone', 'Return to home']
-      );
+      return `Switching you to Total 5G Unlimited now.\n[UPGRADE_FLOW]`;
     }
   }
 
@@ -806,16 +803,16 @@ function getDerekTurnResponse(userMsgs, turn, persona) {
     if (turn === 2) {
       // R11: Escape hatches for skip actions after diagnosisFlow.intro
       if (latest.includes('skip') && (latest.includes('upgrade') || latest.includes('options'))) {
-        return msg(
-          `I have a few options that could work for you. Let me walk you through the details in a moment.`,
-          ['Show me options', 'Talk to someone', 'Return to home']
-        );
+        return `Here are your upgrade options:\n[RECOMMENDATIONS]${JSON.stringify([
+          { type: 'plan', id: '5g-unlimited', reason: 'Unlimited data — no more caps. Includes Disney+.', isBest: true },
+          { type: 'plan', id: '5g-plus-unlimited', reason: 'Premium tier — 50 GB hotspot and Disney+ Premium.', isBest: false },
+        ])}[/RECOMMENDATIONS]`;
       }
       if (latest.includes('skip') && (latest.includes('plan') || latest.includes('change'))) {
-        return msg(
-          `I have a few options that could work for you. Let me walk you through the details in a moment.`,
-          ['Show me options', 'Talk to someone', 'Return to home']
-        );
+        return `Here are your plan options:\n[RECOMMENDATIONS]${JSON.stringify([
+          { type: 'plan', id: '5g-unlimited', reason: 'Unlimited data — no more caps. Includes Disney+.', isBest: true },
+          { type: 'plan', id: '5g-plus-unlimited', reason: 'Premium tier — 50 GB hotspot and Disney+ Premium.', isBest: false },
+        ])}[/RECOMMENDATIONS]`;
       }
       // Step 1: streaming question (same in old and new flow at Turn 2)
       return msg(
@@ -861,10 +858,7 @@ function getDerekTurnResponse(userMsgs, turn, persona) {
     }
     if (turn === 5) {
       if (prev.includes('upgrade') || prev.includes('options') || prev.includes('show')) {
-        return msg(
-          `I have a few options that could work for you. Let me walk you through the details in a moment.`,
-          ['Show me options', 'Talk to someone', 'Return to home']
-        );
+        return `Switching you to Total 5G Unlimited now.\n[UPGRADE_FLOW]`;
       }
       return msg(
         `No problem. If you change your mind after trying those tips, I'll be here. Upgrading is always an option at any point.\n\nAnything else I can help with?`,
@@ -891,10 +885,7 @@ function getDerekTurnResponse(userMsgs, turn, persona) {
     }
     if (turn === 3) {
       if (prev.includes('now') || prev.includes('prorated') || prev.includes('upgrade now')) {
-        return msg(
-          `I have a few options that could work for you. Let me walk you through the details in a moment.`,
-          ['Show me options', 'Talk to someone', 'Return to home']
-        );
+        return `Upgrading you to Total 5G Unlimited now.\n[UPGRADE_FLOW]`;
       }
       if (prev.includes('included') || prev.includes("what's included") || prev.includes('tell me')) {
         return msg(
@@ -906,18 +897,12 @@ function getDerekTurnResponse(userMsgs, turn, persona) {
         return `Adding 5 GB to cover you until ${a.renewalDate}:\n[REFILL_FLOW]`;
       }
       if (prev.includes('upgrade now') || prev.includes('go ahead')) {
-        return msg(
-          `I have a few options that could work for you. Let me walk you through the details in a moment.`,
-          ['Show me options', 'Talk to someone', 'Return to home']
-        );
+        return `Upgrading you to Total 5G Unlimited now.\n[UPGRADE_FLOW]`;
       }
     }
     if (turn >= 4) {
       if (prev.includes('upgrade') || prev.includes('confirm') || prev.includes('yes')) {
-        return msg(
-          `I have a few options that could work for you. Let me walk you through the details in a moment.`,
-          ['Show me options', 'Talk to someone', 'Return to home']
-        );
+        return `[UPGRADE_FLOW]`;
       }
     }
   }
@@ -948,10 +933,7 @@ function getDerekTurnResponse(userMsgs, turn, persona) {
   // Late turn catch-all
   if (turn >= 5) {
     if (prev.includes('upgrade') || prev.includes('unlimited') || prev.includes('show')) {
-      return msg(
-        `I have a few options that could work for you. Let me walk you through the details in a moment.`,
-        ['Show me options', 'Talk to someone', 'Return to home']
-      );
+      return `[UPGRADE_FLOW]`;
     }
     if (prev.includes('add') || prev.includes('$10') || prev.includes('data')) {
       return `[REFILL_FLOW]`;
@@ -997,16 +979,10 @@ function getAnaTurnResponse(userMsgs, turn, persona) {
 
   if (turn === 3) {
     if (prev.includes('yes') || prev.includes('free') || prev.includes('confirm') || prev.includes('get it free')) {
-      return msg(
-        `I have a few options that could work for you. Let me walk you through the details in a moment.`,
-        ['Show me options', 'Talk to someone', 'Return to home']
-      );
+      return `Redeeming 1,000 points for your Global Calling Card now.\n[INTERNATIONAL_FLOW]`;
     }
     if (prev.includes('$10') || prev.includes('pay') || prev.includes('cash')) {
-      return msg(
-        `I have a few options that could work for you. Let me walk you through the details in a moment.`,
-        ['Show me options', 'Talk to someone', 'Return to home']
-      );
+      return `Setting up your Global Calling Card at $10/mo.\n[INTERNATIONAL_FLOW]`;
     }
     if (prev.includes('not right now') || prev.includes('cancel')) {
       return msg(
@@ -1015,28 +991,21 @@ function getAnaTurnResponse(userMsgs, turn, persona) {
       );
     }
     if (prev.includes('global') || prev.includes('calling card')) {
-      return msg(
-        `I have a few options that could work for you. Let me walk you through the details in a moment.`,
-        ['Show me options', 'Talk to someone', 'Return to home']
-      );
+      return `Setting up your Global Calling Card.\n[INTERNATIONAL_FLOW]`;
     }
     if (prev.includes('5 gb') || prev.includes('data')) {
       return `Adding 5 GB to your account.\n[REFILL_FLOW]`;
     }
     if (prev.includes('unlimited')) {
-      return msg(
-        `I have a few options that could work for you. Let me walk you through the details in a moment.`,
-        ['Show me options', 'Talk to someone', 'Return to home']
-      );
+      return `Here's the Unlimited plan:\n[RECOMMENDATIONS]${JSON.stringify([
+        { type: 'plan', id: '5g-unlimited', reason: 'Unlimited data plus Disney+. Check current price at totalwireless.com.', isBest: true },
+      ])}[/RECOMMENDATIONS]`;
     }
   }
 
   if (turn >= 4) {
     if (prev.includes('confirm') || prev.includes('yes') || prev.includes('go ahead')) {
-      return msg(
-        `I have a few options that could work for you. Let me walk you through the details in a moment.`,
-        ['Show me options', 'Talk to someone', 'Return to home']
-      );
+      return `[INTERNATIONAL_FLOW]`;
     }
   }
 
@@ -1052,10 +1021,11 @@ function getRobertTurnResponse(userMsgs, turn, persona) {
 
   if (turn === 2) {
     if (prev.includes('comparison') || prev.includes('compare') || prev.includes('see full') || prev.includes('side-by-side')) {
-      return msg(
-        `I have a few options that could work for you. Let me walk you through the details in a moment.`,
-        ['Show me options', 'Talk to someone', 'Return to home']
-      );
+      return `Here's a full comparison for ${a.familyLines} lines:\n[RECOMMENDATIONS]${JSON.stringify([
+        { type: 'plan', id: 'base-5g', reason: `Total Base 5G: $${a.currentMonthlySpend}/mo for ${a.familyLines} lines ($${a.currentMonthlySpend / a.familyLines}/line) — current plan`, isBest: false },
+        { type: 'plan', id: '5g-unlimited', reason: `Total 5G Unlimited: $110/mo for ${a.familyLines} lines ($27.50/line) — saves $50/mo`, isBest: true },
+        { type: 'plan', id: '5g-plus-unlimited', reason: `Total 5G+ Unlimited: $130/mo for ${a.familyLines} lines ($32.50/line) — premium tier`, isBest: false },
+      ])}[/RECOMMENDATIONS]`;
     }
     if (prev.includes('upgrade') || prev.includes('unlimited') || prev.includes('save $50')) {
       return msg(
@@ -1079,10 +1049,7 @@ function getRobertTurnResponse(userMsgs, turn, persona) {
 
   if (turn === 3) {
     if (prev.includes('now') || prev.includes('$27') || prev.includes('start now')) {
-      return msg(
-        `I have a few options that could work for you. Let me walk you through the details in a moment.`,
-        ['Show me options', 'Talk to someone', 'Return to home']
-      );
+      return `Switching all ${a.familyLines} lines now.\n[UPGRADE_FLOW]`;
     }
     if (prev.includes('renewal') || prev.includes(`${a.renewalDate}`) || prev.includes('$0 today') || prev.includes('switch on')) {
       return msg(
@@ -1091,19 +1058,13 @@ function getRobertTurnResponse(userMsgs, turn, persona) {
       );
     }
     if (prev.includes('upgrade') || prev.includes('switch') || prev.includes('unlimited')) {
-      return msg(
-        `I have a few options that could work for you. Let me walk you through the details in a moment.`,
-        ['Show me options', 'Talk to someone', 'Return to home']
-      );
+      return `Switching all ${a.familyLines} lines to Total 5G Unlimited.\n[UPGRADE_FLOW]`;
     }
   }
 
   if (turn >= 4) {
     if (prev.includes('upgrade') || prev.includes('confirm') || prev.includes('go ahead') || prev.includes('yes')) {
-      return msg(
-        `I have a few options that could work for you. Let me walk you through the details in a moment.`,
-        ['Show me options', 'Talk to someone', 'Return to home']
-      );
+      return `[UPGRADE_FLOW]`;
     }
   }
 
@@ -1372,19 +1333,13 @@ function getNinaTurnResponse(userMsgs, turn) {
       latest.includes('port') || latest.includes('current number') ||
       latest.includes('existing') || latest.includes('keep')
     ) {
-      return msg(
-        `I have a few options that could work for you. Let me walk you through the details in a moment.`,
-        ['Show me options', 'Talk to someone', 'Return to home']
-      );
+      return `To keep your existing number, I'll need your current carrier name, account number, and PIN. Keep your old SIM in until the transfer completes — usually under 30 minutes.\n\nReady to start?\n[ACTION_PILLS]${JSON.stringify(['Start port-in now', 'I need to find my account info', 'Get a new number instead'])}[/ACTION_PILLS]`;
     }
     if (
       latest.includes('new number') || latest.includes('fresh') ||
       latest.includes('new') || latest.includes('get a new')
     ) {
-      return msg(
-        `I have a few options that could work for you. Let me walk you through the details in a moment.`,
-        ['Show me options', 'Talk to someone', 'Return to home']
-      );
+      return `[ACTIVATION_FLOW]`;
     }
     if (latest.includes('plan') || latest.includes('help') || latest.includes('choose')) {
       return `Sure! The most popular option for a new phone is Total Base 5G Unlimited at $20/mo — unlimited data, talk, and text. No annual contract.\n\nOnce you pick a plan we'll start activation.\n[ACTION_PILLS]${JSON.stringify(['Total Base 5G — $20/mo', 'See all plans', 'Port my number', 'Get a new number'])}[/ACTION_PILLS]`;
@@ -1392,18 +1347,12 @@ function getNinaTurnResponse(userMsgs, turn) {
     if (latest.includes('what') || latest.includes('involve') || latest.includes('need')) {
       return `Activation is simple: pick your number preference, confirm your plan, and your SIM powers on. Takes about 5 minutes.\n\nReady to start?\n[ACTION_PILLS]${JSON.stringify(['Port my current number', 'Get a new number', 'Help me pick a plan'])}[/ACTION_PILLS]`;
     }
-    return msg(
-      `I have a few options that could work for you. Let me walk you through the details in a moment.`,
-      ['Show me options', 'Talk to someone', 'Return to home']
-    );
+    return `[ACTIVATION_FLOW]`;
   }
 
   if (turn === 3) {
     if (latest.includes('port') || latest.includes('yes') || latest.includes('activate') || latest.includes('start')) {
-      return msg(
-        `I have a few options that could work for you. Let me walk you through the details in a moment.`,
-        ['Show me options', 'Talk to someone', 'Return to home']
-      );
+      return `[ACTIVATION_FLOW]`;
     }
     return `Whenever you're ready, I can start activation right here.\n[ACTION_PILLS]${JSON.stringify(['Start activation', 'Port my number', 'Get a new number'])}[/ACTION_PILLS]`;
   }
@@ -1560,10 +1509,7 @@ export function generateDemoResponse(messages, persona, activeIntent, intentTurn
       return `Let's get that taken care of.\n[REFILL_FLOW]`;
     }
     if (lowerCurrent === 'activate a phone' || lowerCurrent === 'activate') {
-      return msg(
-        `I have a few options that could work for you. Let me walk you through the details in a moment.`,
-        ['Show me options', 'Talk to someone', 'Return to home']
-      );
+      return `[ACTIVATION_FLOW]`;
     }
     if (lowerCurrent === 'my account' || lowerCurrent === 'account') {
       const a = persona?.account;
@@ -1707,10 +1653,10 @@ export function generateDemoResponse(messages, persona, activeIntent, intentTurn
   if (flowKey === 'upgrade' && turn === 3) {
     const prev = userMessages[turn - 2]?.content?.toLowerCase() || '';
     if (prev.includes('yes') || prev.includes('comparison') || prev.includes('show') || prev.includes('upgrade')) {
-      return msg(
-        `I have a few options that could work for you. Let me walk you through the details in a moment.`,
-        ['Show me options', 'Talk to someone', 'Return to home']
-      );
+      return `Here are your upgrade options:\n[RECOMMENDATIONS]${JSON.stringify([
+        { type: 'plan', id: '5g-unlimited', reason: 'Unlimited data with no caps. Includes 15 GB hotspot and Disney+ Basic.', isBest: true },
+        { type: 'plan', id: '5g-plus-unlimited', reason: 'Premium tier — 25 GB hotspot and Disney+ Premium.', isBest: false },
+      ])}[/RECOMMENDATIONS]`;
     }
     if (prev.includes('schedule') || prev.includes('renewal') || prev.includes('lock')) {
       return `Done — your plan upgrade is scheduled for your next renewal. No charge today.\n[ACTION_PILLS]${JSON.stringify(['What else can I help with?'])}[/ACTION_PILLS]`;
@@ -1730,10 +1676,7 @@ export function generateDemoResponse(messages, persona, activeIntent, intentTurn
   if (flowKey === 'international' && turn === 3) {
     const prev = userMessages[turn - 2]?.content?.toLowerCase() || '';
     if (prev.includes('yes') || prev.includes('add-on') || prev.includes('show') || prev.includes('redeem')) {
-      return msg(
-        `I have a few options that could work for you. Let me walk you through the details in a moment.`,
-        ['Show me options', 'Talk to someone', 'Return to home']
-      );
+      return `Setting up your Global Calling Card.\n[INTERNATIONAL_FLOW]`;
     }
     return `No worries! If you change your mind, I can always pull up international options for you.\n[ACTION_PILLS]${JSON.stringify(['Tell me more about savings', 'I have another question'])}[/ACTION_PILLS]`;
   }
@@ -1743,24 +1686,15 @@ export function generateDemoResponse(messages, persona, activeIntent, intentTurn
     if (turn === 2) {
       const prev = userMessages[turn - 2]?.content?.toLowerCase() || '';
       if (prev.includes('port') || prev.includes('keep') || prev.includes('current number')) {
-        return msg(
-          `I have a few options that could work for you. Let me walk you through the details in a moment.`,
-          ['Show me options', 'Talk to someone', 'Return to home']
-        );
+        return `To keep your existing number you'll need your current carrier name, account number, and PIN. Keep your old SIM in until the transfer completes.\n\nReady to start?\n[ACTION_PILLS]${JSON.stringify(['Start port-in now', 'I need to find my account info', 'Get a new number instead'])}[/ACTION_PILLS]`;
       }
       if (prev.includes('new number') || prev.includes('fresh') || prev.includes('new')) {
-        return msg(
-          `I have a few options that could work for you. Let me walk you through the details in a moment.`,
-          ['Show me options', 'Talk to someone', 'Return to home']
-        );
+        return `[ACTIVATION_FLOW]`;
       }
       return `Great — let's get you connected. First: are you keeping your existing number, or would you like a new Total Wireless number?\n[ACTION_PILLS]${JSON.stringify(['Keep my existing number (port-in)', 'Get a new Total Wireless number', 'Help me choose a plan first'])}[/ACTION_PILLS]`;
     }
     if (turn === 3) {
-      return msg(
-        `I have a few options that could work for you. Let me walk you through the details in a moment.`,
-        ['Show me options', 'Talk to someone', 'Return to home']
-      );
+      return `[ACTIVATION_FLOW]`;
     }
   }
 
@@ -1769,18 +1703,12 @@ export function generateDemoResponse(messages, persona, activeIntent, intentTurn
     if (turn === 2) {
       const prev = userMessages[turn - 2]?.content?.toLowerCase() || '';
       if (prev.includes('check') || prev.includes('imei') || prev.includes('compatible') || prev.includes('works')) {
-        return msg(
-          `I have a few options that could work for you. Let me walk you through the details in a moment.`,
-          ['Show me options', 'Talk to someone', 'Return to home']
-        );
+        return `Good news — most unlocked phones work on our network. Your phone is compatible.\n\nWant to go ahead with activation?\n[ACTION_PILLS]${JSON.stringify(['Yes, start activation', 'Help me pick a plan', 'Tell me about BYOP plans'])}[/ACTION_PILLS]`;
       }
       return `Let's check your phone's compatibility — most unlocked phones work on our network. Do you know your IMEI, or want help finding it?\n[ACTION_PILLS]${JSON.stringify(['Check compatibility now', 'Help me find my IMEI', 'Tell me about BYOP plans'])}[/ACTION_PILLS]`;
     }
     if (turn === 3) {
-      return msg(
-        `I have a few options that could work for you. Let me walk you through the details in a moment.`,
-        ['Show me options', 'Talk to someone', 'Return to home']
-      );
+      return `[BYOP_FLOW]`;
     }
   }
 
@@ -1808,10 +1736,11 @@ export function generateDemoResponse(messages, persona, activeIntent, intentTurn
       return `Here's the key thing: at 4 lines, Total 5G Unlimited is actually cheaper per line than Total Base 5G.\n\n4 lines on Total Base: $160/mo ($40/line)\n4 lines on Unlimited: $110/mo ($27.50/line)\n\nThat's $50/mo in savings. Want to see the full comparison with all features?\n[ACTION_PILLS]${JSON.stringify(['Yes, show full comparison', 'What does Unlimited include?', 'How does family pricing work?', 'Not ready to switch'])}[/ACTION_PILLS]`;
     }
     if (turn === 3) {
-      return msg(
-        `I have a few options that could work for you. Let me walk you through the details in a moment.`,
-        ['Show me options', 'Talk to someone', 'Return to home']
-      );
+      return `Here are our available plans:\n[RECOMMENDATIONS]${JSON.stringify([
+        { type: 'plan', id: 'base-5g', reason: 'Most affordable — 5 GB of 5G data at $20/mo. No contract.', isBest: true },
+        { type: 'plan', id: '5g-unlimited', reason: 'Unlimited data with no caps. Includes 15 GB hotspot and Disney+ Basic.', isBest: false },
+        { type: 'plan', id: '5g-plus-unlimited', reason: 'Premium tier — 25 GB hotspot and Disney+ Premium.', isBest: false },
+      ])}[/RECOMMENDATIONS]`;
     }
   }
 
