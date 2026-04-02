@@ -105,7 +105,7 @@ export function AlertCardGrid({ signals = [], onCta, persona }) {
       const a = actions[1] || actions[0];
       return { label: a?.label || 'Show Options', prompt: a?.label || 'What are my options?', intent: a?.action || null };
     }
-    return { label: 'Tell Me More', prompt: sig.headline, intent: 'info_inquiry' };
+    return { label: 'Tell Me More', prompt: sig.headline, intent: null };
   }
 
   const count = Math.min(signals.length, 3);
