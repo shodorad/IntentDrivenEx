@@ -171,6 +171,30 @@ function getPersonaOpeningResponse(persona) {
   }
 }
 
+// ─── Signal-specific proactive openings ──────────────────────────────────────
+// Called by startProactiveChat when a signal card opens the chat AI-first.
+// Falls back to getPersonaOpeningResponse when no signal-specific copy exists.
+export function getSignalOpeningResponse(sig, persona) {
+  const a = persona?.account;
+  if (!a) return null;
+
+  switch (sig?.id) {
+    case 'sig-001-c': // "App opened 3 times today with no action"
+      return msg(
+        `Looks like you've been checking in a few times today — no pressure, I'm here when you're ready.\n\nQuick summary: you have **${a.dataRemaining}** left and **${a.daysUntilRenewal} days until renewal** on ${a.renewalDate}. Only 22% of your usage goes through Wi-Fi, so there may be a free fix before spending anything.\n\nWhat's holding you back?`,
+        [
+          { label: 'Why am I running out?', intent: 'diagnose_usage' },
+          { label: 'Quick Refill — $15',   intent: 'quick_refill'   },
+          { label: 'Change my plan',        intent: 'plan_change'    },
+          { label: "I'm fine for now",      intent: 'done'           },
+        ]
+      );
+
+    default:
+      return getPersonaOpeningResponse(persona);
+  }
+}
+
 // ─── Per-persona multi-turn flow handlers ────────────────────────────────────
 
 function getMariaTurnResponse(userMsgs, intentTurn, activeIntent, persona, flowState) {

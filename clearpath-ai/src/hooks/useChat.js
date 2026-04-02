@@ -1,7 +1,7 @@
 import { useCallback } from 'react';
 import { useChat as useChatContext } from '../context/ChatContext';
 import { parseResponse } from '../utils/parseResponse';
-import { generateDemoResponse } from '../utils/demoResponses';
+import { generateDemoResponse, getSignalOpeningResponse } from '../utils/demoResponses';
 import { callAPI } from '../utils/api';
 import { getSystemPrompt } from '../data/systemPrompt';
 
@@ -30,6 +30,13 @@ export function useChatActions() {
       const resolvedTurn   = intentOverride != null ? 0 : state.intentTurn;
       // When a pill fires a new intent, reset flow state so the named state machine starts fresh
       const resolvedFlowState = intentOverride != null ? null : state.flowState;
+
+      // Persist a pill-driven intent to state so subsequent free-text turns stay in the same flow.
+      // Without this, turns after a pill click resolve `null ?? null` and fall off the scripted engine.
+      if (intentOverride != null && intentOverride !== state.activeIntent) {
+        dispatch({ type: 'SET_INTENT', payload: intentOverride });
+      }
+
       let responseText = generateDemoResponse(apiMessages, persona, resolvedIntent, resolvedTurn, resolvedFlowState);
 
       // ── API FALLBACK ──────────────────────────────────────────────────────────
@@ -116,9 +123,24 @@ export function useChatActions() {
     setTimeout(() => sendMessage(intentPrompt, intentOverride), 100);
   }, [dispatch, sendMessage]);
 
+  // Proactive AI-first opening — used by info-severity signal cards.
+  // Opens the chat and shows the persona opening as an AI message with no user bubble.
+  const startProactiveChat = useCallback((sig) => {
+    dispatch({ type: 'START_CHAT' });
+    if (sig) dispatch({ type: 'SET_ACTIVE_SIGNAL', payload: sig });
+    setTimeout(() => {
+      // Call with empty messages so turn=0, which triggers getPersonaOpeningResponse
+      const responseText = getSignalOpeningResponse(sig, state.persona);
+      if (responseText) {
+        const { message, actionPills } = parseResponse(responseText);
+        dispatch({ type: 'ADD_MESSAGE', payload: { role: 'assistant', content: message, actionPills } });
+      }
+    }, 100);
+  }, [dispatch, state.persona]);
+
   const resetChat = useCallback(() => {
     dispatch({ type: 'RESET_CHAT' });
   }, [dispatch]);
 
-  return { sendMessage, startChat, resetChat };
+  return { sendMessage, startChat, startProactiveChat, resetChat };
 }

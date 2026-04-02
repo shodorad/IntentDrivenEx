@@ -115,7 +115,7 @@ function getPersonaPills(persona, lang) {
 
 export default function LandingScreen() {
   const { state, dispatch } = useChat();
-  const { startChat } = useChatActions();
+  const { startChat, startProactiveChat } = useChatActions();
   const { t, lang } = useTranslation();
 
   // Clear signal banner whenever persona changes (signals are now shown in the alerts grid)
@@ -200,9 +200,13 @@ export default function LandingScreen() {
           signals={state.persona?.signals || []}
           persona={state.persona}
           onCta={(prompt, intent, sig) => {
-            if (intent) dispatch({ type: 'SET_INTENT', payload: intent });
-            if (sig) dispatch({ type: 'SET_ACTIVE_SIGNAL', payload: sig });
-            startChat(prompt, intent);
+            if (!intent && sig?.severity === 'info') {
+              startProactiveChat(sig);
+            } else {
+              if (intent) dispatch({ type: 'SET_INTENT', payload: intent });
+              if (sig) dispatch({ type: 'SET_ACTIVE_SIGNAL', payload: sig });
+              startChat(prompt, intent);
+            }
           }}
         />
         <SignalBanner onAction={handleSignalAction} />
