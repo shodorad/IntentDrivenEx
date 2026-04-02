@@ -1634,10 +1634,11 @@ export function generateDemoResponse(messages, persona, activeIntent, intentTurn
     if (response) return response;
   }
 
-  // Free-text fallback: user typed something at turn > 1 with no activeIntent
-  // (e.g. they dismissed pills and typed freehand after an earlier exchange)
+  // Free-text fallback: user typed something at turn > 1 with no activeIntent.
+  // Return null so the API handles unrecognized free-text instead of always
+  // showing the generic clarify response.
   if (!activeIntent && turn > 1) {
-    return getGenericClarifyResponse();
+    return null;
   }
 
   // Turn 1: Use persona-specific opening if available (only when no activeIntent)
