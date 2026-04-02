@@ -1580,13 +1580,6 @@ export function generateDemoResponse(messages, persona, activeIntent, intentTurn
     if (response) return response;
   }
 
-  // Free-text fallback: user typed something at turn > 1 with no activeIntent.
-  // Return null so the API handles unrecognized free-text instead of always
-  // showing the generic clarify response.
-  if (!activeIntent && turn > 1) {
-    return null;
-  }
-
   // Turn 1: Use persona-specific opening if available (only when no activeIntent)
   if (!activeIntent && turn === 1 && persona) {
     const personaResponse = getPersonaOpeningResponse(persona);
@@ -1609,6 +1602,14 @@ export function generateDemoResponse(messages, persona, activeIntent, intentTurn
       case 'us-010': response = getNinaTurnResponse(userMessages, turn, persona); break;
     }
     if (response) return response;
+  }
+
+  // Free-text fallback: persona handler returned null (unrecognized path).
+  // Only route to API for the three primary demo personas.
+  // All others fall through to generic scripted flows below.
+  const API_PERSONAS = ['us-001', 'us-005', 'us-009'];
+  if (!activeIntent && turn > 1 && API_PERSONAS.includes(persona?.id)) {
+    return null;
   }
 
   // ─── Generic signal-triggered fallback flows ──────────────────────
@@ -1745,8 +1746,10 @@ export function generateDemoResponse(messages, persona, activeIntent, intentTurn
   }
 
   // Generic multi-turn flow fallback — only fires when a known flowKey matched.
-  // If flowKey is null (unrecognized message), return null so the API handles it.
-  if (!flowKey) return null;
+  // For API personas with no matched flow, return null so the API handles it.
+  // For all other personas, fall through to the cost flow as a safe default.
+  const API_PERSONAS_FALLBACK = ['us-001', 'us-005', 'us-009'];
+  if (!flowKey) return API_PERSONAS_FALLBACK.includes(persona?.id) ? null : getGenericClarifyResponse();
 
   const flow = FLOWS[flowKey] || FLOWS['cost'];
   if (turn <= flow.length) {
