@@ -1378,6 +1378,31 @@ function getAlexPhoneTurnResponse(userMessages, persona, flowState) {
     );
   }
 
+  // ── Post-order: responses to "What else can I help you with?" ───────────────
+  // flowState remains at order_* after PHONE_ORDER_FLOW completes since that
+  // component doesn't emit a FLOW_STATE tag.
+  if (flowState?.startsWith('order_')) {
+    if (last.includes('manage account') || last.includes('my account')) {
+      const a = persona?.account;
+      return withState(
+        msg(
+          `Here's your account overview:\n\n• Plan: ${a?.plan || 'Total Unlimited'}\n• Renewal: ${a?.renewalDate || 'Apr 9'}\n• Rewards: 0 pts (used on your order)\n\nWant to make any changes?`,
+          ['Change my plan', 'Update payment method', "That's all, thanks"]
+        ),
+        'account_mgmt'
+      );
+    }
+    if (last.includes("that's all") || last.includes('all, thanks') || last.includes("i'm done") || last.includes('no thanks')) {
+      return msg(
+        `You're all set, Alex. Your order ships in 2–3 business days — you'll get a tracking number via SMS. Have a great day!`,
+        []
+      );
+    }
+    if (last.includes('check plan') || last.includes('plan option')) {
+      return handleBrowseIntent('browse_plans', persona);
+    }
+  }
+
   // ── Confirm order — uses flowState so it's unambiguous regardless of turn ──
   const isConfirm = last.includes('order it') || last.includes('confirm') || last.includes('place') ||
     (last.includes('yes') && (last.includes('order') || last.includes('free') || last.includes('24.99')));
@@ -1462,6 +1487,38 @@ function getAlexPhoneTurnResponse(userMessages, persona, flowState) {
       ),
       'order_galaxy_a36'
     );
+  }
+
+  // ── Phone preference filters (shown after the clarifying fallback) ──────────
+  if (last.includes('best camera') || last === 'camera') {
+    return withState(
+      `Best camera upgrades from your iPhone 12:\n[RECOMMENDATIONS]${JSON.stringify([
+        { type: 'phone', id: 'iphone-13',            reason: '$24.99 after rewards — 12MP dual camera with Night Mode. Big jump from iPhone 12.', isBest: true, costDiff: '−$25 with rewards' },
+        { type: 'phone', id: 'samsung-galaxy-a36-5g', reason: 'Free with your plan — 50MP main camera, Super AMOLED display.', isBest: false },
+      ])}[/RECOMMENDATIONS][ACTION_PILLS]${JSON.stringify(['I want the iPhone 13', 'I want the Galaxy A36 (free)', 'Show all phones'])}[/ACTION_PILLS]`,
+      'browsing_camera'
+    );
+  }
+  if (last.includes('longest battery') || last === 'battery') {
+    return withState(
+      `Best battery life available — both free with your plan:\n[RECOMMENDATIONS]${JSON.stringify([
+        { type: 'phone', id: 'moto-g-stylus-2025',    reason: 'Best battery — 5000mAh, lasts all day. Built-in stylus. Free.', isBest: true },
+        { type: 'phone', id: 'samsung-galaxy-a36-5g',  reason: 'Free — efficient 5G chip, solid all-day battery.', isBest: false },
+      ])}[/RECOMMENDATIONS][ACTION_PILLS]${JSON.stringify(['I want the Moto G Stylus (free)', 'I want the Galaxy A36 (free)', 'Show all phones'])}[/ACTION_PILLS]`,
+      'browsing_battery'
+    );
+  }
+  if (last.includes('biggest screen') || last === 'screen') {
+    return withState(
+      `Biggest screens in your lineup — both free:\n[RECOMMENDATIONS]${JSON.stringify([
+        { type: 'phone', id: 'moto-g-stylus-2025',    reason: '6.7-inch FHD+ display — great for video. Built-in stylus. Free.', isBest: true },
+        { type: 'phone', id: 'samsung-galaxy-a36-5g',  reason: '6.7-inch Super AMOLED — vivid colors. Free.', isBest: false },
+      ])}[/RECOMMENDATIONS][ACTION_PILLS]${JSON.stringify(['I want the Moto G Stylus (free)', 'I want the Galaxy A36 (free)', 'Show all phones'])}[/ACTION_PILLS]`,
+      'browsing_screen'
+    );
+  }
+  if (last.includes('cheapest') || last.includes('cheapest option')) {
+    return showAllPhones(true);
   }
 
   // Fallback
@@ -1762,10 +1819,16 @@ export function generateDemoResponse(messages, persona, activeIntent, intentTurn
   }
 
   // Free-text fallback: persona handler returned null (unrecognized path).
-  // Only route to API for the three primary demo personas.
-  // All others fall through to generic scripted flows below.
+  // Before handing off to API, try to classify the last message so typed
+  // intent phrases (e.g. "Diagnose why it's happening") enter the scripted
+  // flow instead of getting a pill-less API response.
   const API_PERSONAS = ['us-001', 'us-005', 'us-009'];
   if (!activeIntent && turn > 1 && API_PERSONAS.includes(persona?.id)) {
+    const inferredIntent = classifyIntent(lastUserMsg);
+    if (inferredIntent && persona?.id === 'us-001') {
+      const response = getMariaTurnResponse(userMessages, 0, inferredIntent, persona, null);
+      if (response) return response;
+    }
     return null;
   }
 
