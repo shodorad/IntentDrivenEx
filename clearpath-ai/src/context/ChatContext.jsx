@@ -20,13 +20,14 @@ const initialState = {
   inputFocused: false,
   activeIntent: null,    // current intent driving the conversation
   intentTurn: 0,         // how many user messages sent within current intent
+  flowState: null,       // named state within current flow (Phase 3)
   activeSignal: null,    // signal card that triggered the chat session
 };
 
 function chatReducer(state, action) {
   switch (action.type) {
     case 'START_CHAT':
-      return { ...state, mode: 'chatting', messages: [] };
+      return { ...state, mode: 'chatting', messages: [], flowState: null };
     case 'ADD_MESSAGE':
       return { ...state, messages: [...state.messages, action.payload] };
     case 'SET_LOADING':
@@ -67,17 +68,21 @@ function chatReducer(state, action) {
         ...state,
         activeIntent: action.payload,
         intentTurn: 0,       // always reset turn counter when intent changes
+        flowState: null,     // reset named flow state when intent changes
       };
     case 'INCREMENT_INTENT_TURN':
       return {
         ...state,
         intentTurn: state.intentTurn + 1,
       };
+    case 'SET_FLOW_STATE':
+      return { ...state, flowState: action.payload };
     case 'CLEAR_INTENT':
       return {
         ...state,
         activeIntent: null,
         intentTurn: 0,
+        flowState: null,
       };
     case 'SET_ACTIVE_SIGNAL':
       return { ...state, activeSignal: action.payload };

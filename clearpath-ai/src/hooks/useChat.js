@@ -28,7 +28,9 @@ export function useChatActions() {
 
       const resolvedIntent = intentOverride ?? state.activeIntent;
       const resolvedTurn   = intentOverride != null ? 0 : state.intentTurn;
-      let responseText = generateDemoResponse(apiMessages, persona, resolvedIntent, resolvedTurn);
+      // When a pill fires a new intent, reset flow state so the named state machine starts fresh
+      const resolvedFlowState = intentOverride != null ? null : state.flowState;
+      let responseText = generateDemoResponse(apiMessages, persona, resolvedIntent, resolvedTurn, resolvedFlowState);
 
       // ── API FALLBACK ──────────────────────────────────────────────────────────
       // If the scripted engine returns null (unhandled path), call Claude API.
@@ -49,6 +51,16 @@ export function useChatActions() {
         }
       }
       // ─────────────────────────────────────────────────────────────────────────
+
+      // Phase 3: extract [FLOW_STATE:xxx] tag before parsing so it doesn't pollute the message
+      let nextFlowState;
+      if (responseText) {
+        const flowMatch = responseText.match(/\[FLOW_STATE:([^\]]+)\]/);
+        if (flowMatch) {
+          nextFlowState = flowMatch[1];
+          responseText = responseText.replace(/\n?\[FLOW_STATE:[^\]]+\]/, '').trim();
+        }
+      }
 
       const { message, actionPills, recommendations, refillFlow, liveChatFlow, phoneOrderFlow, upgradeFlow, internationalFlow, activationFlow, byopFlow } = parseResponse(responseText);
 
@@ -77,6 +89,9 @@ export function useChatActions() {
         }
       });
       dispatch({ type: 'INCREMENT_INTENT_TURN' });
+      if (nextFlowState !== undefined) {
+        dispatch({ type: 'SET_FLOW_STATE', payload: nextFlowState });
+      }
     } catch (err) {
       console.error('Chat error:', err);
       dispatch({
