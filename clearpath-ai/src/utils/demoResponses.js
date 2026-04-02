@@ -5,6 +5,10 @@
 // R4: Always give an escape hatch.
 // R5: Sensible defaults everywhere.
 
+import { classifyIntent } from '../data/intentMap.js';
+import mariaConfig from '../data/conversations/us-001-maria.json';
+import { runConversationEngine } from './conversationEngine.js';
+
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 const msg = (t, pills) =>
   pills
@@ -169,7 +173,7 @@ function getPersonaOpeningResponse(persona) {
 
 // ─── Per-persona multi-turn flow handlers ────────────────────────────────────
 
-function getMariaTurnResponse(userMsgs, intentTurn, activeIntent, persona) {
+function getMariaTurnResponse(userMsgs, intentTurn, activeIntent, persona, flowState) {
   const a = persona?.account || {};
   const latest = (userMsgs[userMsgs.length - 1]?.content || '').toLowerCase();
 
@@ -177,7 +181,7 @@ function getMariaTurnResponse(userMsgs, intentTurn, activeIntent, persona) {
 
     // ── DIAGNOSE USAGE FLOW ──────────────────────────────────────────
     case 'diagnose_usage':
-      return getMariaDiagnoseResponse(latest, intentTurn, a);
+      return getMariaDiagnoseResponse(latest, intentTurn, a, flowState);
 
     // ── QUICK REFILL FLOW ────────────────────────────────────────────
     case 'quick_refill':
@@ -278,70 +282,94 @@ function getMariaTurnResponse(userMsgs, intentTurn, activeIntent, persona) {
 }
 
 // ── DIAGNOSIS SUB-FLOW ───────────────────────────────────────────────────────
-function getMariaDiagnoseResponse(latest, intentTurn, a) {
-  // intentTurn 0: Intro — surface the Wi-Fi stat
-  if (intentTurn === 0) {
-    return msg(
-      `I can see you're mostly on cellular — only ${a.wifiUsagePercent || 22}% of your usage goes through Wi-Fi. Let's see if there's a free fix first.\n\nWant me to walk you through a couple of quick checks?`,
-      [
-        { label: "Let's do it",              intent: null          },
-        { label: 'Skip — add 5 GB for $15', intent: 'quick_refill' },
-        { label: 'Skip — change my plan',   intent: 'plan_change'  },
-      ]
-    );
-  }
+// Phase 3: uses named flowState instead of intentTurn for non-linear robustness.
+function getMariaDiagnoseResponse(latest, intentTurn, a, flowState) {
+  // Helper: append FLOW_STATE tag
+  const withState = (response, nextState) => `${response}\n[FLOW_STATE:${nextState}]`;
 
-  // intentTurn 1: Wi-Fi question — all answers continue the diagnose flow
-  if (intentTurn === 1) {
-    return msg(
-      `Are you connected to Wi-Fi when you're at home or at work?`,
-      [
-        { label: 'Yes, always',  intent: null },
-        { label: 'Sometimes',    intent: null },
-        { label: "I'm not sure", intent: null },
-      ]
-    );
-  }
+  // Resolve effective state — fall back to turn-based mapping when flowState is null
+  // so pill-initiated first turns still work correctly.
+  const effectiveState = flowState ?? (intentTurn === 0 ? null : `legacy_turn_${intentTurn}`);
 
-  // intentTurn 2: Streaming question — all answers continue the diagnose flow
-  if (intentTurn === 2) {
-    const wifiNote = latest.includes('sometimes') || latest.includes('not sure')
-      ? `That could be it — when Wi-Fi is slow your phone silently switches to cellular.\n\n`
-      : '';
-    return msg(
-      `${wifiNote}Do you stream video or music on cellular — not just on Wi-Fi?`,
-      [
-        { label: 'Yes, often',   intent: null },
-        { label: 'Occasionally', intent: null },
-        { label: 'Rarely',       intent: null },
-      ]
-    );
-  }
+  switch (effectiveState) {
+    case null: {
+      // Turn 0 / entry: surface the Wi-Fi stat and offer the three paths
+      return withState(
+        msg(
+          `I can see you're mostly on cellular — only ${a.wifiUsagePercent || 22}% of your usage goes through Wi-Fi. Let's see if there's a free fix first.\n\nWant me to walk you through a couple of quick checks?`,
+          [
+            { label: "Let's do it",              intent: null           },
+            { label: 'Skip — add 5 GB for $15', intent: 'quick_refill' },
+            { label: 'Skip — change my plan',   intent: 'plan_change'  },
+          ]
+        ),
+        'asked_wifi'
+      );
+    }
 
-  // intentTurn 3: Background apps — all answers continue the diagnose flow
-  if (intentTurn === 3) {
-    const streamingNote = latest.includes('often') || latest.includes('occasionally')
-      ? `That can use 1–3 GB per hour on HD.\n\n`
-      : '';
-    return msg(
-      `${streamingNote}Last one: do you have apps set to auto-update or sync in the background on cellular?`,
-      [
-        { label: 'Probably yes',    intent: null },
-        { label: "I've disabled it", intent: null },
-        { label: 'Not sure',         intent: null },
-      ]
-    );
-  }
+    case 'asked_wifi':
+    case 'legacy_turn_1': {
+      return withState(
+        msg(
+          `Are you connected to Wi-Fi when you're at home or at work?`,
+          [
+            { label: 'Yes, always',  intent: null },
+            { label: 'Sometimes',    intent: null },
+            { label: "I'm not sure", intent: null },
+          ]
+        ),
+        'asked_streaming'
+      );
+    }
 
-  // intentTurn 4+: Show free fixes — exit pills leave the flow
-  return msg(
-    `Here are three free fixes that could make a real difference:\n\n✅ Turn off "Wi-Fi Assist" in Settings — stops your phone from silently switching to cellular when Wi-Fi slows down\n✅ Set streaming apps to "Wi-Fi only" — YouTube and Netflix can each burn 1–3 GB per hour on HD over cellular\n✅ Disable Background App Refresh — Settings → General → Background App Refresh and turn it off for apps that don't need to stay current in the background\n\nWant to try these first? If they don't solve it, I can add data or change your plan in seconds.`,
-    [
-      { label: "I'll try those",         intent: 'try_free_fixes' },
-      { label: 'Add data for now — $15', intent: 'quick_refill'   },
-      { label: 'Show plan options',       intent: 'plan_change'    },
-    ]
-  );
+    case 'asked_streaming':
+    case 'legacy_turn_2': {
+      const wifiNote = latest.includes('sometimes') || latest.includes('not sure')
+        ? `That could be it — when Wi-Fi is slow your phone silently switches to cellular.\n\n`
+        : '';
+      return withState(
+        msg(
+          `${wifiNote}Do you stream video or music on cellular — not just on Wi-Fi?`,
+          [
+            { label: 'Yes, often',   intent: null },
+            { label: 'Occasionally', intent: null },
+            { label: 'Rarely',       intent: null },
+          ]
+        ),
+        'asked_background'
+      );
+    }
+
+    case 'asked_background':
+    case 'legacy_turn_3': {
+      const streamingNote = latest.includes('often') || latest.includes('occasionally')
+        ? `That can use 1–3 GB per hour on HD.\n\n`
+        : '';
+      return withState(
+        msg(
+          `${streamingNote}Last one: do you have apps set to auto-update or sync in the background on cellular?`,
+          [
+            { label: 'Probably yes',     intent: null },
+            { label: "I've disabled it", intent: null },
+            { label: 'Not sure',          intent: null },
+          ]
+        ),
+        'showing_fixes'
+      );
+    }
+
+    // 'showing_fixes' + any legacy turn ≥ 4 → show the free fixes
+    default: {
+      return msg(
+        `Here are three free fixes that could make a real difference:\n\n✅ Turn off "Wi-Fi Assist" in Settings — stops your phone from silently switching to cellular when Wi-Fi slows down\n✅ Set streaming apps to "Wi-Fi only" — YouTube and Netflix can each burn 1–3 GB per hour on HD over cellular\n✅ Disable Background App Refresh — Settings → General → Background App Refresh and turn it off for apps that don't need to stay current in the background\n\nWant to try these first? If they don't solve it, I can add data or change your plan in seconds.`,
+        [
+          { label: "I'll try those",         intent: 'try_free_fixes' },
+          { label: 'Add data for now — $15', intent: 'quick_refill'   },
+          { label: 'Show plan options',       intent: 'plan_change'    },
+        ]
+      );
+    }
+  }
 }
 
 // ── REFILL SUB-FLOW ──────────────────────────────────────────────────────────
@@ -569,216 +597,295 @@ function getJamesTurnResponse(userMsgs, turn, persona) {
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
+// Phase 3: Angela's handler — full named-state machine.
+// `turn` is kept in the signature for backwards compatibility but is no longer
+// used for routing — `flowState` drives all branching.
+// ─────────────────────────────────────────────────────────────────────────────
 
-function getAngelaTurnResponse(userMsgs, turn, persona) {
+function getAngelaTurnResponse(userMsgs, _turn, persona, flowState) {
   const a    = persona?.account || {};
-  const _first = userMsgs[0]?.content?.toLowerCase() || '';
-  const prev  = userMsgs[turn - 2]?.content?.toLowerCase() || '';
+  const last = (userMsgs[userMsgs.length - 1]?.content || '').toLowerCase();
 
-  // Helper: check if user is in a fix-step branch
-  const _inDiagnosis = !prev.includes('talk to') && !prev.includes('speak with') && !prev.includes('just talk') && !prev.includes('support');
+  // Helper: append FLOW_STATE tag so useChat.js can dispatch SET_FLOW_STATE
+  const withState = (response, nextState) => `${response}\n[FLOW_STATE:${nextState}]`;
 
-  if (turn === 2) {
-    const current = userMsgs[turn - 1]?.content?.toLowerCase() || '';
-    if (current.includes('talk') || current.includes('someone') || current.includes('speak')) {
-      const hour = new Date().getHours();
-      const available = hour >= 8 && hour < 23.75;
-      return msg(
-        available
-          ? `Live chat is available now — wait time is about 4 minutes. Or I can schedule you a callback within 15 minutes.\n\nWhich works better for you?`
-          : `Live chat is closed right now (closes at 11:45 PM EST). You can call 1-866-663-3633, or I can have an agent reach out to you first thing tomorrow morning.`,
-        available
-          ? ['Start live chat now', 'Schedule callback in 15 min', 'Call 1-866-663-3633']
-          : ['Schedule callback tomorrow', 'Call now — 1-866-663-3633']
-      );
-    }
-    if (current.includes('plan') || current.includes('coverage') || current.includes('better')) {
-      return `Good question — and coverage matters a lot when you're seeing dropped calls.\n\nYou're on ${a.plan || 'Total Base 5G'} right now. Here are plans that may help with your signal situation:\n[RECOMMENDATIONS]${JSON.stringify([
-        { type: 'plan', id: '5g-unlimited',      reason: 'Includes Wi-Fi Calling — uses your home Wi-Fi for calls when cellular is weak. Best fix for dropped calls indoors.', isBest: true },
-        { type: 'plan', id: '5g-plus-unlimited', reason: 'Premium 5G speeds with the highest network priority — better performance in congested areas.', isBest: false },
-        { type: 'plan', id: 'base-5g',           reason: 'Your current plan tier — most affordable, but no Wi-Fi Calling.', isBest: false },
-      ])}[/RECOMMENDATIONS]`;
-    }
-    // Outage check / walk through a fix / general
-    return msg(
+  // ── Shared response builders (used in multiple states) ────────────────────
+  const step1Restart = () => withState(
+    msg(
       `Network check complete:\n• Active outages in your area: None ✓\n• Root cause: Likely a device or settings issue\n\nI'll walk you through 4 quick fixes that resolve this 90% of the time. Step 1: have you restarted your ${a.device || 'phone'} recently?`,
-      ['Restarted, problem\'s still there', 'No — let me try now', 'I restart it often']
-    );
-  }
+      ["Restarted, problem's still there", 'No — let me try now', 'I restart it often']
+    ),
+    'asked_restart'
+  );
 
-  if (turn === 3) {
-    const current3 = userMsgs[turn - 1]?.content?.toLowerCase() || '';
-    if (current3.includes('live chat') || current3.includes('start chat') || current3.includes('callback') || current3.includes('call back') || current3.includes('request callback')) {
-      return `Connecting you now — Jordan M. will be with you in about 4 minutes.\n[LIVE_CHAT_FLOW]`;
-    }
-    if (current3.startsWith('no') || current3.includes('let me try')) {
-      return msg(
-        `Try it now and let me know how it goes — I'll wait.\n\nDid a restart help at all?`,
-        ['Yes, that helped!', 'Still having issues', 'Helped briefly, came back']
-      );
-    }
-    if (current3.includes('helped') && !current3.includes('still') && !current3.includes('briefly')) {
-      return msg(
-        `Great — sometimes all it takes is a fresh connection. Keep an eye on it over the next hour.\n\nIf it comes back, we can run through a few more steps. Anything else I can help with?`,
-        ['It came back — keep going', "I'm good, thanks"]
-      );
-    }
-    // Still having issues / restarted but still broken → Step 2
-    return msg(
-      `Step 2: Is the issue worse indoors, or about the same everywhere?`,
-      ['Worse indoors', 'Same everywhere', 'Not sure']
-    );
-  }
+  const step2Indoor = () => withState(
+    msg(`Step 2: Is the issue worse indoors, or about the same everywhere?`,
+      ['Worse indoors', 'Same everywhere', 'Not sure']),
+    'asked_indoor'
+  );
 
-  if (turn === 4) {
-    const current4 = userMsgs[turn - 1]?.content?.toLowerCase() || '';
-    // User is responding to "Did a restart help?" → still broken or came back
-    if (current4.includes('still') || current4.includes('issue') || current4.includes('came back') || current4.includes('briefly')) {
-      return msg(
-        `Step 2: Is the issue worse indoors, or about the same everywhere?`,
-        ['Worse indoors', 'Same everywhere', 'Not sure']
-      );
-    }
-    // User says restart actually helped
-    if ((current4.includes('yes') || current4.includes('helped')) && !current4.includes('still') && !current4.includes('not')) {
-      return msg(
-        `Great — sometimes all it takes is a fresh connection. Keep an eye on it over the next hour.\n\nIf it comes back, we can run through a few more steps. Anything else I can help with?`,
-        ['It came back — keep going', "I'm good, thanks"]
-      );
-    }
-    // User is responding to Step 2 (worse indoors / same everywhere)
-    if (current4.includes('indoors') || current4.includes('worse')) {
-      return msg(
-        `Building materials can block 1–2 bars of signal — that may explain it.\n\nQuick test:\n• Move to a window or step outside briefly\n• Check if signal improves (top bar on your screen)\n• This tells us: coverage gap vs device issue\n\nStep 3 while you test: toggle Airplane Mode on for 10 seconds, then off — this forces your phone to re-register with the nearest tower.\n\nHow does it look?`,
-        ['Signal improves outside', 'Same outside too', 'Airplane mode helped!', 'Still the same']
-      );
-    }
-    if (current4.includes('same') || current4.includes('everywhere') || current4.includes('not sure')) {
-      return msg(
-        `Step 3 — Airplane Mode reset:\n• Toggle Airplane Mode on for 10 seconds\n• Then toggle it back off\n• This forces your phone to re-register with the nearest tower\n\nDid that help?`,
-        ['Yes, that helped!', 'Done — still not working', 'Already tried that']
-      );
-    }
-  }
+  const step3IndoorAirplane = () => withState(
+    msg(
+      `Building materials can block 1–2 bars of signal — that may explain it.\n\nQuick test:\n• Move to a window or step outside briefly\n• Check if signal improves (top bar on your screen)\n• This tells us: coverage gap vs device issue\n\nStep 3 while you test: toggle Airplane Mode on for 10 seconds, then off — this forces your phone to re-register with the nearest tower.\n\nHow does it look?`,
+      ['Signal improves outside', 'Same outside too', 'Airplane mode helped!', 'Still the same']
+    ),
+    'asked_airplane_indoor'
+  );
 
-  if (turn === 5) {
-    const current5 = userMsgs[turn - 1]?.content?.toLowerCase() || '';
-    // User just answered Step 2 (came via the "Did restart help?" extra loop)
-    if (current5.includes('indoors') || current5.includes('worse')) {
-      return msg(
-        `Building materials can block 1–2 bars of signal — that may explain it.\n\nQuick test:\n• Move to a window or step outside briefly\n• Check if signal improves (top bar on your screen)\n• This tells us: coverage gap vs device issue\n\nStep 3 while you test: toggle Airplane Mode on for 10 seconds, then off — this forces your phone to re-register with the nearest tower.\n\nHow does it look?`,
-        ['Signal improves outside', 'Same outside too', 'Airplane mode helped!', 'Still the same']
-      );
-    }
-    if ((current5.includes('same') && !current5.includes('still')) || current5.includes('everywhere') || current5.includes('not sure')) {
-      return msg(
-        `Step 3 — Airplane Mode reset:\n• Toggle Airplane Mode on for 10 seconds\n• Then toggle it back off\n• This forces your phone to re-register with the nearest tower\n\nDid that help?`,
-        ['Yes, that helped!', 'Done — still not working', 'Already tried that']
-      );
-    }
-    // User responded to Step 3 (Airplane Mode) — it helped
-    if ((current5.includes('helped') || current5.includes('yes') || current5.includes('improves')) && !current5.includes('still') && !current5.includes('not')) {
-      return msg(
-        `That's a good sign. The issue may clear up on its own as you move around. I'd suggest keeping an eye on it for the rest of the day.\n\nIf it comes back consistently, we can escalate to our network team who can run deeper diagnostics.\n\nAnything else I can help with?`,
-        ['It keeps coming back', "I'm good, thanks"]
-      );
-    }
-    // Step 4: SIM reseat (Step 3 not working, or came back)
-    return msg(
+  const step3GeneralAirplane = () => withState(
+    msg(
+      `Step 3 — Airplane Mode reset:\n• Toggle Airplane Mode on for 10 seconds\n• Then toggle it back off\n• This forces your phone to re-register with the nearest tower\n\nDid that help?`,
+      ['Yes, that helped!', 'Done — still not working', 'Already tried that']
+    ),
+    'asked_airplane_general'
+  );
+
+  const step4SimReseat = () => withState(
+    msg(
       `Step 4 — SIM card reseat:\n• Power off your ${a.device || 'phone'}\n• Remove the SIM tray and reseat the card firmly\n• Power back on — this forces a fresh network registration\n• Have eSIM? Skip this and tap "Already tried" below\n\nCan you try that?`,
       ['Done — still the same', 'Fixed it!', 'How do I do that?', 'Already tried / eSIM']
-    );
-  }
+    ),
+    'asked_sim_reseat'
+  );
 
-  if (turn === 6) {
-    const current6 = userMsgs[turn - 1]?.content?.toLowerCase() || '';
-    // User just answered Step 2 (shifted path — came via two extra loops)
-    if (current6.includes('indoors') || current6.includes('worse')) {
-      return msg(
-        `Building materials can block 1–2 bars of signal — that may explain it.\n\nQuick test:\n• Move to a window or step outside briefly\n• Check if signal improves (top bar on your screen)\n• This tells us: coverage gap vs device issue\n\nStep 3 while you test: toggle Airplane Mode on for 10 seconds, then off — this forces your phone to re-register with the nearest tower.\n\nHow does it look?`,
-        ['Signal improves outside', 'Same outside too', 'Airplane mode helped!', 'Still the same']
-      );
-    }
-    if ((current6.includes('same') && !current6.includes('still')) || current6.includes('everywhere') || current6.includes('not sure')) {
-      return msg(
-        `Step 3 — Airplane Mode reset:\n• Toggle Airplane Mode on for 10 seconds\n• Then toggle it back off\n• This forces your phone to re-register with the nearest tower\n\nDid that help?`,
-        ['Yes, that helped!', 'Done — still not working', 'Already tried that']
-      );
-    }
-    // Signal improves outside → confirmed indoor coverage gap → recommend Wi-Fi Calling
-    if (current6.includes('improves') || current6.includes('signal improves')) {
-      return msg(
-        `That confirms it — the issue is indoor coverage, not your device. Building materials are blocking the signal.\n\nThe permanent fix is Wi-Fi Calling: your phone routes calls through your home Wi-Fi when cellular is weak indoors. It's included in Total 5G Unlimited ($55/mo).\n\nWant me to show you the plan, or would you prefer to talk to our network team?`,
-        ['Show plan with Wi-Fi Calling', 'Talk to support', 'Schedule a callback']
-      );
-    }
-    // User said Step 3 (Airplane Mode) or SIM reseat helped
-    if ((current6.includes('fixed') || current6.includes('worked') || current6.includes('helped') || current6.includes('yes')) && !current6.includes('still') && !current6.includes('not')) {
-      return msg(
-        `Glad that did it! If you have any more issues, I'm right here.\n\nAnything else I can help with today?`,
-        POST_FLOW_PILLS
-      );
-    }
-    // User asking how to reseat SIM
-    if (current6.includes('how do i') || current6.includes('how do') || (current6.includes('how') && !current6.includes('how much'))) {
-      return msg(
-        `On Samsung Galaxy devices:\n\n✅ Power off your phone completely\n✅ Use a SIM ejector or paperclip to open the tray\n✅ Remove the SIM — check for dirt or damage\n✅ Place it back firmly in the tray\n✅ Reinsert the tray and power back on\n\nThat forces a fresh network registration. Did that help?`,
-        ['Yes, fixed it!', 'Still the same']
-      );
-    }
-    // User answered Step 3 (Airplane Mode) still not working — show Step 4 SIM reseat
-    if (current6.includes('still') || current6.includes('not working') || current6.includes('already tried') || (current6.includes('outside') && !current6.includes('improves'))) {
-      return msg(
-        `Step 4 — SIM card reseat:\n• Power off your ${a.device || 'phone'}\n• Remove the SIM tray and reseat the card firmly\n• Power back on — this forces a fresh network registration\n• Have eSIM? Skip this and tap "Already tried" below\n\nCan you try that?`,
-        ['Done — still the same', 'Fixed it!', 'How do I do that?', 'Already tried / eSIM']
-      );
-    }
-    // All steps done, still not working → escalation
-    return msg(
+  const maybeResolved = () => withState(
+    msg(
+      `Great — sometimes all it takes is a fresh connection. Keep an eye on it over the next hour.\n\nIf it comes back, we can run through a few more steps. Anything else I can help with?`,
+      ['It came back — keep going', "I'm good, thanks"]
+    ),
+    'maybe_resolved'
+  );
+
+  const wifiCallingUpsell = () => withState(
+    msg(
+      `That confirms it — the issue is indoor coverage, not your device. Building materials are blocking the signal.\n\nThe permanent fix is Wi-Fi Calling: your phone routes calls through your home Wi-Fi when cellular is weak indoors. It's included in Total 5G Unlimited ($55/mo).\n\nWant me to show you the plan, or would you prefer to talk to our network team?`,
+      ['Show plan with Wi-Fi Calling', 'Talk to support', 'Schedule a callback']
+    ),
+    'upsell_wifi_calling'
+  );
+
+  const escalate = () => withState(
+    msg(
       `We've gone through all four standard fixes and none of them resolved it. At this point it may be a deeper coverage issue in your area.\n\nI can connect you with our network team who can run deeper diagnostics — or I can show you a plan option that might help in the meantime.\n\nWhat would you prefer?`,
       ['Show plan with Wi-Fi Calling', 'Talk to support', 'Schedule a callback']
-    );
-  }
+    ),
+    'escalating'
+  );
 
-  if (turn === 7) {
-    const current7 = userMsgs[turn - 1]?.content?.toLowerCase() || '';
-    // User picked "Show plan with Wi-Fi Calling" from escalation
-    if (current7.includes('wifi calling') || current7.includes('wi-fi calling') || current7.includes('show plan')) {
-      return msg(
-        `Total 5G Unlimited at $55/mo includes Wi-Fi Calling — your phone uses your home Wi-Fi for calls even when cellular is weak. That would solve most of your dropped call issues.\n\nThe change takes effect at your next billing cycle. Want me to schedule the upgrade?`,
-        ['Yes, schedule the upgrade', 'How much more is that?', 'Let me think about it', 'No thanks — just connect me to support']
-      );
-    }
-    // User picked "Talk to support", "Schedule a callback", or live chat option → trigger live chat flow
-    if (current7.includes('talk') || current7.includes('support') || current7.includes('callback') || current7.includes('schedule') || current7.includes('live chat') || current7.includes('connect')) {
-      return `I'll connect you with our network team right now — they can run deeper diagnostics on your account.\n\nLive chat wait time: ~4 minutes.\n[LIVE_CHAT_FLOW]`;
-    }
-    // Also handle Step 2/3 answers that arrive shifted to turn 7
-    if (current7.includes('indoors') || current7.includes('worse')) {
-      return msg(
-        `Building materials can block 1–2 bars of signal — that may explain it.\n\nStep 3: toggle Airplane Mode on for 10 seconds, then off — this forces your phone to re-register with the nearest tower.\n\nHow does it look?`,
-        ['Signal improves outside', 'Same outside too', 'Airplane mode helped!', 'Still the same']
-      );
-    }
-    // Default → live chat
-    return `I'll connect you with our network team right now — they can run deeper diagnostics on your account.\n\nLive chat wait time: ~4 minutes.\n[LIVE_CHAT_FLOW]`;
-  }
+  const toLiveChat = () =>
+    `I'll connect you with our network team right now — they can run deeper diagnostics on your account.\n\nLive chat wait time: ~4 minutes.\n[LIVE_CHAT_FLOW]`;
 
-  // Turn 8+: handle post-escalation responses (Wi-Fi Calling upgrade confirmation, live chat from deeper path)
-  if (turn >= 8) {
-    const current8 = userMsgs[turn - 1]?.content?.toLowerCase() || '';
-    if (current8.includes('talk') || current8.includes('support') || current8.includes('callback') || current8.includes('schedule') || current8.includes('live chat') || current8.includes('connect me')) {
-      return `I'll connect you with our network team right now — they can run deeper diagnostics on your account.\n\nLive chat wait time: ~4 minutes.\n[LIVE_CHAT_FLOW]`;
+  // ── State machine ─────────────────────────────────────────────────────────
+  switch (flowState) {
+
+    // First user message after the persona opening (flowState is null)
+    case null:
+    case undefined: {
+      if (last.includes('talk') || last.includes('someone') || last.includes('speak')) {
+        const hour = new Date().getHours();
+        const available = hour >= 8 && hour < 23.75;
+        return withState(
+          msg(
+            available
+              ? `Live chat is available now — wait time is about 4 minutes. Or I can schedule you a callback within 15 minutes.\n\nWhich works better for you?`
+              : `Live chat is closed right now (closes at 11:45 PM EST). You can call 1-866-663-3633, or I can have an agent reach out to you first thing tomorrow morning.`,
+            available
+              ? ['Start live chat now', 'Schedule callback in 15 min', 'Call 1-866-663-3633']
+              : ['Schedule callback tomorrow', 'Call now — 1-866-663-3633']
+          ),
+          'asked_live_chat'
+        );
+      }
+      if (last.includes('plan') || last.includes('coverage') || last.includes('better')) {
+        return `Good question — and coverage matters a lot when you're seeing dropped calls.\n\nYou're on ${a.plan || 'Total Base 5G'} right now. Here are plans that may help with your signal situation:\n[RECOMMENDATIONS]${JSON.stringify([
+          { type: 'plan', id: '5g-unlimited',      reason: 'Includes Wi-Fi Calling — uses your home Wi-Fi for calls when cellular is weak. Best fix for dropped calls indoors.', isBest: true },
+          { type: 'plan', id: '5g-plus-unlimited', reason: 'Premium 5G speeds with the highest network priority — better performance in congested areas.', isBest: false },
+          { type: 'plan', id: 'base-5g',           reason: 'Your current plan tier — most affordable, but no Wi-Fi Calling.', isBest: false },
+        ])}[/RECOMMENDATIONS]\n[FLOW_STATE:showed_coverage_plans]`;
+      }
+      // "Check for outages", "Walk me through a fix", or any other pill → Step 1
+      return step1Restart();
     }
-    if (current8.includes('yes') || current8.includes('schedule the upgrade') || current8.includes('switch')) {
+
+    case 'asked_live_chat': {
+      if (last.includes('live chat') || last.includes('start chat') || last.includes('callback') || last.includes('call back')) {
+        return toLiveChat();
+      }
+      // Changed mind — run the diagnosis instead
+      return step1Restart();
+    }
+
+    case 'showed_coverage_plans': {
+      if (last.includes('talk') || last.includes('support') || last.includes('callback')) {
+        return toLiveChat();
+      }
+      if (last.includes('wifi calling') || last.includes('wi-fi calling') || last.includes('unlimited')) {
+        return withState(
+          msg(
+            `Total 5G Unlimited at $55/mo includes Wi-Fi Calling — your phone uses your home Wi-Fi for calls even when cellular is weak. That would solve most of your dropped call issues.\n\nThe change takes effect at your next billing cycle. Want me to schedule the upgrade?`,
+            ['Yes, schedule the upgrade', 'Let me think about it', 'No thanks — just connect me to support']
+          ),
+          'showing_wifi_plan'
+        );
+      }
+      // Asked to try a fix after seeing plans
+      return step1Restart();
+    }
+
+    case 'asked_restart': {
+      if (last.startsWith('no') || last.includes('let me try')) {
+        return withState(
+          msg(
+            `Try it now and let me know how it goes — I'll wait.\n\nDid a restart help at all?`,
+            ['Yes, that helped!', 'Still having issues', 'Helped briefly, came back']
+          ),
+          'waiting_for_restart'
+        );
+      }
+      if ((last.includes('helped') || last.includes('yes')) && !last.includes('still') && !last.includes('briefly') && !last.includes('came back')) {
+        return maybeResolved();
+      }
+      // "Restarted, problem's still there" / "I restart it often" / anything else → Step 2
+      return step2Indoor();
+    }
+
+    case 'waiting_for_restart': {
+      if ((last.includes('yes') || last.includes('helped')) && !last.includes('still') && !last.includes('not') && !last.includes('briefly')) {
+        return maybeResolved();
+      }
+      return step2Indoor();
+    }
+
+    case 'maybe_resolved': {
+      if (last.includes('came back') || last.includes('keep going') || last.includes('still')) {
+        return step2Indoor();
+      }
       return msg(
-        `Done — your plan upgrade to Total 5G Unlimited ($55/mo) is scheduled for your next billing cycle. Wi-Fi Calling will activate automatically.\n\nIn the meantime, if you're in a weak signal area, connect to Wi-Fi and enable Wi-Fi Calling in your phone settings.\n\nAnything else I can help with?`,
+        `Great — glad that's sorted! Come back if it happens again.\n\nAnything else I can help with?`,
         POST_FLOW_PILLS
       );
     }
-  }
 
-  return null;
+    case 'asked_indoor': {
+      if (last.includes('indoors') || last.includes('worse')) {
+        return step3IndoorAirplane();
+      }
+      // "Same everywhere" or "Not sure"
+      return step3GeneralAirplane();
+    }
+
+    case 'asked_airplane_indoor': {
+      if (last.includes('improves') || last.includes('signal improves')) {
+        return wifiCallingUpsell();
+      }
+      if ((last.includes('helped') || last.includes('airplane mode helped')) && !last.includes('still') && !last.includes('not')) {
+        return withState(
+          msg(
+            `That's a good sign. The issue may clear up on its own as you move around. I'd suggest keeping an eye on it for the rest of the day.\n\nIf it comes back consistently, we can escalate to our network team who can run deeper diagnostics.\n\nAnything else I can help with?`,
+            ['It keeps coming back', "I'm good, thanks"]
+          ),
+          'step3_helped'
+        );
+      }
+      // "Same outside too" / "Still the same" / "Already tried" → Step 4
+      return step4SimReseat();
+    }
+
+    case 'asked_airplane_general': {
+      if ((last.includes('yes') || last.includes('helped')) && !last.includes('still') && !last.includes('not')) {
+        return withState(
+          msg(
+            `That's a good sign. The issue may clear up on its own as you move around. I'd suggest keeping an eye on it for the rest of the day.\n\nIf it comes back consistently, we can escalate to our network team who can run deeper diagnostics.\n\nAnything else I can help with?`,
+            ['It keeps coming back', "I'm good, thanks"]
+          ),
+          'step3_helped'
+        );
+      }
+      return step4SimReseat();
+    }
+
+    case 'step3_helped': {
+      if (last.includes('keeps coming back') || last.includes('coming back') || last.includes('still')) {
+        return step4SimReseat();
+      }
+      return msg(
+        `Great — glad that's sorted! Come back if it happens again.\n\nAnything else I can help with?`,
+        POST_FLOW_PILLS
+      );
+    }
+
+    case 'asked_sim_reseat': {
+      if ((last.includes('fixed') || last.includes('worked')) && !last.includes('still') && !last.includes('not')) {
+        return msg(`Glad that did it! If you have any more issues, I'm right here.\n\nAnything else I can help with today?`, POST_FLOW_PILLS);
+      }
+      if (last.includes('how do i') || last.includes('how to') || (last.includes('how') && !last.includes('how much'))) {
+        return withState(
+          msg(
+            `On Samsung Galaxy devices:\n\n✅ Power off your phone completely\n✅ Use a SIM ejector or paperclip to open the tray\n✅ Remove the SIM — check for dirt or damage\n✅ Place it back firmly in the tray\n✅ Reinsert the tray and power back on\n\nThat forces a fresh network registration. Did that help?`,
+            ['Yes, fixed it!', 'Still the same']
+          ),
+          'asked_sim_how'
+        );
+      }
+      // "Done — still the same" / "Already tried / eSIM" → escalate
+      return escalate();
+    }
+
+    case 'asked_sim_how': {
+      if ((last.includes('fixed') || last.includes('yes')) && !last.includes('still') && !last.includes('not')) {
+        return msg(`Glad that did it! If you have any more issues, I'm right here.\n\nAnything else I can help with today?`, POST_FLOW_PILLS);
+      }
+      return escalate();
+    }
+
+    case 'upsell_wifi_calling': {
+      if (last.includes('show plan') || last.includes('wifi calling') || last.includes('wi-fi calling')) {
+        return withState(
+          msg(
+            `Total 5G Unlimited at $55/mo includes Wi-Fi Calling — your phone uses your home Wi-Fi for calls even when cellular is weak. That would solve most of your dropped call issues.\n\nThe change takes effect at your next billing cycle. Want me to schedule the upgrade?`,
+            ['Yes, schedule the upgrade', 'How much more is that?', 'Let me think about it', 'No thanks — just connect me to support']
+          ),
+          'showing_wifi_plan'
+        );
+      }
+      return toLiveChat();
+    }
+
+    case 'showing_wifi_plan': {
+      if (last.includes('yes') || last.includes('schedule') || last.includes('switch')) {
+        return msg(
+          `Done — your plan upgrade to Total 5G Unlimited ($55/mo) is scheduled for your next billing cycle. Wi-Fi Calling will activate automatically.\n\nIn the meantime, if you're in a weak signal area, connect to Wi-Fi and enable Wi-Fi Calling in your phone settings.\n\nAnything else I can help with?`,
+          POST_FLOW_PILLS
+        );
+      }
+      if (last.includes('how much') || last.includes('more is that')) {
+        return withState(
+          msg(
+            `It's $55/mo — that's $15 more than your current plan. Includes unlimited data, Wi-Fi Calling, 15 GB hotspot, and Disney+ Basic.\n\nWant to schedule the upgrade?`,
+            ['Yes, schedule the upgrade', 'No thanks — connect me to support']
+          ),
+          'showing_wifi_plan'
+        );
+      }
+      return toLiveChat();
+    }
+
+    case 'escalating': {
+      if (last.includes('wifi calling') || last.includes('wi-fi calling') || last.includes('show plan')) {
+        return withState(
+          msg(
+            `Total 5G Unlimited at $55/mo includes Wi-Fi Calling — your phone uses your home Wi-Fi for calls even when cellular is weak. That would solve most of your dropped call issues.\n\nThe change takes effect at your next billing cycle. Want me to schedule the upgrade?`,
+            ['Yes, schedule the upgrade', 'How much more is that?', 'Let me think about it', 'No thanks — just connect me to support']
+          ),
+          'showing_wifi_plan'
+        );
+      }
+      return toLiveChat();
+    }
+
+    default:
+      return null;
+  }
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -1177,48 +1284,76 @@ const REC_MESSAGES = {
   'not-working': "I hear you — let's get this sorted. Here's what I think will help the most:",
 };
 
+// Phase 4: maps classifyIntent() return values to the legacy flow keys
+// consumed by the FLOWS / RECOMMENDATIONS fallback section below.
+const INTENT_TO_FLOW_KEY = {
+  quick_refill:   'refill',
+  upgrade_now:    'upgrade',
+  plan_change:    'upgrade',
+  browse_phones:  'new-phone',
+  support:        'support',
+  international:  'international',
+  // granular flow intents pass through unchanged (same key as FLOWS entry)
+  // primary intents with no flow key (handled upstream) return null:
+  diagnose_usage: null,
+  browse_plans:   null,
+  done:           null,
+};
+
 function getFlowKey(firstMessage) {
-  const m = firstMessage.toLowerCase();
-  if (m.includes('refill') || m.includes('renew') || m.includes('expir') || m.includes('autopay')) return 'refill';
-  if (m.includes('upgrade') || m.includes('unlimited') || m.includes('55/mo') || (m.includes('upgrade') && m.includes('plan'))) return 'upgrade';
-  if (m.includes('international') || m.includes('calling card') || m.includes('colombia') || m.includes('global call')) return 'international';
-  if (m.includes('activate') && (m.includes('sim') || m.includes('esim'))) return 'activate';
-  if (m.includes('connectivity') || m.includes('support') || m.includes('outage') || m.includes('dropped') || m.includes('signal')) return 'support';
-  if (m.includes('compare') || (m.includes('side') && m.includes('side')) || m.includes('family pric')) return 'compare';
-  if (m.includes('slow') && (m.includes('data') || m.includes('internet') || m.includes('speed'))) return 'slow-data';
-  if (m.includes('run out') || m.includes('runs out') || (m.includes('data') && m.includes('end of'))) return 'runs-out';
-  if (m.includes('sluggish') || (m.includes('slow') && m.includes('phone'))) return 'slow-phone';
-  if (m.includes('storage') || m.includes('space') || m.includes('full')) return 'storage';
-  if (m.includes('photo') || m.includes('picture') || m.includes('camera')) return 'camera';
-  if (m.includes('cheap') || m.includes('cost') || m.includes('spend less') || m.includes('save') || m.includes('affordable')) return 'cost';
-  if (m.includes('new phone') || m.includes('replace') || m.includes('thinking about getting')) return 'new-phone';
-  if (m.includes('not working') || m.includes("isn't working") || m.includes('broken') || m.includes("can't connect")) return 'not-working';
-  return null; // No scripted flow matched — API fallback will handle this
+  const intent = classifyIntent(firstMessage);
+  if (!intent) return null;
+  // Primary intents have an explicit mapping; granular ones pass through.
+  if (Object.prototype.hasOwnProperty.call(INTENT_TO_FLOW_KEY, intent)) {
+    return INTENT_TO_FLOW_KEY[intent];
+  }
+  return intent; // granular flow keys ('slow-data', 'runs-out', etc.)
 }
 
 // ─── US-009: Alex — BYOP multi-turn flow ──────────────────────────────────────
-function getAlexPhoneTurnResponse(userMessages, persona) {
+// Phase 3: Alex's handler uses flowState to track the selected phone so order
+// confirmation is unambiguous, regardless of which turn the user is on.
+function getAlexPhoneTurnResponse(userMessages, persona, flowState) {
   const msgs = userMessages.map(m => m.content?.toLowerCase() || '');
   const last = msgs[msgs.length - 1] || '';
   const turnCount = userMessages.length;
 
+  // Helper: append FLOW_STATE tag
+  const withState = (response, nextState) => `${response}\n[FLOW_STATE:${nextState}]`;
+
   // Helper: show iPhone options
-  function showIphoneOptions() {
-    return `With your 2,450 rewards points, the iPhone 13 comes to $24.99. Here are your best iPhone options:\n[RECOMMENDATIONS]${JSON.stringify([
+  const showIphoneOptions = () => withState(
+    `With your 2,450 rewards points, the iPhone 13 comes to $24.99. Here are your best iPhone options:\n[RECOMMENDATIONS]${JSON.stringify([
       { type: 'phone', id: 'iphone-13',  reason: '$24.99 after your 2,450 rewards points — significant upgrade from iPhone 12.', isBest: true,  costDiff: '−$25 with rewards' },
       { type: 'phone', id: 'iphone-17e', reason: 'Newest iPhone — A18 chip, 48MP camera, $300 in bill credits available.', isBest: false },
-    ])}[/RECOMMENDATIONS][ACTION_PILLS]${JSON.stringify(['I want the iPhone 13 — $24.99', 'Tell me more about iPhone 17e', 'Show me Samsung too'])}[/ACTION_PILLS]`;
-  }
+    ])}[/RECOMMENDATIONS][ACTION_PILLS]${JSON.stringify(['I want the iPhone 13 — $24.99', 'Tell me more about iPhone 17e', 'Show me Samsung too'])}[/ACTION_PILLS]`,
+    'browsing_iphones'
+  );
 
   // Helper: show Samsung options
-  function showSamsungOptions() {
-    return `Here are your best free options on your Unlimited plan — no trade-in needed:\n[RECOMMENDATIONS]${JSON.stringify([
+  const showSamsungOptions = () => withState(
+    `Here are your best free options on your Unlimited plan — no trade-in needed:\n[RECOMMENDATIONS]${JSON.stringify([
       { type: 'phone', id: 'samsung-galaxy-a36-5g', reason: 'Best free option — Super AMOLED display, 50MP camera, 5G. Biggest upgrade from iPhone 12.', isBest: true },
       { type: 'phone', id: 'samsung-galaxy-a17-5g', reason: 'Also free — reliable 5G, 50MP camera, great everyday Samsung.', isBest: false },
-    ])}[/RECOMMENDATIONS][ACTION_PILLS]${JSON.stringify(['I want the Galaxy A36', 'I want the Galaxy A17', 'Show me iPhones too'])}[/ACTION_PILLS]`;
-  }
+    ])}[/RECOMMENDATIONS][ACTION_PILLS]${JSON.stringify(['I want the Galaxy A36', 'I want the Galaxy A17', 'Show me iPhones too'])}[/ACTION_PILLS]`,
+    'browsing_samsungs'
+  );
 
-  // Cross-navigation: "Show me Samsung too" / "Show me iPhones too" at any turn
+  // Helper: show all phones
+  const showAllPhones = (withPillsVariant = false) => withState(
+    `Here are your top picks based on your Unlimited plan. A few are completely free:\n[RECOMMENDATIONS]${JSON.stringify([
+      { type: 'phone', id: 'samsung-galaxy-a36-5g', reason: 'Best free phone — Super AMOLED, 50MP camera, 5G. No cost, no trade-in.', isBest: true },
+      { type: 'phone', id: 'iphone-13',             reason: '$24.99 after your 2,450 rewards points — solid iPhone upgrade.', isBest: false, costDiff: '−$25 with rewards' },
+      { type: 'phone', id: 'moto-g-stylus-2025',    reason: 'Free with your plan — built-in stylus, 256GB storage, big battery.', isBest: false },
+    ])}[/RECOMMENDATIONS][ACTION_PILLS]${JSON.stringify(
+      withPillsVariant
+        ? ['I want the Galaxy A36 (free)', 'I want the iPhone 13', 'I want the Moto G Stylus', 'Show me all phones']
+        : ['I want the Galaxy A36 (free)', 'I want the iPhone 13', 'I want the Moto G Stylus']
+    )}[/ACTION_PILLS]`,
+    'browsing_all'
+  );
+
+  // ── Cross-navigation: always checked first, overrides current state ────────
   if (last.includes('show me samsung') || last.includes('samsung too')) {
     return showSamsungOptions();
   }
@@ -1226,94 +1361,106 @@ function getAlexPhoneTurnResponse(userMessages, persona) {
     return showIphoneOptions();
   }
   if (last.includes('show me all') || last.includes('all phones') || last.includes('show all')) {
-    return `Here are your top picks based on your Unlimited plan. A few are completely free:\n[RECOMMENDATIONS]${JSON.stringify([
-      { type: 'phone', id: 'samsung-galaxy-a36-5g', reason: 'Best free phone — Super AMOLED, 50MP camera, 5G. No cost, no trade-in.', isBest: true },
-      { type: 'phone', id: 'iphone-13',             reason: '$24.99 after your 2,450 rewards points — solid iPhone upgrade.', isBest: false, costDiff: '−$25 with rewards' },
-      { type: 'phone', id: 'moto-g-stylus-2025',    reason: 'Free with your plan — built-in stylus, 256GB storage, big battery.', isBest: false },
-    ])}[/RECOMMENDATIONS][ACTION_PILLS]${JSON.stringify(['I want the Galaxy A36 (free)', 'I want the iPhone 13', 'I want the Moto G Stylus'])}[/ACTION_PILLS]`;
+    return showAllPhones();
+  }
+  if (last.includes('go back') || last === 'back') {
+    return showAllPhones();
   }
 
-  // iPhone 17e detail request — don't route to order summary
+  // ── iPhone 17e detail request ──────────────────────────────────────────────
   if (last.includes('17e') || last.includes('iphone 17')) {
-    return msg(
-      `The iPhone 17e is the newest iPhone in the lineup:\n\n• A18 chip — same as iPhone 16 Pro\n• 48MP main camera\n• 6.1-inch OLED display\n• Up to $300 in bill credits available (applied over 24 months)\n\nAfter bill credits: effectively $0–$12.50/mo depending on plan.\n\nWant to go with the 17e, or stick with the iPhone 13 at $24.99 upfront?`,
-      ['I want the iPhone 17e', 'I want the iPhone 13 — $24.99', 'Show me Samsung too']
+    return withState(
+      msg(
+        `The iPhone 17e is the newest iPhone in the lineup:\n\n• A18 chip — same as iPhone 16 Pro\n• 48MP main camera\n• 6.1-inch OLED display\n• Up to $300 in bill credits available (applied over 24 months)\n\nAfter bill credits: effectively $0–$12.50/mo depending on plan.\n\nWant to go with the 17e, or stick with the iPhone 13 at $24.99 upfront?`,
+        ['I want the iPhone 17e', 'I want the iPhone 13 — $24.99', 'Show me Samsung too']
+      ),
+      'viewing_17e'
     );
   }
 
-  // "Go back" — re-show the mixed options
-  if (last.includes('go back') || last === 'back') {
-    return `Here are your top picks based on your Unlimited plan. A few are completely free:\n[RECOMMENDATIONS]${JSON.stringify([
-      { type: 'phone', id: 'samsung-galaxy-a36-5g', reason: 'Best free phone — Super AMOLED, 50MP camera, 5G. No cost, no trade-in.', isBest: true },
-      { type: 'phone', id: 'iphone-13',             reason: '$24.99 after your 2,450 rewards points — solid iPhone upgrade.', isBest: false, costDiff: '−$25 with rewards' },
-      { type: 'phone', id: 'moto-g-stylus-2025',    reason: 'Free with your plan — built-in stylus, 256GB storage, big battery.', isBest: false },
-    ])}[/RECOMMENDATIONS][ACTION_PILLS]${JSON.stringify(['I want the Galaxy A36 (free)', 'I want the iPhone 13', 'I want the Moto G Stylus'])}[/ACTION_PILLS]`;
+  // ── Confirm order — uses flowState so it's unambiguous regardless of turn ──
+  const isConfirm = last.includes('order it') || last.includes('confirm') || last.includes('place') ||
+    (last.includes('yes') && (last.includes('order') || last.includes('free') || last.includes('24.99')));
+
+  if (isConfirm) {
+    // Prefer flowState; fall back to prior message content for backwards compat
+    let item, price, free, rewards;
+    if (flowState === 'order_iphone13' || flowState === 'viewing_17e') {
+      item = flowState === 'viewing_17e' ? 'iPhone 17e' : 'iPhone 13';
+      price = flowState === 'viewing_17e' ? '$0 (bill credits)' : '$24.99';
+      free = flowState === 'viewing_17e';
+      rewards = flowState === 'order_iphone13' ? '−$25.00 (2,450 pts)' : null;
+    } else if (flowState === 'order_moto') {
+      item = 'Moto G Stylus'; price = 'FREE'; free = true;
+    } else if (flowState === 'order_galaxy_a17') {
+      item = 'Samsung Galaxy A17'; price = 'FREE'; free = true;
+    } else if (flowState === 'order_galaxy_a36') {
+      item = 'Samsung Galaxy A36'; price = 'FREE'; free = true;
+    } else {
+      // Legacy fallback: infer from prior message
+      const priorMsg = msgs[msgs.length - 2] || '';
+      const isIphone = priorMsg.includes('iphone') || priorMsg.includes('13') || priorMsg.includes('24.99');
+      const isMotoFb = priorMsg.includes('moto') || priorMsg.includes('stylus');
+      const isA17Fb  = priorMsg.includes('a17');
+      item    = isIphone ? 'iPhone 13' : isMotoFb ? 'Moto G Stylus' : isA17Fb ? 'Samsung Galaxy A17' : 'Samsung Galaxy A36';
+      price   = isIphone ? '$24.99' : 'FREE';
+      free    = !isIphone;
+      rewards = isIphone ? '−$25.00 (2,450 pts)' : null;
+    }
+    return `[PHONE_ORDER_FLOW]${JSON.stringify({ item, price, free, card: 'Visa ••••7823', rewards: rewards || null })}[/PHONE_ORDER_FLOW]`;
   }
 
-  // Turn 1-2: Show phone options as visual cards
+  // ── Early turns: show options based on what the user asked for ─────────────
   if (turnCount <= 2) {
-    if (last.includes('iphone') || last.includes('apple')) {
-      return showIphoneOptions();
-    }
-    if (last.includes('samsung') || last.includes('android')) {
-      return showSamsungOptions();
-    }
-    // Default: show a curated mix
-    return `Here are your top picks based on your Unlimited plan. A few are completely free:\n[RECOMMENDATIONS]${JSON.stringify([
-      { type: 'phone', id: 'samsung-galaxy-a36-5g', reason: 'Best free phone — Super AMOLED, 50MP camera, 5G. No cost, no trade-in.', isBest: true },
-      { type: 'phone', id: 'iphone-13',             reason: '$24.99 after your 2,450 rewards points — solid iPhone upgrade.', isBest: false, costDiff: '−$25 with rewards' },
-      { type: 'phone', id: 'moto-g-stylus-2025',    reason: 'Free with your plan — built-in stylus, 256GB storage, big battery.', isBest: false },
-    ])}[/RECOMMENDATIONS][ACTION_PILLS]${JSON.stringify(['I want the Galaxy A36 (free)', 'I want the iPhone 13', 'I want the Moto G Stylus', 'Show me all phones'])}[/ACTION_PILLS]`;
+    if (last.includes('iphone') || last.includes('apple')) return showIphoneOptions();
+    if (last.includes('samsung') || last.includes('android')) return showSamsungOptions();
+    return showAllPhones(true);
   }
 
-  // Confirm order — must run BEFORE isPhonePick so "Yes, order it — $24.99"
-  // doesn't get re-matched as a phone selection via the '24.99' substring check.
-  if (last.includes('order it') || last.includes('confirm') || last.includes('place') ||
-      (last.includes('yes') && (last.includes('order') || last.includes('free') || last.includes('24.99')))) {
-    const priorMsg = msgs[msgs.length - 2] || '';
-    const isIphone = priorMsg.includes('iphone') || priorMsg.includes('13') || priorMsg.includes('24.99');
-    const isMotoOrder = priorMsg.includes('moto') || priorMsg.includes('stylus');
-    const isA17Order  = priorMsg.includes('a17');
-    const item  = isIphone ? 'iPhone 13' : isMotoOrder ? 'Moto G Stylus' : isA17Order ? 'Samsung Galaxy A17' : 'Samsung Galaxy A36';
-    const price = isIphone ? '$24.99' : 'FREE';
-    const free  = !isIphone;
-    return `[PHONE_ORDER_FLOW]${JSON.stringify({ item, price, free, card: 'Visa ••••7823', rewards: isIphone ? '−$25.00 (2,450 pts)' : null })}[/PHONE_ORDER_FLOW]`;
-  }
-
-  // Turn 3+: User picks a specific phone — confirm specs and price
-  // Note: '24.99' is excluded from isIphoneSelection to avoid matching "Yes, order it — $24.99"
+  // ── Phone selection — show order summary and set flowState ─────────────────
   const isIphoneSelection = (last.includes('iphone 13') || last.includes('24.99')) && !last.includes('17e') && !last.includes('order it');
-  const isIphone17e = last.includes('17e') || last.includes('iphone 17e');
   const isMoto = last.includes('moto') || last.includes('stylus');
-  const isA17 = last.includes('a17');
-  const isA36 = last.includes('a36') || last.includes('galaxy a36');
-  const isPhonePick = isIphoneSelection || isIphone17e || isMoto || isA17 || isA36 ||
+  const isA17  = last.includes('a17');
+  const isA36  = last.includes('a36') || last.includes('galaxy a36');
+  const isPhonePick = isIphoneSelection || isMoto || isA17 || isA36 ||
     last.includes('want the') || last.includes('i want') || last.includes('pick') ||
     (last.includes('free') && !last.includes('completely') && !last.includes('order it'));
 
   if (isPhonePick) {
     if (isIphoneSelection) {
-      return msg(
-        `Here's your order summary:\n\n**iPhone 13**\n• Color: Midnight\n• Storage: 128 GB\n• Regular price: $49.99\n• Rewards discount: −$25.00 (2,450 pts)\n• You pay: $24.99\n• Points remaining after purchase: 0\n• Ships: 2–3 business days\n• Card: Visa ••••7823\n\nReady to place the order?`,
-        ['Yes, order it — $24.99', 'Go back']
+      return withState(
+        msg(
+          `Here's your order summary:\n\n**iPhone 13**\n• Color: Midnight\n• Storage: 128 GB\n• Regular price: $49.99\n• Rewards discount: −$25.00 (2,450 pts)\n• You pay: $24.99\n• Points remaining after purchase: 0\n• Ships: 2–3 business days\n• Card: Visa ••••7823\n\nReady to place the order?`,
+          ['Yes, order it — $24.99', 'Go back']
+        ),
+        'order_iphone13'
       );
     }
     if (isMoto) {
-      return msg(
-        `Here's your order summary:\n\n**Moto G Stylus**\n• Color: Graphite\n• Storage: 128 GB\n• Price: FREE with your Unlimited plan\n• Ships: 2–3 business days\n• Card: Visa ••••7823\n\nReady to place the order?`,
-        ['Yes, order it — FREE', 'Go back']
+      return withState(
+        msg(
+          `Here's your order summary:\n\n**Moto G Stylus**\n• Color: Graphite\n• Storage: 128 GB\n• Price: FREE with your Unlimited plan\n• Ships: 2–3 business days\n• Card: Visa ••••7823\n\nReady to place the order?`,
+          ['Yes, order it — FREE', 'Go back']
+        ),
+        'order_moto'
       );
     }
     if (isA17) {
-      return msg(
-        `Here's your order summary:\n\n**Samsung Galaxy A17**\n• Color: Black\n• Storage: 64 GB\n• Price: FREE with your Unlimited plan\n• Ships: 2–3 business days\n• Card: Visa ••••7823\n\nReady to place the order?`,
-        ['Yes, order it — FREE', 'Go back']
+      return withState(
+        msg(
+          `Here's your order summary:\n\n**Samsung Galaxy A17**\n• Color: Black\n• Storage: 64 GB\n• Price: FREE with your Unlimited plan\n• Ships: 2–3 business days\n• Card: Visa ••••7823\n\nReady to place the order?`,
+          ['Yes, order it — FREE', 'Go back']
+        ),
+        'order_galaxy_a17'
       );
     }
     // Default / Galaxy A36
-    return msg(
-      `Here's your order summary:\n\n**Samsung Galaxy A36**\n• Color: Awesome Navy\n• Storage: 128 GB\n• Price: FREE with your Unlimited plan\n• Ships: 2–3 business days\n• Card: Visa ••••7823\n\nReady to place the order?`,
-      ['Yes, order it — FREE', 'Go back']
+    return withState(
+      msg(
+        `Here's your order summary:\n\n**Samsung Galaxy A36**\n• Color: Awesome Navy\n• Storage: 128 GB\n• Price: FREE with your Unlimited plan\n• Ships: 2–3 business days\n• Card: Visa ••••7823\n\nReady to place the order?`,
+        ['Yes, order it — FREE', 'Go back']
+      ),
+      'order_galaxy_a36'
     );
   }
 
@@ -1412,7 +1559,7 @@ function handleBrowseIntent(intent, persona) {
   }
 }
 
-export function generateDemoResponse(messages, persona, activeIntent, intentTurn) {
+export function generateDemoResponse(messages, persona, activeIntent, intentTurn, flowState) {
   const userMessages = messages.filter(m => m.role === 'user');
   const turn = userMessages.length;
   const firstUserMsg = userMessages[0]?.content || '';
@@ -1445,7 +1592,7 @@ export function generateDemoResponse(messages, persona, activeIntent, intentTurn
   // handleBrowseIntent so 'browse_phones' doesn't get intercepted generically
   if (persona?.id === 'us-009') {
     if (intentTurn === 0) return getPersonaOpeningResponse(persona);
-    return getAlexPhoneTurnResponse(userMessages, persona) || getGenericClarifyResponse();
+    return getAlexPhoneTurnResponse(userMessages, persona, flowState) || getGenericClarifyResponse();
   }
 
   // Intent-first routing: if activeIntent is a browse intent, route directly
@@ -1565,16 +1712,26 @@ export function generateDemoResponse(messages, persona, activeIntent, intentTurn
     }
   }
 
+  // ── Phase 5: JSON conversation engine ────────────────────────────────────
+  // Runs before persona-specific handlers for us-001 (Maria).
+  // Returns null to fall through to the scripted engine for unhandled paths.
+  if (persona?.id === 'us-001') {
+    const engineResult = runConversationEngine(
+      mariaConfig, activeIntent, flowState, userMessages, persona
+    );
+    if (engineResult !== null) return engineResult;
+  }
+
   // Intent-first routing — if activeIntent is set, route to persona handler regardless of turn
   if (activeIntent && persona) {
     let response = null;
     switch (persona.id) {
-      case 'us-001': response = getMariaTurnResponse(userMessages, intentTurn, activeIntent, persona); break;
+      case 'us-001': response = getMariaTurnResponse(userMessages, intentTurn, activeIntent, persona, flowState); break;
       case 'us-005':
         // Angela's opening always runs first regardless of which intent pill was clicked;
-        // subsequent turns fall through to getAngelaTurnResponse via the turn > 1 block below
+        // subsequent turns go to the named state machine
         if (intentTurn === 0) response = getPersonaOpeningResponse(persona);
-        else response = getAngelaTurnResponse(userMessages, turn, persona);
+        else response = getAngelaTurnResponse(userMessages, turn, persona, flowState);
         break;
     }
     if (response) return response;
@@ -1590,15 +1747,15 @@ export function generateDemoResponse(messages, persona, activeIntent, intentTurn
   if (turn > 1 && persona) {
     let response = null;
     switch (persona.id) {
-      case 'us-001': response = getMariaTurnResponse(userMessages, intentTurn, activeIntent, persona); break;
+      case 'us-001': response = getMariaTurnResponse(userMessages, intentTurn, activeIntent, persona, flowState); break;
       case 'us-002': response = getCarlosTurnResponse(userMessages, turn, persona); break;
       case 'us-003': response = getPriyaTurnResponse(userMessages, turn, persona); break;
       case 'us-004': response = getJamesTurnResponse(userMessages, turn, persona); break;
-      case 'us-005': response = getAngelaTurnResponse(userMessages, turn, persona); break;
+      case 'us-005': response = getAngelaTurnResponse(userMessages, turn, persona, flowState); break;
       case 'us-006': response = getDerekTurnResponse(userMessages, turn, persona); break;
       case 'us-007': response = getAnaTurnResponse(userMessages, turn, persona); break;
       case 'us-008': response = getRobertTurnResponse(userMessages, turn, persona); break;
-      case 'us-009': response = getAlexPhoneTurnResponse(userMessages, persona); break;
+      case 'us-009': response = getAlexPhoneTurnResponse(userMessages, persona, flowState); break;
       case 'us-010': response = getNinaTurnResponse(userMessages, turn, persona); break;
     }
     if (response) return response;
