@@ -6,7 +6,7 @@ const SESSION_KEY = 'clearpath_auth';
 
 function checkUrlPassword() {
   const params = new URLSearchParams(window.location.search);
-  return params.get('pwd') === CORRECT_PASSWORD;
+  return params.get('pwd') === CORRECT_PASSWORD || params.get('pass') === CORRECT_PASSWORD;
 }
 
 export default function PasswordGate({ children }) {
