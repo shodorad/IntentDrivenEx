@@ -99,11 +99,12 @@ export default function PillOverlay() {
 
   if (!state.inputFocused) return null;
 
-  const isChat = state.mode === 'chat';
+  const isChat = state.mode === 'chatting';
   const personalizedPills = getPersonaPills(state.persona, lang);
   const browsePills = BROWSE_PILLS;
 
   const handlePillClick = (pill) => {
+    dispatch({ type: 'SET_INPUT_FOCUSED', payload: false });
     if (pill.intent) dispatch({ type: 'SET_INTENT', payload: pill.intent });
     if (isChat) {
       sendMessage(pill.prompt, pill.intent);
@@ -125,7 +126,7 @@ export default function PillOverlay() {
           <button
             className={styles.backBtn}
             onMouseDown={(e) => e.preventDefault()}
-            onClick={() => { window.location.href = '/'; }}
+            onClick={() => { dispatch({ type: 'SET_INPUT_FOCUSED', payload: false }); window.location.href = '/'; }}
           >
             <ArrowLeft size={13} weight="bold" />
             <span>Back to Home</span>
