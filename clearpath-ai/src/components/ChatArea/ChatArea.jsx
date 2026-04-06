@@ -7,6 +7,7 @@ import ActionPills from '../ActionPills/ActionPills';
 import TypingIndicator from '../TypingIndicator/TypingIndicator';
 import RecommendationCard from '../RecommendationCard/RecommendationCard';
 import RefillFlow from '../RefillFlow/RefillFlow';
+import RedeemFlow from '../RedeemFlow/RedeemFlow';
 import UpgradeFlow from '../UpgradeFlow/UpgradeFlow';
 import LiveChatFlow from '../LiveChatFlow/LiveChatFlow';
 import PhoneOrderFlow from '../PhoneOrderFlow/PhoneOrderFlow';
@@ -15,7 +16,7 @@ import styles from './ChatArea.module.css';
 
 export default function ChatArea() {
   const { state, dispatch } = useChat();
-  const { sendMessage } = useChatActions();
+  const { sendMessage, resetChat } = useChatActions();
   const bottomRef = useRef(null);
 
   useEffect(() => {
@@ -63,7 +64,7 @@ export default function ChatArea() {
   return (
     <div className={styles.area}>
       {/* Floating back to home button */}
-      <button className={styles.homeBtn} onClick={() => { window.location.href = '/'; }}>
+      <button className={styles.homeBtn} onClick={resetChat}>
         <ArrowLeft size={15} weight="bold" />
         <span>Back to Home</span>
       </button>
@@ -88,6 +89,9 @@ export default function ChatArea() {
             <MessageBubble role={msg.role} content={msg.content} />
             {msg.role === 'assistant' && msg.refillFlow && (
               <RefillFlow />
+            )}
+            {msg.role === 'assistant' && msg.redeemFlow && (
+              <RedeemFlow />
             )}
             {msg.role === 'assistant' && msg.upgradeFlow && (
               <UpgradeFlow />

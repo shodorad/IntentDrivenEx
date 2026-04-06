@@ -26,6 +26,7 @@ export function parseResponse(text) {
   const refillFlow = text.includes('[REFILL_FLOW]');
   const upgradeFlow = text.includes('[UPGRADE_FLOW]');
   const liveChatFlow = text.includes('[LIVE_CHAT_FLOW]');
+  const redeemFlow = text.includes('[REDEEM_FLOW]');
 
   // Extract phone order flow data
   const phoneOrderMatch = text.match(/\[PHONE_ORDER_FLOW\](.*?)\[\/PHONE_ORDER_FLOW\]/s);
@@ -42,8 +43,9 @@ export function parseResponse(text) {
     .replace(/\[REFILL_FLOW\]/g, '')
     .replace(/\[UPGRADE_FLOW\]/g, '')
     .replace(/\[LIVE_CHAT_FLOW\]/g, '')
+    .replace(/\[REDEEM_FLOW\]/g, '')
     .replace(/\[PHONE_ORDER_FLOW\].*?\[\/PHONE_ORDER_FLOW\]/s, '')
     .trim();
 
-  return { message, actionPills, recommendations, refillFlow, upgradeFlow, liveChatFlow, phoneOrderFlow };
+  return { message, actionPills, recommendations, refillFlow, upgradeFlow, liveChatFlow, redeemFlow, phoneOrderFlow };
 }

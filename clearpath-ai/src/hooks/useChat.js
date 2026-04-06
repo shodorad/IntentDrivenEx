@@ -37,6 +37,7 @@ export function useChatActions() {
           actionPills:     parsed.actionPills,
           recommendations: parsed.recommendations,
           ...(parsed.refillFlow     && { refillFlow:     true              }),
+          ...(parsed.redeemFlow     && { redeemFlow:     true              }),
           ...(parsed.liveChatFlow   && { liveChatFlow:   true              }),
           ...(parsed.phoneOrderFlow && { phoneOrderFlow: parsed.phoneOrderFlow }),
           ...(parsed.upgradeFlow    && { upgradeFlow:    true              }),

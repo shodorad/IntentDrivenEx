@@ -102,6 +102,15 @@ export const INTENT_MAP = {
     negations: [],
   },
 
+  browse_rewards: {
+    phrases: [
+      'rewards', 'my points', 'reward points', 'loyalty points',
+      'redeem points', 'how many points', 'points balance',
+      'my rewards', 'earn points', 'use my points', 'points expir',
+    ],
+    negations: [],
+  },
+
   done: {
     phrases: [
       'never mind', "that's all", 'thats all', 'go home', 'return home',

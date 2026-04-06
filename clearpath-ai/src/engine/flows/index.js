@@ -7,6 +7,7 @@ import { BrowsePlansFlow }        from './browse-plans.js';
 import { BrowsePhonesFlow }       from './browse-phones.js';
 import { ActivationFlow }         from './activation.js';
 import { InternationalFlow }      from './international.js';
+import { BrowseRewardsFlow }      from './browse-rewards.js';
 import { msg }                    from '../utils.js';
 
 // ── Terminal intent flows ─────────────────────────────────────────────────────
@@ -66,6 +67,18 @@ const UpgradeAtRenewalFlow = {
           { label: "I'll manage",             intent: 'done'          },
         ]
       ),
+      nextFlowId:   null,
+      nextStepId:   'flow_complete',
+      contextPatch: {},
+      endFlow:      true,
+    };
+  },
+};
+
+const RedeemPointsFlow = {
+  step(_stepId, _userText, _ctx, _persona) {
+    return {
+      response: `[REDEEM_FLOW]`,
       nextFlowId:   null,
       nextStepId:   'flow_complete',
       contextPatch: {},
@@ -143,6 +156,7 @@ export const FLOW_REGISTRY = {
   browse_phones:  BrowsePhonesFlow,
   activate:       ActivationFlow,
   international:  InternationalFlow,
+  browse_rewards: BrowseRewardsFlow,
 
   // Terminal intents — explicit pill intents that resolve without text-matching
   try_free_fixes:     TryFreeFixesFlow,
@@ -152,20 +166,23 @@ export const FLOW_REGISTRY = {
   upgrade_at_renewal: UpgradeAtRenewalFlow,
   keep_plan:          KeepPlanFlow,
   show_options:       ShowOptionsFlow,
+  redeem_points:      RedeemPointsFlow,
 
   // Aliases — same flow, different entry points
-  'slow-data': DiagnoseUsageFlow,
-  'runs-out':  DiagnoseUsageFlow,
-  cost:        PlanChangeFlow,
-  compare:     BrowsePlansFlow,
-  byop:        ActivationFlow,
+  'slow-data':          DiagnoseUsageFlow,
+  'runs-out':           DiagnoseUsageFlow,
+  cost:                 PlanChangeFlow,
+  compare:              BrowsePlansFlow,
+  byop:                 ActivationFlow,
+  browse_rewards_earn:  BrowseRewardsFlow,
+  browse_rewards_redeem: BrowseRewardsFlow,
 
   // Landing pill intents — persona suggestedActions that must route directly
   add_data:          QuickRefillFlow,       // "Add 5 GB of data — $10" (Maria)
   upgrade_unlimited: PlanChangeFlow,        // "Upgrade to Unlimited" (various)
   renew_current:     QuickRefillFlow,       // "Renew Total Base 5G" (Carlos)
   renew_early:       QuickRefillFlow,       // "Renew full plan early" (Priya)
-  redeem_points:     QuickRefillFlow,       // "Redeem 1,000 pts" (Priya)
+  redeem_points:     RedeemPointsFlow,      // "Redeem 1,000 pts" (Priya / Alex)
   check_outage:      TroubleshootSignalFlow,// "Check for outages" (Angela)
   self_fix:          TroubleshootSignalFlow,// "Walk me through a fix" (Angela)
   escalate_support:  TroubleshootSignalFlow,// "Talk to someone" (Angela)

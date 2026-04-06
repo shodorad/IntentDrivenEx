@@ -11,6 +11,7 @@ const BROWSE_PILLS = [
 ];
 import { useChat } from '../../context/ChatContext';
 import { useChatActions } from '../../hooks/useChat';
+
 import { useTranslation } from '../../i18n/useTranslation';
 import styles from './PillOverlay.module.css';
 
@@ -94,7 +95,7 @@ function getPersonaPills(persona, lang) {
 
 export default function PillOverlay() {
   const { state, dispatch } = useChat();
-  const { startChat, sendMessage } = useChatActions();
+  const { startChat, sendMessage, resetChat } = useChatActions();
   const { t, lang } = useTranslation();
 
   if (!state.inputFocused) return null;
@@ -126,7 +127,7 @@ export default function PillOverlay() {
           <button
             className={styles.backBtn}
             onMouseDown={(e) => e.preventDefault()}
-            onClick={() => { dispatch({ type: 'SET_INPUT_FOCUSED', payload: false }); window.location.href = '/'; }}
+            onClick={() => { dispatch({ type: 'SET_INPUT_FOCUSED', payload: false }); resetChat(); }}
           >
             <ArrowLeft size={13} weight="bold" />
             <span>Back to Home</span>
