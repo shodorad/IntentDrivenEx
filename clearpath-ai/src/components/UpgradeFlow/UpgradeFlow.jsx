@@ -170,7 +170,6 @@ export default function UpgradeFlow() {
 
             {showPostFlow && (
               <div className={styles.postFlowActions}>
-                <p className={styles.postFlowPrompt}>What would you like to do next?</p>
                 <div className={styles.postFlowPills}>
                   <button className={styles.postFlowPill} onClick={handleReturnHome}>
                     Return home

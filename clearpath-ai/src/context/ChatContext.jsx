@@ -22,6 +22,11 @@ const initialState = {
   intentTurn: 0,         // how many user messages sent within current intent
   flowState: null,       // named state within current flow (Phase 3)
   activeSignal: null,    // signal card that triggered the chat session
+
+  // ── New engine state (replaces activeIntent + intentTurn + flowState) ──────
+  flowId:      null,     // e.g. 'quick_refill' | 'support' | null
+  stepId:      null,     // e.g. 'asked_wifi' | 'asked_restart' | null
+  flowContext: {},       // facts accumulated during the active flow
 };
 
 function chatReducer(state, action) {
@@ -86,6 +91,24 @@ function chatReducer(state, action) {
       };
     case 'SET_ACTIVE_SIGNAL':
       return { ...state, activeSignal: action.payload };
+
+    // ── New engine actions ──────────────────────────────────────────────────
+    case 'START_FLOW':
+      return {
+        ...state,
+        flowId:      action.payload.flowId,
+        stepId:      'start',
+        flowContext: {},
+      };
+    case 'ADVANCE_FLOW':
+      return {
+        ...state,
+        stepId:      action.payload.stepId,
+        flowContext: { ...state.flowContext, ...action.payload.contextPatch },
+      };
+    case 'END_FLOW':
+      return { ...state, flowId: null, stepId: null, flowContext: {} };
+
     default:
       return state;
   }

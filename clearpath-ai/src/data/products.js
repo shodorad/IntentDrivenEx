@@ -28,8 +28,8 @@ export const PLANS = [
   {
     id: "5g-unlimited",
     name: "Total 5G Unlimited",
-    price: null,
-    priceNote: "dynamic pricing — see site for current rate",
+    price: 55,
+    priceNote: "per line / month",
     data: "Unlimited",
     hotspot: "15GB",
     talk: "Unlimited",
@@ -54,8 +54,8 @@ export const PLANS = [
   {
     id: "5g-plus-unlimited",
     name: "Total 5G+ Unlimited",
-    price: null,
-    priceNote: "dynamic pricing — see site for current rate",
+    price: 65,
+    priceNote: "per line / month",
     data: "Unlimited",
     hotspot: "Unlimited",
     talk: "Unlimited",

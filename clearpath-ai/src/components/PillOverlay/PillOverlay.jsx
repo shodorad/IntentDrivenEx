@@ -1,15 +1,29 @@
-import { useEffect } from 'react';
+import * as Icons from '@phosphor-icons/react';
+import { ArrowLeft } from '@phosphor-icons/react';
 import { motion } from 'framer-motion';
+import { INTENT_PILLS } from '../../data/products';
+
+const BROWSE_PILLS = [
+  { label: 'Show me all plans',         prompt: 'Show me all available plans.',                          intent: 'browse_plans'   },
+  { label: 'Show me the latest phones', prompt: 'Show me the latest phones available.',                  intent: 'browse_phones'  },
+  { label: 'Show me current deals',     prompt: 'Show me all current deals and promotions.',             intent: 'browse_deals'   },
+  { label: 'My rewards & points',       prompt: 'Tell me about my rewards points and how to use them.',  intent: 'browse_rewards' },
+];
 import { useChat } from '../../context/ChatContext';
 import { useChatActions } from '../../hooks/useChat';
 import { useTranslation } from '../../i18n/useTranslation';
-import { PERSONAS } from '../../data/personas';
-import SignalBanner from '../SignalBanner/SignalBanner';
-import MiniDashboard from '../MiniDashboard/MiniDashboard';
-import { AlertCardGrid } from '../AlertCard/AlertCard';
-import styles from './LandingScreen.module.css';
+import styles from './PillOverlay.module.css';
 
-// Extra pills per intentCategory
+const containerVariants = {
+  hidden: {},
+  show: { transition: { staggerChildren: 0.04 } },
+};
+
+const itemVariants = {
+  hidden: { opacity: 0, y: 8 },
+  show: { opacity: 1, y: 0, transition: { duration: 0.25, ease: 'easeOut' } },
+};
+
 const EXTRA_PILLS = {
   refill: [
     { label: 'Why does this keep happening?', labelEs: '¿Por qué sigue pasando esto?',   prompt: 'Why do I keep running out of data every month?',           intent: 'diagnose_usage'  },
@@ -66,7 +80,7 @@ function getPersonaPills(persona, lang) {
   const es = lang === 'es';
   const suggested = (persona.suggestedActions || []).map((a) => ({
     label: es && a.labelEs ? a.labelEs : a.label,
-    prompt: a.label, // always English prompt so AI/flow routing works correctly
+    prompt: a.label,
     intent: a.action,
   }));
   const category = persona.intentCategory || 'refill';
@@ -75,116 +89,104 @@ function getPersonaPills(persona, lang) {
     prompt: p.prompt,
     intent: p.intent,
   }));
-  const combined = [...suggested, ...extras];
-  return combined.slice(0, 8);
+  return [...suggested, ...extras].slice(0, 4);
 }
 
-export default function LandingScreen() {
+export default function PillOverlay() {
   const { state, dispatch } = useChat();
-  const { startChat, startProactiveChat } = useChatActions();
-  const { t } = useTranslation();
+  const { startChat, sendMessage } = useChatActions();
+  const { t, lang } = useTranslation();
 
-  // Clear signal banner whenever persona changes (signals are now shown in the alerts grid)
-  useEffect(() => {
-    dispatch({ type: 'CLEAR_SIGNAL_BANNER' });
-  }, [state.persona, dispatch]);
+  if (!state.inputFocused) return null;
 
-  // Keyboard shortcuts: 1=us-001, 2=us-005, 3=us-009
-  useEffect(() => {
-    const PERSONA_MAP = { '1': 'us-001', '2': 'us-005', '3': 'us-009' };
-    const handleKey = (e) => {
-      if (e.target.tagName === 'TEXTAREA' || e.target.tagName === 'INPUT') return;
-      if (!PERSONA_MAP[e.key]) return;
-      const persona = PERSONAS[PERSONA_MAP[e.key]];
-      if (persona) {
-        dispatch({ type: 'SET_PERSONA', payload: persona });
-        dispatch({ type: 'RESET_CHAT' });
-      }
-    };
-    window.addEventListener('keydown', handleKey);
-    return () => window.removeEventListener('keydown', handleKey);
-  }, [dispatch]);
+  const isChat = state.mode === 'chat';
+  const personalizedPills = getPersonaPills(state.persona, lang);
+  const browsePills = BROWSE_PILLS;
 
-  const handleSignalAction = (banner) => {
-    dispatch({ type: 'CLEAR_SIGNAL_BANNER' });
-    const flowPrompts = {
-      refill: 'I need to refill my data',
-      upgrade: 'I want to upgrade my plan',
-      international: 'I want to add international calling',
-      addon: 'I want to add international calling',
-      activate: 'I need to activate my SIM',
-      support: 'I am having connectivity issues',
-      compare: 'I want to compare plans for my family',
-    };
-    const prompt = flowPrompts[banner.flowId] || 'I need help with my account';
-    startChat(prompt);
+  const handlePillClick = (pill) => {
+    if (pill.intent) dispatch({ type: 'SET_INTENT', payload: pill.intent });
+    if (isChat) {
+      sendMessage(pill.prompt, pill.intent);
+    } else {
+      startChat(pill.prompt, pill.intent);
+    }
   };
 
-  const hour = new Date().getHours();
-  const greetingLabel = hour < 12 ? 'GOOD MORNING' : hour < 17 ? 'GOOD AFTERNOON' : 'GOOD EVENING';
-  const firstName = (state.persona?.name || 'there').split(' ')[0].toUpperCase();
-
   return (
-    <div className={styles.landing}>
-      {/* Greeting */}
-      <motion.div
-        className={styles.greeting}
-        initial={{ opacity: 0, y: 10 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.4, delay: 0.1 }}
-      >
-        <span className={styles.greetingDash}>—</span>
-        <span className={styles.greetingText}>{greetingLabel}, {firstName}</span>
-      </motion.div>
+    <motion.div
+      className={styles.overlay}
+      variants={containerVariants}
+      initial="hidden"
+      animate="show"
+    >
+      {/* Back to Home — only shown in chat mode */}
+      {isChat && (
+        <div className={styles.overlayHeader}>
+          <button
+            className={styles.backBtn}
+            onMouseDown={(e) => e.preventDefault()}
+            onClick={() => { window.location.href = '/'; }}
+          >
+            <ArrowLeft size={13} weight="bold" />
+            <span>Back to Home</span>
+          </button>
+        </div>
+      )}
 
-      {/* Headline */}
-      <motion.h1
-        className={styles.headline}
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5, delay: 0.15 }}
-      >
-        {t('headline').split('\n').map((line, i) => (
-          i === 0
-            ? <span key={i}>{line}<br /></span>
-            : <span key={i} className={styles.headlineAccent}>{line}</span>
-        ))}
-      </motion.h1>
+      {/* For You */}
+      <div className={styles.pillCategory}>
+        <span className={`${styles.pillCategoryLabel} ${styles.pillCategoryLabelFor}`}>For You</span>
+        <div className={styles.pillCategoryGrid}>
+          {personalizedPills.map((pill, idx) => {
+            const knownPill = INTENT_PILLS ? INTENT_PILLS.find((ip) => ip.label === pill.label || ip.prompt === pill.prompt) : null;
+            const IconComponent = knownPill ? Icons[knownPill.icon] : Icons['ArrowRight'];
+            return (
+              <motion.button
+                key={idx}
+                className={styles.pill}
+                onMouseDown={(e) => e.preventDefault()}
+                onClick={() => handlePillClick(pill)}
+                variants={itemVariants}
+                whileHover={{ scale: 1.03, y: -2 }}
+                whileTap={{ scale: 0.97 }}
+              >
+                <span className={styles.pillIcon}>
+                  {IconComponent && <IconComponent size={18} weight="regular" />}
+                </span>
+                <span>{pill.label}</span>
+              </motion.button>
+            );
+          })}
+        </div>
+      </div>
 
-      <motion.div
-        className={styles.sectionGroup}
-        initial={{ opacity: 0, y: 10 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.4, delay: 0.5 }}
-      >
-        <span className={styles.sectionLabel}>{t('landing.sectionAlerts')}</span>
-        <AlertCardGrid
-          signals={state.persona?.signals || []}
-          persona={state.persona}
-          onCta={(prompt, intent, sig) => {
-            if (!intent && sig?.severity === 'info') {
-              startProactiveChat(sig);
-            } else {
-              if (intent) dispatch({ type: 'SET_INTENT', payload: intent });
-              if (sig) dispatch({ type: 'SET_ACTIVE_SIGNAL', payload: sig });
-              startChat(prompt, intent);
-            }
-          }}
-        />
-        <SignalBanner onAction={handleSignalAction} />
-      </motion.div>
+      {/* Divider */}
+      <div className={styles.pillDivider}>
+        <span className={styles.pillDividerText}>or explore</span>
+      </div>
 
-      <motion.div
-        className={styles.sectionGroup}
-        initial={{ opacity: 0, y: 10 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.4, delay: 0.6 }}
-      >
-        <span className={styles.sectionLabel}>{t('landing.sectionAccount')}</span>
-        <MiniDashboard />
-      </motion.div>
-
-      {/* Pill overlay is now rendered globally in App.jsx (PillOverlay component) */}
-    </div>
+      {/* Explore */}
+      <div className={styles.pillCategory}>
+        <span className={`${styles.pillCategoryLabel} ${styles.pillCategoryLabelExplore}`}>Explore</span>
+        <div className={styles.pillCategoryGrid}>
+          {browsePills.map((pill, idx) => (
+            <motion.button
+              key={idx}
+              className={`${styles.pill} ${styles.pillExplore}`}
+              onMouseDown={(e) => e.preventDefault()}
+              onClick={() => handlePillClick(pill)}
+              variants={itemVariants}
+              whileHover={{ scale: 1.03, y: -2 }}
+              whileTap={{ scale: 0.97 }}
+            >
+              <span className={styles.pillIcon}>
+                <Icons.MagnifyingGlass size={18} weight="regular" />
+              </span>
+              <span>{pill.label}</span>
+            </motion.button>
+          ))}
+        </div>
+      </div>
+    </motion.div>
   );
 }

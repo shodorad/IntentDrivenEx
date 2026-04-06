@@ -9,6 +9,7 @@ import TransparencyPanel from './components/TransparencyPanel/TransparencyPanel'
 import IPhoneSMSModal from './components/IPhoneSMSModal/IPhoneSMSModal';
 import FloatingShapes from './components/FloatingShapes/FloatingShapes';
 import PasswordGate from './components/PasswordGate/PasswordGate';
+import PillOverlay from './components/PillOverlay/PillOverlay';
 import styles from './App.module.css';
 
 function AppContent() {
@@ -43,6 +44,7 @@ function AppContent() {
               </motion.div>
             )}
           </AnimatePresence>
+          <PillOverlay />
           <InputBar />
         </div>
       </div>
