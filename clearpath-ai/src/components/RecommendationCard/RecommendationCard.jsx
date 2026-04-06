@@ -92,7 +92,7 @@ function PlanCard({ product, reason, isBest, onExplore, costDiff, solveHighlight
           size="sm"
           onClick={() => onExplore(product, 'plan', reason)}
         >
-          {isBest ? 'Upgrade Now' : 'Learn More'}
+          Upgrade Now
         </Button>
       </div>
     </motion.div>
@@ -226,10 +226,6 @@ export default function RecommendationCard({ recommendations, onExplore }) {
         })}
       </div>
 
-      <div className={styles.talkLink}>
-        <Headset size={16} />
-        <span>Want to talk to a real person instead? Call <strong>1-866-663-3633</strong></span>
-      </div>
     </div>
   );
 }

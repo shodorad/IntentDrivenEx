@@ -223,11 +223,8 @@ export default function RefillFlow() {
 
             {showPostFlow && (
               <div className={styles.postFlowActions}>
-                <p className={styles.postFlowPrompt}>{t('postFlow.prompt')}</p>
                 <div className={styles.postFlowPills}>
                   <button className={styles.postFlowPill} onClick={handleReturnHome}>{t('postFlow.returnHome')}</button>
-                  <button className={styles.postFlowPill} onClick={handleNewQuestion}>{t('postFlow.newQuestion')}</button>
-                  <button className={styles.postFlowPill} onClick={handleDone}>{t('postFlow.done')}</button>
                 </div>
               </div>
             )}

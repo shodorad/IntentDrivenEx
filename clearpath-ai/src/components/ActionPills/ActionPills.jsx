@@ -17,6 +17,10 @@ export default function ActionPills({ pills, onSelect }) {
           <Pill
             key={i}
             onClick={() => {
+              if (intent === 'done' || intent === 'reset') {
+                window.location.href = '/';
+                return;
+              }
               if (intent) dispatch({ type: 'SET_INTENT', payload: intent });
               onSelect(label, intent);
             }}

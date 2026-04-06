@@ -370,7 +370,7 @@ function ExtrasGrid({ addons, urgency }) {
             recommended={dataUrgent && extra.id.startsWith('data')}
             isActive={addons.includes(extra.id)}
             ctaLabel={extra.ctaLabel}
-            onClick={() => startChat(extra.ctaPrompt)}
+            onClick={() => {}}
           />
         ))}
       </div>

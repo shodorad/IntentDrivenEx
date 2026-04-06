@@ -5,6 +5,34 @@
   gap: 20px;
 }
 
+/* ── Floating back-to-home button ── */
+.homeBtn {
+  position: fixed;
+  top: 80px;
+  left: 24px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 14px;
+  background: white;
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  border-radius: 20px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--tw-gray-600, #4b5563);
+  cursor: pointer;
+  z-index: 20;
+  font-family: var(--font);
+  transition: all 0.15s ease;
+}
+
+.homeBtn:hover {
+  background: var(--tw-gray-50, #f9fafb);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+  transform: translateY(-1px);
+}
+
 /* ── Sticky signal card — fixed, floats left of the chat, out of flow ── */
 .stickySignalWrap {
   position: fixed;

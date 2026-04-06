@@ -1,0 +1,1000 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Maria — "Why am I running out?" Chat Tree</title>
+    <style>
+      *,
+      *::before,
+      *::after {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+
+      body {
+        font-family:
+          -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+        background: #0f1117;
+        color: #e2e8f0;
+        padding: 40px 24px 80px;
+        min-height: 100vh;
+      }
+
+      /* ── Header ──────────────────────────────────────────────── */
+      .header {
+        max-width: 960px;
+        margin: 0 auto 48px;
+      }
+      .header h1 {
+        font-size: 22px;
+        font-weight: 600;
+        color: #f8fafc;
+        margin-bottom: 6px;
+      }
+      .header p {
+        font-size: 13px;
+        color: #64748b;
+      }
+      .legend {
+        display: flex;
+        gap: 20px;
+        flex-wrap: wrap;
+        margin-top: 16px;
+      }
+      .legend-item {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 12px;
+        color: #94a3b8;
+      }
+      .legend-dot {
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+      }
+
+      /* ── Tree canvas ─────────────────────────────────────────── */
+      .tree {
+        max-width: 960px;
+        margin: 0 auto;
+        position: relative;
+      }
+
+      /* ── Node ────────────────────────────────────────────────── */
+      .node {
+        position: relative;
+        background: #1e2330;
+        border: 1px solid #2d3748;
+        border-radius: 12px;
+        padding: 16px 18px;
+        margin-bottom: 0;
+      }
+      .node.spine {
+        border-left: 3px solid #3b82f6;
+      }
+      .node.exit-node {
+        border-left: 3px solid #f97316;
+        background: #1c1f2b;
+      }
+      .node.terminal {
+        border-left: 3px solid #475569;
+        background: #161820;
+        opacity: 0.85;
+      }
+      .node.opening {
+        border-left: 3px solid #8b5cf6;
+        background: #1d1a2e;
+      }
+      .node.success {
+        border-left: 3px solid #22c55e;
+        background: #141f1a;
+      }
+
+      .node-label {
+        font-size: 10px;
+        font-weight: 700;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        margin-bottom: 8px;
+      }
+      .node.spine .node-label {
+        color: #60a5fa;
+      }
+      .node.opening .node-label {
+        color: #a78bfa;
+      }
+      .node.exit-node .node-label {
+        color: #fb923c;
+      }
+      .node.terminal .node-label {
+        color: #64748b;
+      }
+      .node.success .node-label {
+        color: #4ade80;
+      }
+
+      .node-message {
+        font-size: 13px;
+        color: #cbd5e1;
+        line-height: 1.5;
+        margin-bottom: 12px;
+        white-space: pre-line;
+      }
+      .node-message em {
+        font-style: normal;
+        color: #94a3b8;
+      }
+
+      /* ── Pills ───────────────────────────────────────────────── */
+      .pills {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px;
+      }
+      .pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        font-size: 12px;
+        font-weight: 500;
+        padding: 5px 11px;
+        border-radius: 20px;
+        cursor: default;
+        white-space: nowrap;
+      }
+      .pill .arrow {
+        font-size: 10px;
+        opacity: 0.7;
+      }
+
+      .pill-advance {
+        background: #1e3a5f;
+        border: 1px solid #2563eb;
+        color: #93c5fd;
+      }
+      .pill-exit {
+        background: #2d1f0e;
+        border: 1px solid #c2410c;
+        color: #fdba74;
+      }
+      .pill-neutral {
+        background: #1e293b;
+        border: 1px solid #334155;
+        color: #94a3b8;
+      }
+      .pill-success {
+        background: #0f2a1a;
+        border: 1px solid #16a34a;
+        color: #86efac;
+      }
+      .pill-terminal {
+        background: #1a1d26;
+        border: 1px solid #374151;
+        color: #6b7280;
+      }
+
+      /* ── Connector lines ─────────────────────────────────────── */
+      .connector {
+        display: flex;
+        align-items: stretch;
+        margin: 0;
+      }
+      .connector-line {
+        width: 2px;
+        background: #2d3748;
+        margin: 0 0 0 28px;
+        flex-shrink: 0;
+      }
+      .connector-line.blue {
+        background: #3b82f6;
+      }
+      .connector-line.orange {
+        background: #f97316;
+      }
+      .connector-line.purple {
+        background: #8b5cf6;
+      }
+
+      .connector-spacer {
+        height: 16px;
+      }
+
+      /* ── Branch row (spine node + side terminals) ────────────── */
+      .row {
+        display: grid;
+        grid-template-columns: 1fr auto;
+        gap: 16px;
+        align-items: start;
+      }
+      .row-main {
+        /* spine node goes here */
+      }
+      .row-exits {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+        min-width: 260px;
+        max-width: 280px;
+      }
+
+      /* ── Exit branch block ───────────────────────────────────── */
+      .exit-branch {
+        display: flex;
+        align-items: flex-start;
+        gap: 0;
+      }
+      .exit-branch-line {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        padding-top: 22px;
+      }
+      .exit-branch-h-line {
+        width: 24px;
+        height: 2px;
+        background: #f97316;
+        flex-shrink: 0;
+      }
+      .exit-branch-v-line {
+        width: 2px;
+        flex: 1;
+        background: transparent;
+      }
+
+      /* ── Auto-advance label ──────────────────────────────────── */
+      .auto-label {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        font-size: 10px;
+        color: #475569;
+        background: #1a1f2e;
+        border: 1px dashed #334155;
+        border-radius: 4px;
+        padding: 2px 8px;
+        margin-bottom: 4px;
+      }
+      .auto-label::before {
+        content: "↕";
+        font-size: 9px;
+        color: #3b82f6;
+      }
+
+      /* ── Section divider ─────────────────────────────────────── */
+      .section-gap {
+        height: 48px;
+      }
+
+      /* ── Inline annotation ───────────────────────────────────── */
+      .annotation {
+        font-size: 11px;
+        color: #475569;
+        font-style: italic;
+        margin-top: 6px;
+      }
+
+      /* ── Terminal group label ───────────────────────────────── */
+      .terminal-group-label {
+        font-size: 10px;
+        font-weight: 700;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: #475569;
+        margin-bottom: 8px;
+        padding-left: 2px;
+      }
+
+      /* ── Separator line ──────────────────────────────────────── */
+      hr.flow-sep {
+        border: none;
+        border-top: 1px dashed #1e2a3a;
+        margin: 32px 0;
+      }
+
+      /* ── Flow title ──────────────────────────────────────────── */
+      .flow-title {
+        font-size: 11px;
+        font-weight: 700;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        color: #3b82f6;
+        margin-bottom: 16px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+      .flow-title::after {
+        content: "";
+        flex: 1;
+        height: 1px;
+        background: #1e2d40;
+      }
+
+      .flow-title.orange {
+        color: #f97316;
+      }
+      .flow-title.orange::after {
+        background: #2d1f0e;
+      }
+      .flow-title.purple {
+        color: #8b5cf6;
+      }
+      .flow-title.purple::after {
+        background: #1e1a2e;
+      }
+      .flow-title.green {
+        color: #22c55e;
+      }
+      .flow-title.green::after {
+        background: #0f2a1a;
+      }
+      .flow-title.gray {
+        color: #475569;
+      }
+      .flow-title.gray::after {
+        background: #1a1d24;
+      }
+
+      /* ── Node badge ──────────────────────────────────────────── */
+      .badge {
+        display: inline-flex;
+        align-items: center;
+        font-size: 10px;
+        font-weight: 600;
+        padding: 2px 7px;
+        border-radius: 4px;
+        margin-left: 8px;
+        vertical-align: middle;
+      }
+      .badge-auto {
+        background: #1e2d40;
+        color: #60a5fa;
+        border: 1px solid #1d4ed8;
+      }
+      .badge-entry {
+        background: #2e1a4a;
+        color: #c4b5fd;
+        border: 1px solid #7c3aed;
+      }
+      .badge-terminal {
+        background: #1a1d26;
+        color: #6b7280;
+        border: 1px solid #374151;
+      }
+
+      /* ── Scrollable wrapper for narrow screens ───────────────── */
+      .scroll-wrap {
+        overflow-x: auto;
+        padding-bottom: 8px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="header">
+      <h1>Maria — Chat Tree: "Why am I running out?"</h1>
+      <p>
+        diagnose_usage flow · Source: us-001-maria.json · Account: 0.8 GB left,
+        renews Apr 9
+      </p>
+      <div class="legend">
+        <div class="legend-item">
+          <div class="legend-dot" style="background: #3b82f6"></div>
+          Spine state (diagnose_usage)
+        </div>
+        <div class="legend-item">
+          <div class="legend-dot" style="background: #8b5cf6"></div>
+          Opening card
+        </div>
+        <div class="legend-item">
+          <div class="legend-dot" style="background: #22c55e"></div>
+          Within-flow resolution
+        </div>
+        <div class="legend-item">
+          <div class="legend-dot" style="background: #f97316"></div>
+          Exit to another intent
+        </div>
+        <div class="legend-item">
+          <div class="legend-dot" style="background: #475569"></div>
+          Terminal / end state
+        </div>
+        <div class="legend-item" style="margin-left: auto">
+          <span style="font-size: 11px; color: #3b82f6">↕ auto-advance</span>
+          <span style="margin: 0 4px; color: #334155">·</span>
+          <span style="font-size: 11px; color: #f97316">→ intent jump</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="tree scroll-wrap">
+      <!-- ═══════════════════════════════════════════════════════════
+       OPENING CARD
+  ═══════════════════════════════════════════════════════════════ -->
+      <div class="flow-title purple">Opening card</div>
+
+      <div class="node opening">
+        <div class="node-label">
+          AI · Opening message <span class="badge badge-entry">ENTRY</span>
+        </div>
+        <div class="node-message">
+          Hi Maria. You have <em>0.8 GB</em> left and <em>14 days</em> until
+          your plan renews on <em>Apr 9</em>. One thing I noticed: only
+          <em>22%</em> of your usage goes through Wi-Fi — your phone is using
+          cellular most of the time, even when you might not need to. That's
+          worth looking at before spending anything. Want me to walk you through
+          a couple of quick fixes, or add data right now?
+        </div>
+        <div class="pills">
+          <span class="pill pill-advance"
+            >Why am I running out?
+            <span class="arrow">→ diagnose_usage</span></span
+          >
+          <span class="pill pill-exit"
+            >Quick Refill — $15 <span class="arrow">→ quick_refill</span></span
+          >
+          <span class="pill pill-exit"
+            >Change my plan <span class="arrow">→ plan_change</span></span
+          >
+          <span class="pill pill-terminal"
+            >I'm fine for now <span class="arrow">→ done</span></span
+          >
+        </div>
+        <div class="annotation">
+          ↑ User taps "Why am I running out?" to enter diagnose_usage flow below
+        </div>
+      </div>
+
+      <div class="connector">
+        <div class="connector-line blue"></div>
+        <div style="flex: 1"></div>
+      </div>
+      <div class="connector-spacer"></div>
+
+      <!-- ═══════════════════════════════════════════════════════════
+       DIAGNOSE_USAGE SPINE
+  ═══════════════════════════════════════════════════════════════ -->
+      <div class="flow-title">diagnose_usage flow</div>
+
+      <!-- STATE: start ─────────────────────────────────────────── -->
+      <div class="row">
+        <div class="row-main">
+          <div class="node spine">
+            <div class="node-label">AI · diagnose_usage / start</div>
+            <div class="node-message">
+              I can see you're mostly on cellular — only <em>22%</em> of your
+              usage goes through Wi-Fi. Let's see if there's a free fix first.
+              Want me to walk you through a couple of quick checks?
+            </div>
+            <div class="pills">
+              <span class="pill pill-advance"
+                >Let's do it <span class="arrow">→ asked_wifi</span></span
+              >
+              <span class="pill pill-exit"
+                >Skip — add 5 GB for $15
+                <span class="arrow">↗ quick_refill</span></span
+              >
+              <span class="pill pill-exit"
+                >Skip — change my plan
+                <span class="arrow">↗ plan_change</span></span
+              >
+            </div>
+          </div>
+        </div>
+        <div class="row-exits">
+          <div style="height: 22px"></div>
+          <div class="exit-branch">
+            <div class="exit-branch-line">
+              <div class="exit-branch-h-line"></div>
+            </div>
+            <div class="node exit-node" style="flex: 1">
+              <div class="node-label">
+                ↗ EXIT → quick_refill
+                <span class="badge badge-terminal">INTENT JUMP</span>
+              </div>
+              <div class="node-message" style="font-size: 12px">
+                "Want to add 5 GB right now for $15? I'll charge your Visa
+                ••••4291."
+              </div>
+              <div class="annotation">Enters quick_refill flow</div>
+            </div>
+          </div>
+          <div class="exit-branch">
+            <div class="exit-branch-line">
+              <div class="exit-branch-h-line"></div>
+            </div>
+            <div class="node exit-node" style="flex: 1">
+              <div class="node-label">
+                ↗ EXIT → plan_change
+                <span class="badge badge-terminal">INTENT JUMP</span>
+              </div>
+              <div class="node-message" style="font-size: 12px">
+                "Based on your usage, you've needed more than 5 GB almost every
+                month…"
+              </div>
+              <div class="annotation">Enters plan_change flow</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="connector">
+        <div class="connector-line blue"></div>
+        <div style="flex: 1"></div>
+      </div>
+      <div style="padding-left: 18px; padding-bottom: 4px">
+        <span class="auto-label">all 3 replies auto-advance to asked_wifi</span>
+      </div>
+      <div class="connector">
+        <div class="connector-line blue"></div>
+        <div style="flex: 1"></div>
+      </div>
+      <div class="connector-spacer"></div>
+
+      <!-- STATE: asked_wifi ─────────────────────────────────────── -->
+      <div class="node spine">
+        <div class="node-label">
+          AI · diagnose_usage / asked_wifi
+          <span class="badge badge-auto">AUTO-ADVANCE</span>
+        </div>
+        <div class="node-message">
+          Are you connected to Wi-Fi when you're at home or at work?
+        </div>
+        <div class="pills">
+          <span class="pill pill-neutral">Yes, always</span>
+          <span class="pill pill-neutral">Sometimes</span>
+          <span class="pill pill-neutral">I'm not sure</span>
+        </div>
+        <div class="annotation">
+          Any reply → auto-advances to asked_streaming (no routing logic, answer
+          is collected as context)
+        </div>
+      </div>
+
+      <div class="connector">
+        <div class="connector-line blue"></div>
+        <div style="flex: 1"></div>
+      </div>
+      <div style="padding-left: 18px; padding-bottom: 4px">
+        <span class="auto-label"
+          >all 3 replies auto-advance to asked_streaming</span
+        >
+      </div>
+      <div class="connector">
+        <div class="connector-line blue"></div>
+        <div style="flex: 1"></div>
+      </div>
+      <div class="connector-spacer"></div>
+
+      <!-- STATE: asked_streaming ────────────────────────────────── -->
+      <div class="node spine">
+        <div class="node-label">
+          AI · diagnose_usage / asked_streaming
+          <span class="badge badge-auto">AUTO-ADVANCE</span>
+        </div>
+        <div class="node-message">
+          Do you stream video or music on cellular — not just on Wi-Fi?
+        </div>
+        <div class="pills">
+          <span class="pill pill-neutral">Yes, often</span>
+          <span class="pill pill-neutral">Occasionally</span>
+          <span class="pill pill-neutral">Rarely</span>
+        </div>
+        <div class="annotation">
+          Any reply → auto-advances to asked_background (context collected)
+        </div>
+      </div>
+
+      <div class="connector">
+        <div class="connector-line blue"></div>
+        <div style="flex: 1"></div>
+      </div>
+      <div style="padding-left: 18px; padding-bottom: 4px">
+        <span class="auto-label"
+          >all 3 replies auto-advance to asked_background</span
+        >
+      </div>
+      <div class="connector">
+        <div class="connector-line blue"></div>
+        <div style="flex: 1"></div>
+      </div>
+      <div class="connector-spacer"></div>
+
+      <!-- STATE: asked_background ───────────────────────────────── -->
+      <div class="node spine">
+        <div class="node-label">
+          AI · diagnose_usage / asked_background
+          <span class="badge badge-auto">AUTO-ADVANCE</span>
+        </div>
+        <div class="node-message">
+          Last one: do you have apps set to auto-update or sync in the
+          background on cellular?
+        </div>
+        <div class="pills">
+          <span class="pill pill-neutral">Probably yes</span>
+          <span class="pill pill-neutral">I've disabled it</span>
+          <span class="pill pill-neutral">Not sure</span>
+        </div>
+        <div class="annotation">
+          Any reply → auto-advances to showing_fixes (context collected)
+        </div>
+      </div>
+
+      <div class="connector">
+        <div class="connector-line blue"></div>
+        <div style="flex: 1"></div>
+      </div>
+      <div style="padding-left: 18px; padding-bottom: 4px">
+        <span class="auto-label"
+          >all 3 replies auto-advance to showing_fixes</span
+        >
+      </div>
+      <div class="connector">
+        <div class="connector-line blue"></div>
+        <div style="flex: 1"></div>
+      </div>
+      <div class="connector-spacer"></div>
+
+      <!-- STATE: showing_fixes ──────────────────────────────────── -->
+      <div class="row">
+        <div class="row-main">
+          <div class="node spine">
+            <div class="node-label">AI · diagnose_usage / showing_fixes</div>
+            <div class="node-message">
+              Here are three free fixes that could make a real difference: ✅
+              Turn off "Wi-Fi Assist" in Settings — stops your phone from
+              silently switching to cellular when Wi-Fi slows down ✅ Set
+              streaming apps to "Wi-Fi only" — YouTube and Netflix can each burn
+              1–3 GB per hour on HD over cellular ✅ Disable Background App
+              Refresh — Settings → General → Background App Refresh Want to try
+              these first? If they don't solve it, I can add data or change your
+              plan in seconds.
+            </div>
+            <div class="pills">
+              <span class="pill pill-success"
+                >I'll try those
+                <span class="arrow">→ try_free_fixes</span></span
+              >
+              <span class="pill pill-exit"
+                >Add data for now — $15
+                <span class="arrow">↗ quick_refill</span></span
+              >
+              <span class="pill pill-exit"
+                >Show plan options
+                <span class="arrow">↗ plan_change</span></span
+              >
+            </div>
+          </div>
+        </div>
+        <div class="row-exits">
+          <div style="height: 22px"></div>
+          <div class="exit-branch">
+            <div class="exit-branch-line">
+              <div class="exit-branch-h-line"></div>
+            </div>
+            <div class="node exit-node" style="flex: 1">
+              <div class="node-label">
+                ↗ EXIT → quick_refill
+                <span class="badge badge-terminal">INTENT JUMP</span>
+              </div>
+              <div class="node-message" style="font-size: 12px">
+                "Want to add 5 GB right now for $15? I'll charge your Visa
+                ••••4291."
+              </div>
+              <div class="annotation">Enters quick_refill flow</div>
+            </div>
+          </div>
+          <div class="exit-branch">
+            <div class="exit-branch-line">
+              <div class="exit-branch-h-line"></div>
+            </div>
+            <div class="node exit-node" style="flex: 1">
+              <div class="node-label">
+                ↗ EXIT → plan_change
+                <span class="badge badge-terminal">INTENT JUMP</span>
+              </div>
+              <div class="node-message" style="font-size: 12px">
+                "Based on your usage, you've needed more than 5 GB almost every
+                month…"
+              </div>
+              <div class="annotation">Enters plan_change flow</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="connector">
+        <div class="connector-line" style="background: #22c55e"></div>
+        <div style="flex: 1"></div>
+      </div>
+      <div class="connector-spacer"></div>
+
+      <!-- ═══════════════════════════════════════════════════════════
+       RESOLUTION: try_free_fixes
+  ═══════════════════════════════════════════════════════════════ -->
+      <div class="flow-title green">Resolution: try_free_fixes</div>
+
+      <div class="row">
+        <div class="row-main">
+          <div class="node success">
+            <div class="node-label">AI · try_free_fixes</div>
+            <div class="node-message">
+              Great call. Here's a recap of the three fixes to try: 1. Settings
+              → turn off "Wi-Fi Assist" 2. YouTube / Netflix → set to "Wi-Fi
+              only" 3. Settings → General → Background App Refresh → off If you
+              run out before Apr 9, come back and I can add data instantly.
+              Anything else?
+            </div>
+            <div class="pills">
+              <span class="pill pill-exit"
+                >Add data anyway — $15
+                <span class="arrow">↗ quick_refill</span></span
+              >
+              <span class="pill pill-terminal"
+                >Go back home <span class="arrow">→ done</span></span
+              >
+            </div>
+          </div>
+        </div>
+        <div class="row-exits">
+          <div style="height: 22px"></div>
+          <div class="exit-branch">
+            <div class="exit-branch-line">
+              <div class="exit-branch-h-line"></div>
+            </div>
+            <div class="node exit-node" style="flex: 1">
+              <div class="node-label">↗ EXIT → quick_refill</div>
+              <div class="node-message" style="font-size: 12px">
+                "Want to add 5 GB right now for $15?"
+              </div>
+              <div class="annotation">Enters quick_refill flow</div>
+            </div>
+          </div>
+          <div class="exit-branch">
+            <div class="exit-branch-line">
+              <div class="exit-branch-h-line" style="background: #475569"></div>
+            </div>
+            <div class="node terminal" style="flex: 1">
+              <div class="node-label">
+                → done <span class="badge badge-terminal">END</span>
+              </div>
+              <div class="node-message" style="font-size: 12px">
+                "You're all set. Come back any time!"
+              </div>
+              <div class="pills">
+                <span class="pill pill-neutral" style="font-size: 11px"
+                  >One more thing → show_options</span
+                >
+                <span class="pill pill-terminal" style="font-size: 11px"
+                  >Go back home → reset</span
+                >
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ═══════════════════════════════════════════════════════════
+       REFERENCED EXIT FLOWS (summary)
+  ═══════════════════════════════════════════════════════════════ -->
+      <hr class="flow-sep" />
+      <div class="flow-title orange">
+        Exit flows referenced (not traversed here)
+      </div>
+
+      <div
+        style="
+          display: grid;
+          grid-template-columns: 1fr 1fr;
+          gap: 16px;
+          margin-bottom: 32px;
+        "
+      >
+        <div class="node exit-node">
+          <div class="node-label">
+            quick_refill / start
+            <span class="badge badge-terminal">SEPARATE FLOW</span>
+          </div>
+          <div class="node-message" style="font-size: 12px">
+            "Want to add 5 GB right now for $15? I'll charge your Visa ••••4291.
+            Takes about 2 seconds."
+          </div>
+          <div class="pills" style="margin-top: 8px">
+            <span class="pill pill-exit" style="font-size: 11px"
+              >Yes — do it → confirm_refill</span
+            >
+            <span class="pill pill-exit" style="font-size: 11px"
+              >Show other options → show_options</span
+            >
+            <span class="pill pill-terminal" style="font-size: 11px"
+              >Cancel → cancel</span
+            >
+          </div>
+        </div>
+
+        <div class="node exit-node">
+          <div class="node-label">
+            plan_change / start
+            <span class="badge badge-terminal">SEPARATE FLOW</span>
+          </div>
+          <div class="node-message" style="font-size: 12px">
+            "Based on your usage, you've needed more than 5 GB almost every
+            month. Total 5G Unlimited — $55/mo…"
+          </div>
+          <div class="pills" style="margin-top: 8px">
+            <span class="pill pill-exit" style="font-size: 11px"
+              >Start now — ~$7 today → upgrade_now</span
+            >
+            <span class="pill pill-exit" style="font-size: 11px"
+              >Switch on Apr 9 — free → upgrade_at_renewal</span
+            >
+            <span class="pill pill-terminal" style="font-size: 11px"
+              >Stay on my current plan → keep_plan</span
+            >
+          </div>
+        </div>
+      </div>
+
+      <!-- ═══════════════════════════════════════════════════════════
+       FLOW SUMMARY TABLE
+  ═══════════════════════════════════════════════════════════════ -->
+      <hr class="flow-sep" />
+      <div class="flow-title gray">Flow summary</div>
+
+      <div style="overflow-x: auto">
+        <table
+          style="
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 12px;
+            color: #94a3b8;
+          "
+        >
+          <thead>
+            <tr style="border-bottom: 1px solid #1e2a3a; text-align: left">
+              <th style="padding: 8px 12px; color: #64748b; font-weight: 600">
+                State
+              </th>
+              <th style="padding: 8px 12px; color: #64748b; font-weight: 600">
+                Pill
+              </th>
+              <th style="padding: 8px 12px; color: #64748b; font-weight: 600">
+                Action
+              </th>
+              <th style="padding: 8px 12px; color: #64748b; font-weight: 600">
+                Leads to
+              </th>
+              <th style="padding: 8px 12px; color: #64748b; font-weight: 600">
+                Type
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr style="border-bottom: 1px solid #131720">
+              <td style="padding: 7px 12px; color: #a78bfa">Opening</td>
+              <td style="padding: 7px 12px">Why am I running out?</td>
+              <td style="padding: 7px 12px">intent jump</td>
+              <td style="padding: 7px 12px; color: #60a5fa">
+                diagnose_usage/start
+              </td>
+              <td style="padding: 7px 12px">
+                <span style="color: #3b82f6">entry</span>
+              </td>
+            </tr>
+            <tr style="border-bottom: 1px solid #131720">
+              <td style="padding: 7px 12px; color: #60a5fa">start</td>
+              <td style="padding: 7px 12px">Let's do it</td>
+              <td style="padding: 7px 12px">nextState</td>
+              <td style="padding: 7px 12px; color: #60a5fa">asked_wifi</td>
+              <td style="padding: 7px 12px">
+                <span style="color: #3b82f6">advance</span>
+              </td>
+            </tr>
+            <tr style="border-bottom: 1px solid #131720">
+              <td style="padding: 7px 12px; color: #60a5fa">start</td>
+              <td style="padding: 7px 12px">Skip — add 5 GB for $15</td>
+              <td style="padding: 7px 12px">intent jump</td>
+              <td style="padding: 7px 12px; color: #fb923c">quick_refill</td>
+              <td style="padding: 7px 12px">
+                <span style="color: #f97316">exit</span>
+              </td>
+            </tr>
+            <tr style="border-bottom: 1px solid #131720">
+              <td style="padding: 7px 12px; color: #60a5fa">start</td>
+              <td style="padding: 7px 12px">Skip — change my plan</td>
+              <td style="padding: 7px 12px">intent jump</td>
+              <td style="padding: 7px 12px; color: #fb923c">plan_change</td>
+              <td style="padding: 7px 12px">
+                <span style="color: #f97316">exit</span>
+              </td>
+            </tr>
+            <tr style="border-bottom: 1px solid #131720">
+              <td style="padding: 7px 12px; color: #60a5fa">asked_wifi</td>
+              <td style="padding: 7px 12px">
+                Yes, always / Sometimes / I'm not sure
+              </td>
+              <td style="padding: 7px 12px">autoNextState</td>
+              <td style="padding: 7px 12px; color: #60a5fa">asked_streaming</td>
+              <td style="padding: 7px 12px">
+                <span style="color: #3b82f6">auto</span>
+              </td>
+            </tr>
+            <tr style="border-bottom: 1px solid #131720">
+              <td style="padding: 7px 12px; color: #60a5fa">asked_streaming</td>
+              <td style="padding: 7px 12px">
+                Yes, often / Occasionally / Rarely
+              </td>
+              <td style="padding: 7px 12px">autoNextState</td>
+              <td style="padding: 7px 12px; color: #60a5fa">
+                asked_background
+              </td>
+              <td style="padding: 7px 12px">
+                <span style="color: #3b82f6">auto</span>
+              </td>
+            </tr>
+            <tr style="border-bottom: 1px solid #131720">
+              <td style="padding: 7px 12px; color: #60a5fa">
+                asked_background
+              </td>
+              <td style="padding: 7px 12px">
+                Probably yes / I've disabled it / Not sure
+              </td>
+              <td style="padding: 7px 12px">autoNextState</td>
+              <td style="padding: 7px 12px; color: #60a5fa">showing_fixes</td>
+              <td style="padding: 7px 12px">
+                <span style="color: #3b82f6">auto</span>
+              </td>
+            </tr>
+            <tr style="border-bottom: 1px solid #131720">
+              <td style="padding: 7px 12px; color: #60a5fa">showing_fixes</td>
+              <td style="padding: 7px 12px">I'll try those</td>
+              <td style="padding: 7px 12px">intent</td>
+              <td style="padding: 7px 12px; color: #4ade80">try_free_fixes</td>
+              <td style="padding: 7px 12px">
+                <span style="color: #22c55e">resolve</span>
+              </td>
+            </tr>
+            <tr style="border-bottom: 1px solid #131720">
+              <td style="padding: 7px 12px; color: #60a5fa">showing_fixes</td>
+              <td style="padding: 7px 12px">Add data for now — $15</td>
+              <td style="padding: 7px 12px">intent jump</td>
+              <td style="padding: 7px 12px; color: #fb923c">quick_refill</td>
+              <td style="padding: 7px 12px">
+                <span style="color: #f97316">exit</span>
+              </td>
+            </tr>
+            <tr style="border-bottom: 1px solid #131720">
+              <td style="padding: 7px 12px; color: #60a5fa">showing_fixes</td>
+              <td style="padding: 7px 12px">Show plan options</td>
+              <td style="padding: 7px 12px">intent jump</td>
+              <td style="padding: 7px 12px; color: #fb923c">plan_change</td>
+              <td style="padding: 7px 12px">
+                <span style="color: #f97316">exit</span>
+              </td>
+            </tr>
+            <tr style="border-bottom: 1px solid #131720">
+              <td style="padding: 7px 12px; color: #4ade80">try_free_fixes</td>
+              <td style="padding: 7px 12px">Add data anyway — $15</td>
+              <td style="padding: 7px 12px">intent jump</td>
+              <td style="padding: 7px 12px; color: #fb923c">quick_refill</td>
+              <td style="padding: 7px 12px">
+                <span style="color: #f97316">exit</span>
+              </td>
+            </tr>
+            <tr>
+              <td style="padding: 7px 12px; color: #4ade80">try_free_fixes</td>
+              <td style="padding: 7px 12px">Go back home</td>
+              <td style="padding: 7px 12px">intent</td>
+              <td style="padding: 7px 12px; color: #6b7280">done</td>
+              <td style="padding: 7px 12px">
+                <span style="color: #475569">end</span>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+    <!-- /tree -->
+  </body>
+</html>

@@ -1,5 +1,5 @@
 import { useEffect, useRef } from 'react';
-import { Headset } from '@phosphor-icons/react';
+import { Headset, ArrowLeft } from '@phosphor-icons/react';
 import { useChat } from '../../context/ChatContext';
 import { useChatActions } from '../../hooks/useChat';
 import MessageBubble from '../MessageBubble/MessageBubble';
@@ -28,18 +28,32 @@ export default function ChatArea() {
 
   const handleExplore = (product, type, reason) => {
     if (type === 'phone') {
-      // Route through sendMessage so the persona flow (e.g. Alex) can respond
-      // with an order summary. The product name contains enough keywords for
-      // getAlexPhoneTurnResponse to match (a36, a17, moto, iphone 13, etc.)
-      sendMessage(`I want the ${product.name}`);
+      const a = state.persona?.account || {};
+      const isFree = product.price === 0;
+      dispatch({
+        type: 'ADD_MESSAGE',
+        payload: {
+          role: 'assistant',
+          content: '',
+          phoneOrderFlow: {
+            item:    product.name,
+            price:   isFree ? 'FREE' : `$${product.price}`,
+            free:    isFree,
+            card:    a.savedCard || 'card on file',
+            rewards: product.costDiff || null,
+          },
+          actionPills:     null,
+          recommendations: null,
+        },
+      });
       return;
     }
     dispatch({
       type: 'ADD_MESSAGE',
       payload: {
         role: 'assistant',
-        content: `Great choice! Here's a closer look at the ${product.name} — including what real customers have to say.`,
-        exploreData: { product, type, reason },
+        content: `Confirming your plan upgrade now.`,
+        upgradeFlow: true,
         actionPills: null,
         recommendations: null,
       },
@@ -48,6 +62,12 @@ export default function ChatArea() {
 
   return (
     <div className={styles.area}>
+      {/* Floating back to home button */}
+      <button className={styles.homeBtn} onClick={() => { window.location.href = '/'; }}>
+        <ArrowLeft size={15} weight="bold" />
+        <span>Back to Home</span>
+      </button>
+
       {/* Sticky left signal card — shown when a card triggered this chat */}
       {state.activeSignal && (
         <div className={styles.stickySignalWrap}>
