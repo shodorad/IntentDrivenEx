@@ -23,6 +23,7 @@ export default function IPhoneSMSModal() {
 
   const SMS_MESSAGES = {
     refill: `Your $15 data refill is confirmed. 5 GB added. New balance updated. Expires ${getExpiryDate()}. Reply STOP to opt out.`,
+    redeem: `Your 1,000 Rewards points have been redeemed. 5 GB added at no charge. New balance updated. Expires ${getExpiryDate()}. Reply STOP to opt out.`,
     phone: `Order confirmed! Your ${txItem} ships in 2–3 business days. We'll text you a tracking number once it's on the way.`,
     upgrade: `Your plan has been upgraded to Total 5G Unlimited. Unlimited data is now active. Disney+ activation email is on its way. Reply STOP to opt out.`,
     international: `Your Global Calling Card has been activated. International calls are now covered. Manage add-ons anytime in your account. Reply STOP to opt out.`,

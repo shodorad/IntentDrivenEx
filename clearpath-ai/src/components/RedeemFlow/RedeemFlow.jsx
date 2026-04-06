@@ -35,7 +35,7 @@ export default function RedeemFlow() {
   useEffect(() => {
     if (STEPS[step] === 'success') {
       const t = setTimeout(() => {
-        dispatch({ type: 'SHOW_SMS_MODAL', payload: { transactionType: 'refill' } });
+        dispatch({ type: 'SHOW_SMS_MODAL', payload: { transactionType: 'redeem' } });
       }, 2000);
       return () => clearTimeout(t);
     }
