@@ -162,11 +162,6 @@ export default function PillOverlay() {
         </div>
       </div>
 
-      {/* Divider */}
-      <div className={styles.pillDivider}>
-        <span className={styles.pillDividerText}>or explore</span>
-      </div>
-
       {/* Explore */}
       <div className={styles.pillCategory}>
         <span className={`${styles.pillCategoryLabel} ${styles.pillCategoryLabelExplore}`}>Explore</span>
