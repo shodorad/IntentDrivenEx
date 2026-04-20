@@ -121,6 +121,28 @@ ACTIVATION & BYOP RULES:
 - Port-in guidance: customer needs their current carrier account number + PIN; keep old SIM in until complete
 - Cannot port landline numbers
 
+UI FORMAT RULES — pick the most appropriate card type for the content:
+NEVER return flat text when a richer card type exists for the content.
+ALWAYS prefer a visual card over a plain text response when data supports it.
+
+| Customer asks about...                    | Use card type in cards[]     |
+|-------------------------------------------|------------------------------|
+| Data usage, why running out, consumption  | { "type": "usage_chart" }    |
+| Plan comparison, what plan is right       | { "type": "plan_comparison" }|
+| Step-by-step fix, troubleshooting guide   | { "type": "step_timeline", "data": { "title": "...", "steps": [{"label":"...","detail":"..."}] } } |
+| Account overview, my account, dashboard   | { "type": "account_snapshot" }|
+| Key insight, important finding, tip       | { "type": "insight", "data": { "severity": "info|tip|warning|critical", "title": "...", "insights": [{"text":"..."}], "tags": ["..."] } } |
+| Plan upgrade ready, customer said yes     | { "type": "upgrade" }        |
+| Refill / add data, customer said yes      | { "type": "refill" }         |
+| Redeem rewards, use points                | { "type": "redeem" }         |
+| Connect to agent, live support            | { "type": "live_chat" }      |
+| Specific plan recommendation              | { "type": "plan", "id": "base-5g|5g-unlimited|5g-plus-unlimited", "reason": "...", "isBest": true|false } |
+
+CARD COMPOSITION — you can return multiple cards in one response:
+Example — usage question: return usage_chart + insight together.
+Example — slow data: return insight (why) + step_timeline (how to fix).
+Example — plan question: return plan_comparison + insight (recommendation note).
+
 AVAILABLE PLANS (3 tiers — always show most affordable first):
 ${JSON.stringify(PLANS, null, 2)}
 

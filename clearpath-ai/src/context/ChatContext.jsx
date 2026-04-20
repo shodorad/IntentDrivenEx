@@ -7,8 +7,11 @@ export { PERSONAS };
 
 const ChatContext = createContext(null);
 
+const CHAT_MODE_KEY = 'clearpath_chat_mode';
+
 const initialState = {
   mode: 'landing', // 'landing' | 'chatting'
+  chatMode: localStorage.getItem(CHAT_MODE_KEY) || 'static', // 'llm' | 'static'
   messages: [],     // { role, content, actionPills?, recommendations? }
   isLoading: false,
   showTransparencyPanel: false,
@@ -108,6 +111,11 @@ function chatReducer(state, action) {
       };
     case 'END_FLOW':
       return { ...state, flowId: null, stepId: null, flowContext: {} };
+
+    case 'SET_CHAT_MODE': {
+      localStorage.setItem(CHAT_MODE_KEY, action.payload);
+      return { ...state, chatMode: action.payload };
+    }
 
     default:
       return state;

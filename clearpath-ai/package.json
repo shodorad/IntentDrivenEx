@@ -11,6 +11,12 @@
   },
   "dependencies": {
     "@amcharts/amcharts5": "^5.16.2",
+    "@emotion/react": "^11.14.0",
+    "@emotion/styled": "^11.14.1",
+    "@google/genai": "^1.50.1",
+    "@mui/icons-material": "^9.0.0",
+    "@mui/material": "^9.0.0",
+    "@mui/x-charts": "^9.0.2",
     "@phosphor-icons/react": "^2.1.10",
     "framer-motion": "^12.36.0",
     "react": "^19.2.4",

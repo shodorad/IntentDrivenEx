@@ -24,7 +24,8 @@ export function useChatActions() {
         text,
         state.persona,
         [...state.messages, { role: 'user', content: text }],
-        intentHint
+        intentHint,
+        state.chatMode
       );
 
       const parsed = parseResponse(result.response);
@@ -35,15 +36,16 @@ export function useChatActions() {
           role:            'assistant',
           content:         parsed.message,
           actionPills:     parsed.actionPills,
+          cards:           parsed.cards,           // raw cards[] → registry render
           recommendations: parsed.recommendations,
-          ...(parsed.refillFlow     && { refillFlow:     true              }),
-          ...(parsed.redeemFlow     && { redeemFlow:     true              }),
-          ...(parsed.liveChatFlow   && { liveChatFlow:   true              }),
-          ...(parsed.phoneOrderFlow && { phoneOrderFlow: parsed.phoneOrderFlow }),
-          ...(parsed.upgradeFlow    && { upgradeFlow:    true              }),
-          ...(parsed.internationalFlow && { internationalFlow: true        }),
-          ...(parsed.activationFlow && { activationFlow: true             }),
-          ...(parsed.byopFlow       && { byopFlow:        true            }),
+          ...(parsed.refillFlow        && { refillFlow:        true }),
+          ...(parsed.redeemFlow        && { redeemFlow:        true }),
+          ...(parsed.liveChatFlow      && { liveChatFlow:      true }),
+          ...(parsed.phoneOrderFlow    && { phoneOrderFlow:    parsed.phoneOrderFlow }),
+          ...(parsed.upgradeFlow       && { upgradeFlow:       true }),
+          ...(parsed.internationalFlow && { internationalFlow: true }),
+          ...(parsed.activationFlow    && { activationFlow:    true }),
+          ...(parsed.byopFlow          && { byopFlow:          true }),
         }
       });
 

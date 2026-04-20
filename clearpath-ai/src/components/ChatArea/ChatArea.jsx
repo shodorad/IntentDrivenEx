@@ -12,7 +12,45 @@ import UpgradeFlow from '../UpgradeFlow/UpgradeFlow';
 import LiveChatFlow from '../LiveChatFlow/LiveChatFlow';
 import PhoneOrderFlow from '../PhoneOrderFlow/PhoneOrderFlow';
 import { AlertCard } from '../AlertCard/AlertCard';
+import { CARD_REGISTRY, GROUPED_CARD_TYPES, ORDER_CARD_TYPES } from '../cards/registry';
 import styles from './ChatArea.module.css';
+
+function RegistryCards({ cards, onExplore }) {
+  if (!cards?.length) return null;
+
+  // Group plan/phone cards for RecommendationCard
+  const grouped = [];
+  let recBuffer = [];
+
+  const flushRec = () => {
+    if (recBuffer.length) {
+      grouped.push({ type: '_grouped_rec', cards: recBuffer });
+      recBuffer = [];
+    }
+  };
+
+  for (const card of cards) {
+    if (GROUPED_CARD_TYPES.has(card.type)) {
+      recBuffer.push(card);
+    } else {
+      flushRec();
+      grouped.push(card);
+    }
+  }
+  flushRec();
+
+  return grouped.map((item, idx) => {
+    if (item.type === '_grouped_rec') {
+      return <RecommendationCard key={idx} recommendations={item.cards} onExplore={onExplore} />;
+    }
+    const Component = CARD_REGISTRY[item.type];
+    if (!Component) return null;
+    if (ORDER_CARD_TYPES.has(item.type)) {
+      return <Component key={idx} orderData={item} />;
+    }
+    return <Component key={idx} data={item.data || item} />;
+  });
+}
 
 export default function ChatArea() {
   const { state, dispatch } = useChat();
@@ -87,26 +125,21 @@ export default function ChatArea() {
         {state.messages.map((msg, i) => (
           <div key={i} className={styles.messageGroup}>
             <MessageBubble role={msg.role} content={msg.content} />
-            {msg.role === 'assistant' && msg.refillFlow && (
-              <RefillFlow />
-            )}
-            {msg.role === 'assistant' && msg.redeemFlow && (
-              <RedeemFlow />
-            )}
-            {msg.role === 'assistant' && msg.upgradeFlow && (
-              <UpgradeFlow />
-            )}
-            {msg.role === 'assistant' && msg.liveChatFlow && (
-              <LiveChatFlow />
-            )}
-            {msg.role === 'assistant' && msg.phoneOrderFlow && (
-              <PhoneOrderFlow orderData={msg.phoneOrderFlow} />
-            )}
-            {msg.role === 'assistant' && msg.recommendations && (
-              <RecommendationCard recommendations={msg.recommendations} onExplore={handleExplore} />
-            )}
-            {msg.role === 'assistant' && msg.actionPills && (
-              <ActionPills pills={msg.actionPills} onSelect={handlePillSelect} />
+            {msg.role === 'assistant' && (
+              <>
+                {/* Registry-driven MUI cards (LLM mode) */}
+                {msg.cards && <RegistryCards cards={msg.cards} onExplore={handleExplore} />}
+
+                {/* Legacy static flow components (backward compat) */}
+                {!msg.cards && msg.refillFlow     && <RefillFlow />}
+                {!msg.cards && msg.redeemFlow     && <RedeemFlow />}
+                {!msg.cards && msg.upgradeFlow    && <UpgradeFlow />}
+                {!msg.cards && msg.liveChatFlow   && <LiveChatFlow />}
+                {!msg.cards && msg.phoneOrderFlow && <PhoneOrderFlow orderData={msg.phoneOrderFlow} />}
+                {!msg.cards && msg.recommendations && <RecommendationCard recommendations={msg.recommendations} onExplore={handleExplore} />}
+
+                {msg.actionPills && <ActionPills pills={msg.actionPills} onSelect={handlePillSelect} />}
+              </>
             )}
           </div>
         ))}

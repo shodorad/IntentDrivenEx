@@ -1,15 +1,16 @@
-const API_PROXY_URL = '/api/chat';
+// Vite proxies /api/* → Express backend (localhost:3001) in dev.
+// Vercel routes /api/* → serverless functions in production.
+const API_URL = '/api/chat';
 
-export async function callAPI(messages, systemPrompt) {
-  const res = await fetch(API_PROXY_URL, {
+export async function callAPI(messages, systemPrompt, chatMode = 'static') {
+  const res = await fetch(API_URL, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
-      model: 'claude-haiku-4-5-20251001',
-      max_tokens: 800,
+      chatMode,
       system: systemPrompt,
-      messages
-    })
+      messages,
+    }),
   });
 
   if (!res.ok) {
@@ -18,5 +19,6 @@ export async function callAPI(messages, systemPrompt) {
   }
 
   const data = await res.json();
+  if (data.message !== undefined) return data;
   return data.content?.[0]?.text || '';
 }

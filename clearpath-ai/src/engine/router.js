@@ -80,9 +80,26 @@ function flowFallback(flow, stepId, persona) {
  * @param {Array}  messageHistory     - All messages (for API fallback context)
  * @returns {Promise<RouteResult>}
  */
-export async function route(conversationState, userText, persona, messageHistory, intentHint = null) {
+export async function route(conversationState, userText, persona, messageHistory, intentHint = null, chatMode = 'static') {
   const { flowId, stepId, flowContext } = conversationState;
   const lower = userText.toLowerCase();
+
+  // ── 0. LLM MODE — skip flow engine entirely ──────────────────────────────────
+  if (chatMode === 'llm') {
+    try {
+      const systemPrompt = getSystemPrompt(persona);
+      const apiResponse = await callAPI(messageHistory, systemPrompt, chatMode);
+      return {
+        response:     apiResponse,
+        nextFlowId:   null,
+        nextStepId:   null,
+        contextPatch: {},
+        endFlow:      false,
+      };
+    } catch {
+      return genericClarify();
+    }
+  }
 
   // ── 1. GLOBAL CATCHES ────────────────────────────────────────────────────────
   // These intercept specific phrases regardless of what flow is active.
@@ -142,7 +159,8 @@ export async function route(conversationState, userText, persona, messageHistory
   // Let Claude handle it with persona context.
   try {
     const systemPrompt = getSystemPrompt(persona);
-    const apiResponse = await callAPI(messageHistory, systemPrompt);
+    const apiResponse = await callAPI(messageHistory, systemPrompt, chatMode);
+    // apiResponse is either a JSON object (LLM/static mode) or a plain string (legacy)
     return {
       response:     apiResponse,
       nextFlowId:   null,

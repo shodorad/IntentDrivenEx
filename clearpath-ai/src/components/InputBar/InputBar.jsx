@@ -19,6 +19,7 @@ export default function InputBar() {
     if (!canSend) return;
     const msg = text.trim();
     setText('');
+    dispatch({ type: 'SET_INPUT_FOCUSED', payload: false });
     if (textareaRef.current) {
       textareaRef.current.style.height = 'auto';
     }

@@ -115,6 +115,11 @@ export default function PillOverlay() {
   };
 
   return (
+    <>
+      <div
+        className={styles.backdrop}
+        onMouseDown={() => dispatch({ type: 'SET_INPUT_FOCUSED', payload: false })}
+      />
     <motion.div
       className={styles.overlay}
       variants={containerVariants}
@@ -185,5 +190,6 @@ export default function PillOverlay() {
         </div>
       </div>
     </motion.div>
+    </>
   );
 }

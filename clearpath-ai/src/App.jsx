@@ -1,3 +1,6 @@
+import { ThemeProvider } from '@mui/material/styles';
+import CssBaseline from '@mui/material/CssBaseline';
+import { muiTheme } from './theme/muiTheme';
 import { AnimatePresence, motion } from 'framer-motion';
 import { useChat } from './context/ChatContext';
 import Header from './components/Header/Header';
@@ -10,6 +13,7 @@ import IPhoneSMSModal from './components/IPhoneSMSModal/IPhoneSMSModal';
 import FloatingShapes from './components/FloatingShapes/FloatingShapes';
 import PasswordGate from './components/PasswordGate/PasswordGate';
 import PillOverlay from './components/PillOverlay/PillOverlay';
+import AdminPanel from './components/AdminPanel/AdminPanel';
 import styles from './App.module.css';
 
 function AppContent() {
@@ -51,14 +55,18 @@ function AppContent() {
       <TrustBanner />
       <TransparencyPanel />
       <IPhoneSMSModal />
+      <AdminPanel />
     </div>
   );
 }
 
 export default function App() {
   return (
-    <PasswordGate>
-      <AppContent />
-    </PasswordGate>
+    <ThemeProvider theme={muiTheme}>
+      <CssBaseline />
+      <PasswordGate>
+        <AppContent />
+      </PasswordGate>
+    </ThemeProvider>
   );
 }

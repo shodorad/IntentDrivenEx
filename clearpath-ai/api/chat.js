@@ -1,41 +1,33 @@
+import { handleLLMChat } from './llmHandler.js';
+import { handleStaticChat } from './staticHandler.js';
+import { getFallbackResponse } from './fallback.js';
+
 export default async function handler(req, res) {
-  // CORS
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
 
-  if (req.method === 'OPTIONS') {
-    return res.status(200).end();
-  }
+  if (req.method === 'OPTIONS') return res.status(200).end();
+  if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
 
-  if (req.method !== 'POST') {
-    return res.status(405).json({ error: 'Method not allowed' });
-  }
-
-  const apiKey = process.env.ANTHROPIC_API_KEY;
-  if (!apiKey) {
-    return res.status(500).json({ error: 'ANTHROPIC_API_KEY not configured' });
-  }
+  const { chatMode = 'static' } = req.body;
 
   try {
-    const response = await fetch('https://api.anthropic.com/v1/messages', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'x-api-key': apiKey,
-        'anthropic-version': '2023-06-01'
-      },
-      body: JSON.stringify(req.body)
-    });
+    if (chatMode === 'llm') {
+      return await handleLLMChat(req, res);
+    }
+    return handleStaticChat(req, res);
+  } catch (err) {
+    console.error('[api/chat]', err.message);
 
-    const data = await response.json();
-
-    if (!response.ok) {
-      return res.status(response.status).json(data);
+    if (err.status === 429 || err.message?.includes('429') || err.message?.includes('quota')) {
+      return res.status(200).json(getFallbackResponse());
     }
 
-    return res.status(200).json(data);
-  } catch (err) {
-    return res.status(500).json({ error: err.message });
+    try {
+      return handleStaticChat(req, res);
+    } catch {
+      return res.status(200).json(getFallbackResponse());
+    }
   }
 }
