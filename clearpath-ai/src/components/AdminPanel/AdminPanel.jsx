@@ -50,7 +50,7 @@ export default function AdminPanel() {
           <div className={styles.meta}>
             <div className={styles.metaRow}>
               <Lightning size={12} weight="fill" className={isLLM ? styles.metaIconActive : styles.metaIcon} />
-              <span>{isLLM ? 'gemini-1.5-flash · Google AI' : 'intentRouter · staticData'}</span>
+              <span>{isLLM ? 'gemma-4-31b-it · Google AI' : 'intentRouter · staticData'}</span>
             </div>
             <div className={styles.metaRow}>
               <span className={styles.metaDim}>Fallback: static intentRouter</span>

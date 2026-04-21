@@ -48,7 +48,7 @@ export async function handleLLMChat(req, res) {
   }));
 
   const response = await ai.models.generateContent({
-    model: 'gemini-1.5-flash',
+    model: 'gemma-4-31b-it',
     contents,
     config: {
       systemInstruction: systemPrompt + '\n\n' + JSON_SCHEMA_INSTRUCTION,
