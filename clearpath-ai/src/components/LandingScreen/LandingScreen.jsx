@@ -1,0 +1,190 @@
+import { useEffect } from 'react';
+import { motion } from 'framer-motion';
+import { useChat } from '../../context/ChatContext';
+import { useChatActions } from '../../hooks/useChat';
+import { useTranslation } from '../../i18n/useTranslation';
+import { PERSONAS } from '../../data/personas';
+import SignalBanner from '../SignalBanner/SignalBanner';
+import MiniDashboard from '../MiniDashboard/MiniDashboard';
+import { AlertCardGrid } from '../AlertCard/AlertCard';
+import styles from './LandingScreen.module.css';
+
+// Extra pills per intentCategory
+const EXTRA_PILLS = {
+  refill: [
+    { label: 'Why does this keep happening?', labelEs: '¿Por qué sigue pasando esto?',   prompt: 'Why do I keep running out of data every month?',           intent: 'diagnose_usage'  },
+    { label: 'What are my options?',           labelEs: '¿Cuáles son mis opciones?',       prompt: 'What options do I have for my data situation?',            intent: 'show_options'    },
+    { label: 'I need more hotspot',            labelEs: 'Necesito más hotspot',             prompt: 'I need more mobile hotspot data.',                         intent: 'hotspot_inquiry' },
+    { label: 'Talk to someone',                labelEs: 'Hablar con alguien',               prompt: 'I want to talk to a customer support agent.',              intent: 'talk_to_agent'   },
+    { label: 'Show me everything',             labelEs: 'Mostrar todo',                     prompt: 'Show me all available plans and options.',                 intent: 'browse_all'      },
+  ],
+  activate: [
+    { label: 'Tell me about Total Wireless',   labelEs: 'Cuéntame sobre Total Wireless',   prompt: 'What is Total Wireless and how does it work?',             intent: 'info_inquiry'    },
+    { label: 'What plans are available?',       labelEs: '¿Qué planes hay disponibles?',    prompt: 'Show me all available plans for a new customer.',          intent: 'browse_plans'    },
+    { label: 'Can I keep my number?',           labelEs: '¿Puedo conservar mi número?',     prompt: 'Can I keep my existing phone number when I switch?',       intent: 'port_inquiry'    },
+    { label: 'How long does it take?',          labelEs: '¿Cuánto tiempo tarda?',           prompt: 'How long does SIM activation take?',                      intent: 'activation_time' },
+    { label: 'Show me everything',              labelEs: 'Mostrar todo',                     prompt: 'Show me all available plans and options.',                 intent: 'browse_all'      },
+  ],
+  support: [
+    { label: 'Check for outages',              labelEs: 'Revisar cortes de servicio',       prompt: 'Are there any network outages in my area?',               intent: 'check_outages'   },
+    { label: 'Try a self-fix',                 labelEs: 'Intentar una solución propia',     prompt: 'Walk me through some steps to fix my connectivity issue.', intent: 'diagnose_usage'  },
+    { label: 'Dropped calls',                  labelEs: 'Llamadas cortadas',                prompt: 'I have been experiencing dropped calls.',                 intent: 'dropped_calls'   },
+    { label: 'Talk to someone',                labelEs: 'Hablar con alguien',               prompt: 'I want to talk to a customer support agent.',              intent: 'talk_to_agent'   },
+    { label: 'Show me everything',             labelEs: 'Mostrar todo',                     prompt: 'Show me all available support and plan options.',          intent: 'browse_all'      },
+  ],
+  upgrade: [
+    { label: 'Tell me about Unlimited',        labelEs: 'Cuéntame sobre Ilimitado',        prompt: 'What does the Unlimited plan include?',                   intent: 'plan_change'     },
+    { label: 'Is there a cheaper option?',     labelEs: '¿Hay una opción más económica?',  prompt: 'What is the most affordable option for my situation?',    intent: 'browse_plans'    },
+    { label: 'What is included?',              labelEs: '¿Qué incluye?',                   prompt: 'What features are included in each plan?',                intent: 'plan_features'   },
+    { label: 'Keep my current plan',           labelEs: 'Mantener mi plan actual',          prompt: 'I want to keep my current plan for now.',                 intent: 'keep_plan'       },
+    { label: 'Show me everything',             labelEs: 'Mostrar todo',                     prompt: 'Show me all available plans and options.',                 intent: 'browse_all'      },
+  ],
+  addon: [
+    { label: 'What other add-ons exist?',      labelEs: '¿Qué otros complementos hay?',    prompt: 'What add-ons are available for my plan?',                 intent: 'browse_addons'   },
+    { label: 'How does billing work?',         labelEs: '¿Cómo funciona la facturación?',  prompt: 'How is add-on billing handled?',                          intent: 'billing_inquiry' },
+    { label: 'Is this worth it?',              labelEs: '¿Vale la pena?',                  prompt: 'Is the international calling add-on worth it for my usage?', intent: 'value_inquiry' },
+    { label: 'See all add-ons',                labelEs: 'Ver todos los complementos',       prompt: 'Show me all available add-ons.',                          intent: 'browse_addons'   },
+    { label: 'Show me everything',             labelEs: 'Mostrar todo',                     prompt: 'Show me all available plans and options.',                 intent: 'browse_all'      },
+  ],
+  compare: [
+    { label: 'Calculate 4-line pricing',       labelEs: 'Calcular precio de 4 líneas',     prompt: 'Calculate the total price for 4 lines on each plan.',     intent: 'browse_plans'    },
+    { label: 'What is the difference?',        labelEs: '¿Cuál es la diferencia?',         prompt: 'What is the difference between the plans?',               intent: 'plan_features'   },
+    { label: 'Lock in my rate',                labelEs: 'Fijar mi tarifa',                  prompt: 'How does the 5-year price guarantee work?',               intent: 'plan_change'     },
+    { label: 'Talk to an expert',              labelEs: 'Hablar con un experto',            prompt: 'I want to speak with someone to help me choose a plan.',  intent: 'talk_to_agent'   },
+    { label: 'Show me everything',             labelEs: 'Mostrar todo',                     prompt: 'Show me all available plans and options.',                 intent: 'browse_all'      },
+  ],
+  phone: [
+    { label: "What's the best deal right now?", prompt: 'What is the best phone deal right now?',          intent: 'browse_deals'  },
+    { label: 'Free phones available?',           prompt: 'Are there any free phones available?',            intent: 'browse_phones' },
+    { label: 'Compare iPhone vs Samsung',        prompt: 'Help me compare iPhone vs Samsung options.',      intent: 'browse_phones' },
+    { label: 'Talk to someone',                  prompt: 'I want to talk to a customer support agent.',     intent: 'talk_to_agent' },
+    { label: 'Show me everything',               prompt: 'Show me all available plans and options.',        intent: 'browse_all'    },
+  ],
+};
+
+function getPersonaPills(persona, lang) {
+  const es = lang === 'es';
+  const suggested = (persona.suggestedActions || []).map((a) => ({
+    label: es && a.labelEs ? a.labelEs : a.label,
+    prompt: a.label, // always English prompt so AI/flow routing works correctly
+    intent: a.action,
+  }));
+  const category = persona.intentCategory || 'refill';
+  const extras = (EXTRA_PILLS[category] || EXTRA_PILLS.refill).map((p) => ({
+    label: es && p.labelEs ? p.labelEs : p.label,
+    prompt: p.prompt,
+    intent: p.intent,
+  }));
+  const combined = [...suggested, ...extras];
+  return combined.slice(0, 8);
+}
+
+export default function LandingScreen() {
+  const { state, dispatch } = useChat();
+  const { startChat, startProactiveChat } = useChatActions();
+  const { t } = useTranslation();
+
+  // Clear signal banner whenever persona changes (signals are now shown in the alerts grid)
+  useEffect(() => {
+    dispatch({ type: 'CLEAR_SIGNAL_BANNER' });
+  }, [state.persona, dispatch]);
+
+  // Keyboard shortcuts: 1=us-001, 2=us-005, 3=us-009
+  useEffect(() => {
+    const PERSONA_MAP = { '1': 'us-001', '2': 'us-005', '3': 'us-009' };
+    const handleKey = (e) => {
+      if (e.target.tagName === 'TEXTAREA' || e.target.tagName === 'INPUT') return;
+      if (!PERSONA_MAP[e.key]) return;
+      const persona = PERSONAS[PERSONA_MAP[e.key]];
+      if (persona) {
+        dispatch({ type: 'SET_PERSONA', payload: persona });
+        dispatch({ type: 'RESET_CHAT' });
+      }
+    };
+    window.addEventListener('keydown', handleKey);
+    return () => window.removeEventListener('keydown', handleKey);
+  }, [dispatch]);
+
+  const handleSignalAction = (banner) => {
+    dispatch({ type: 'CLEAR_SIGNAL_BANNER' });
+    const flowPrompts = {
+      refill: 'I need to refill my data',
+      upgrade: 'I want to upgrade my plan',
+      international: 'I want to add international calling',
+      addon: 'I want to add international calling',
+      activate: 'I need to activate my SIM',
+      support: 'I am having connectivity issues',
+      compare: 'I want to compare plans for my family',
+    };
+    const prompt = flowPrompts[banner.flowId] || 'I need help with my account';
+    startChat(prompt);
+  };
+
+  const hour = new Date().getHours();
+  const greetingLabel = hour < 12 ? 'GOOD MORNING' : hour < 17 ? 'GOOD AFTERNOON' : 'GOOD EVENING';
+  const firstName = (state.persona?.name || 'there').split(' ')[0].toUpperCase();
+
+  return (
+    <div className={styles.landing}>
+      {/* Greeting */}
+      <motion.div
+        className={styles.greeting}
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.4, delay: 0.1 }}
+      >
+        <span className={styles.greetingDash}>—</span>
+        <span className={styles.greetingText}>{greetingLabel}, {firstName}</span>
+      </motion.div>
+
+      {/* Headline */}
+      <motion.h1
+        className={styles.headline}
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5, delay: 0.15 }}
+      >
+        {t('headline').split('\n').map((line, i) => (
+          i === 0
+            ? <span key={i}>{line}<br /></span>
+            : <span key={i} className={styles.headlineAccent}>{line}</span>
+        ))}
+      </motion.h1>
+
+      <motion.div
+        className={styles.sectionGroup}
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.4, delay: 0.5 }}
+      >
+        <span className={styles.sectionLabel}>{t('landing.sectionAlerts')}</span>
+        <AlertCardGrid
+          signals={state.persona?.signals || []}
+          persona={state.persona}
+          onCta={(prompt, intent, sig) => {
+            if (!intent && sig?.severity === 'info') {
+              startProactiveChat(sig);
+            } else {
+              if (intent) dispatch({ type: 'SET_INTENT', payload: intent });
+              if (sig) dispatch({ type: 'SET_ACTIVE_SIGNAL', payload: sig });
+              startChat(prompt, intent);
+            }
+          }}
+        />
+        <SignalBanner onAction={handleSignalAction} />
+      </motion.div>
+
+      <motion.div
+        className={styles.sectionGroup}
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.4, delay: 0.6 }}
+      >
+        <span className={styles.sectionLabel}>{t('landing.sectionAccount')}</span>
+        <MiniDashboard />
+      </motion.div>
+
+      {/* Pill overlay is now rendered globally in App.jsx (PillOverlay component) */}
+    </div>
+  );
+}

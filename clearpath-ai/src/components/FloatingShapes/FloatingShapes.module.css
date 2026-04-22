@@ -1,0 +1,37 @@
+.canvas {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+.shapeWrap {
+  position: absolute;
+  will-change: transform;
+}
+
+.circle {
+  border-radius: 50%;
+  filter: blur(40px);
+}
+
+.ring {
+  border-radius: 50%;
+  filter: blur(1px);
+}
+
+.blob {
+  border-radius: 40% 60% 55% 45% / 55% 40% 60% 45%;
+  filter: blur(50px);
+}
+
+.dot {
+  border-radius: 50%;
+}
+
+@media (max-width: 768px) {
+  .canvas {
+    opacity: 0.5;
+  }
+}

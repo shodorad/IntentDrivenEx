@@ -1,0 +1,76 @@
+.sideTab {
+  position: fixed;
+  right: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  background: var(--tw-navy);
+  color: white;
+  border: none;
+  border-radius: 12px 0 0 12px;
+  padding: 12px 12px 12px 14px;
+  cursor: pointer;
+  z-index: 100;
+  width: 160px;
+  text-align: left;
+  transition: all 0.25s ease;
+  box-shadow: -2px 2px 16px rgba(0, 0, 0, 0.15);
+}
+
+.sideTab:hover {
+  box-shadow: -4px 2px 24px rgba(0, 0, 0, 0.25);
+  transform: translateY(-50%) scale(1.03);
+}
+
+.tabContent {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  margin-bottom: 5px;
+}
+
+.tabLabel {
+  font-size: 0.62rem;
+  font-weight: 700;
+  letter-spacing: 0.2px;
+  line-height: 1.3;
+}
+
+.tabDesc {
+  display: block;
+  font-size: 0.58rem;
+  color: rgba(255, 255, 255, 0.7);
+  line-height: 1.4;
+}
+
+.mobileBtn {
+  display: none;
+  position: fixed;
+  bottom: 90px;
+  right: 16px;
+  width: 44px;
+  height: 44px;
+  background: var(--tw-navy);
+  color: white;
+  border: none;
+  border-radius: 50%;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  z-index: 100;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+  transition: all 0.2s ease;
+}
+
+.mobileBtn:hover {
+  transform: scale(1.08);
+}
+
+@media (max-width: 768px) {
+  .sideTab {
+    display: none;
+  }
+
+  .mobileBtn {
+    display: flex;
+  }
+}

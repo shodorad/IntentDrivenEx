@@ -1,0 +1,122 @@
+/* InsightPanel — mirrors AlertCard brand-guide glassmorphism exactly */
+
+.card {
+  background: rgba(13, 33, 55, 0.72);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-radius: 12px;
+  padding: 14px 14px 12px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow:
+    0 1px 3px rgba(0, 0, 0, 0.18),
+    0 6px 20px rgba(0, 0, 0, 0.22),
+    inset 0 1px 0 rgba(255, 255, 255, 0.06);
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  text-align: left;
+  position: relative;
+  overflow: hidden;
+}
+
+/* Per-severity gradient tints */
+.critical { background: linear-gradient(140deg, rgba(13, 33, 55, 0.82) 0%, rgba(55, 12, 16, 0.78) 100%); }
+.warning  { background: linear-gradient(140deg, rgba(13, 33, 55, 0.82) 0%, rgba(50, 36,  4, 0.78) 100%); }
+.success  { background: linear-gradient(140deg, rgba(13, 33, 55, 0.82) 0%, rgba( 6, 40, 15, 0.78) 100%); }
+.info     { background: linear-gradient(140deg, rgba(13, 33, 55, 0.82) 0%, rgba( 4, 36, 40, 0.78) 100%); }
+
+/* Arc decoration */
+.deco {
+  position: absolute;
+  bottom: -8px;
+  right: -8px;
+  pointer-events: none;
+}
+
+/* Top row */
+.top {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  position: relative;
+  z-index: 1;
+  margin-bottom: 8px;
+}
+
+/* Icon container */
+.icon {
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+.iconCritical { background: rgba(220, 53, 69, 0.18);  border: 1px solid rgba(220, 53, 69, 0.30); color: #FF6B7A; }
+.iconWarning  { background: rgba(255, 193, 7, 0.18);  border: 1px solid rgba(255, 193, 7, 0.30); color: #FFD060; }
+.iconSuccess  { background: rgba(40, 167, 69, 0.18);  border: 1px solid rgba(40, 167, 69, 0.30); color: #5BE07A; }
+.iconInfo     { background: rgba(0, 181, 173, 0.18);  border: 1px solid rgba(0, 181, 173, 0.30); color: #5BEBE4; }
+
+/* Text block */
+.body {
+  flex: 1;
+  min-width: 0;
+  position: relative;
+  z-index: 1;
+}
+
+.headline {
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1.3;
+  margin: 0 0 4px;
+  font-family: var(--font);
+}
+.headlineCritical { color: #ffffff; }
+.headlineWarning  { color: #ffffff; }
+.headlineSuccess  { color: #ffffff; }
+.headlineInfo     { color: #ffffff; }
+
+.insights {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.insightText {
+  margin: 0;
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.72);
+  line-height: 1.5;
+  font-family: var(--font);
+}
+
+/* Tag pills */
+.tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 10px;
+  position: relative;
+  z-index: 1;
+}
+
+.tag {
+  display: inline-flex;
+  align-items: center;
+  font-family: var(--font);
+  font-size: 10px;
+  font-weight: 700;
+  padding: 3px 10px;
+  border-radius: 100px;
+  border: 1.5px solid;
+  background: transparent;
+  letter-spacing: 0.01em;
+  line-height: 1;
+}
+
+.ctaCritical { color: #FF6B7A; border-color: rgba(255, 107, 122, 0.35); }
+.ctaWarning  { color: #FFD060; border-color: rgba(255, 208,  96, 0.35); }
+.ctaSuccess  { color: #5BE07A; border-color: rgba(91,  224, 122, 0.35); }
+.ctaInfo     { color: #5BEBE4; border-color: rgba(91,  235, 228, 0.35); }

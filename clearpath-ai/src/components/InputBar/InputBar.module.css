@@ -1,0 +1,118 @@
+.bar {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding: 8px 20px calc(14px + env(safe-area-inset-bottom, 0px));
+  z-index: 20;
+  background: rgba(240, 244, 255, 0.6);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  display: flex;
+  justify-content: center;
+}
+
+.inner {
+  width: 100%;
+  max-width: var(--container-max-width);
+  display: flex;
+  align-items: flex-end;
+  gap: 6px;
+  background: rgba(255, 255, 255, 0.8);
+  border-radius: 24px;
+  padding: 6px 6px 6px 10px;
+  border: 1.5px solid rgba(0, 0, 0, 0.08);
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+}
+
+.inner:focus-within {
+  border-color: var(--tw-teal);
+  box-shadow: 0 0 0 3px rgba(0, 181, 173, 0.1), 0 4px 16px rgba(0, 181, 173, 0.08);
+  background: rgba(255, 255, 255, 0.95);
+}
+
+.textarea {
+  flex: 1;
+  border: none;
+  background: transparent;
+  resize: none;
+  outline: none;
+  font-size: 0.9rem;
+  line-height: 1.5;
+  padding: 7px 0;
+  color: var(--tw-gray-900);
+  max-height: 140px;
+}
+
+.textarea::placeholder {
+  color: var(--tw-gray-400);
+}
+
+.textarea:disabled {
+  opacity: 0.5;
+}
+
+.iconBtn {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: transparent;
+  color: var(--tw-gray-400);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: all 0.2s ease;
+  border: none;
+  cursor: pointer;
+  margin-bottom: 2px;
+}
+
+.iconBtn:hover {
+  color: var(--tw-teal);
+  background: rgba(0, 181, 173, 0.08);
+}
+
+.iconBtnDisabled {
+  cursor: not-allowed;
+  opacity: 0.35;
+}
+
+.iconBtnDisabled:hover {
+  color: var(--tw-gray-400);
+  background: transparent;
+}
+
+.sendBtn {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: var(--tw-gray-200);
+  color: var(--tw-gray-400);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: all 0.2s ease;
+  border: none;
+  cursor: not-allowed;
+}
+
+.sendBtn.active {
+  background: linear-gradient(135deg, var(--tw-teal) 0%, #00d4cb 100%);
+  color: white;
+  cursor: pointer;
+  box-shadow: 0 2px 8px rgba(0, 181, 173, 0.3);
+}
+
+.sendBtn.active:hover {
+  box-shadow: 0 4px 16px rgba(0, 181, 173, 0.4);
+  transform: scale(1.05);
+}
+
+@media (max-width: 768px) {
+  .bar {
+    padding: 8px 12px calc(12px + env(safe-area-inset-bottom, 0px));
+  }
+}

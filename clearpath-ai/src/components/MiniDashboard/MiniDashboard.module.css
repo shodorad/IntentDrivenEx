@@ -1,0 +1,763 @@
+/* ── Mosaic grid ──────────────────────────────────────── */
+.mosaic {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  grid-template-rows: auto auto;
+  grid-template-areas:
+    "data    plan    network"
+    "rewards renew   disney";
+  gap: 10px;
+  width: 100%;
+  box-sizing: border-box;
+  margin-bottom: 10px;
+}
+
+/* ── Base tile ───────────────────────────────────────── */
+.tile {
+  background: #ffffff;
+  border-radius: 14px;
+  padding: 16px;
+  /* Level 1 compound shadow — brand required */
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04), 0 4px 12px rgba(0, 0, 0, 0.03);
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  position: relative;
+  overflow: hidden;
+}
+
+.tileLabel {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: #6b7280;
+}
+
+/* ── Tile A: Data — half-dial gauge (spans 2 rows) ───── */
+.tileData {
+  grid-area: data;
+  align-items: flex-start;
+  text-align: center;
+  justify-content: flex-start;
+  padding: 16px 12px 12px;
+  overflow: visible;
+  background: linear-gradient(160deg, #f0fffe 0%, #ffffff 60%);
+  border: 1px solid rgba(0, 181, 173, 0.18);
+}
+
+.ringWrap {
+  position: relative;
+  width: 72px;
+  height: 72px;
+  margin: 6px auto 4px;
+  flex-shrink: 0;
+}
+
+.ringCenter {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.ringValue {
+  font-size: 16px;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.dataGB {
+  font-size: 17px;
+  font-weight: 700;
+  line-height: 1.1;
+}
+
+.dataUnit {
+  font-size: 11px;
+  font-weight: 500;
+  opacity: 0.75;
+}
+
+.dataSub {
+  font-size: 10px;
+  color: #6b7280;
+}
+
+/* ── Tile B: Plan ────────────────────────────────────── */
+.tilePlan {
+  grid-area: plan;
+  background: linear-gradient(160deg, #f0fffe 0%, #ffffff 60%);
+  border: 1px solid rgba(0, 181, 173, 0.15);
+  align-items: flex-start;
+  text-align: left;
+  justify-content: flex-start;
+}
+
+.planHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  gap: 8px;
+}
+
+.tileLabelLight {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: #6b7280;
+  flex-shrink: 0;
+}
+
+.planNamePill {
+  display: inline-flex;
+  align-items: center;
+  background: rgba(0, 181, 173, 0.1);
+  border: 1px solid rgba(0, 181, 173, 0.22);
+  color: #00B5AD;
+  font-size: 10px;
+  font-weight: 700;
+  padding: 3px 10px;
+  border-radius: 100px;
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+}
+
+.planNamePillUrgent {
+  display: inline-flex;
+  align-items: center;
+  background: rgba(255, 193, 7, 0.1);
+  border: 1px solid rgba(255, 193, 7, 0.28);
+  color: #9A6B00;
+  font-size: 10px;
+  font-weight: 700;
+  padding: 3px 10px;
+  border-radius: 100px;
+  white-space: nowrap;
+}
+
+.planBenefitLine {
+  font-size: 11px;
+  color: #6b7280;
+  margin-top: 3px;
+}
+
+.planPriceHero {
+  font-size: 22px;
+  font-weight: 800;
+  color: #0D2137;
+  margin-top: 6px;
+  letter-spacing: -0.02em;
+  line-height: 1;
+}
+
+.planDataLineDark {
+  font-size: 11px;
+  color: #6b7280;
+  margin-top: 3px;
+}
+
+.planUpgradeDark {
+  font-size: 10px;
+  color: #9A6B00;
+  font-weight: 600;
+  margin-top: auto;
+  padding-top: 4px;
+}
+
+.planAutoPayDark {
+  font-size: 10px;
+  color: #D97706;
+  font-weight: 600;
+  margin-top: 6px;
+}
+
+/* Kept for isEmpty state */
+.planAccent { display: none; }
+.planName { font-size: 14px; font-weight: 700; color: #0D1F33; margin-top: 4px; }
+.planBadge { display: none; }
+.planPrice { font-size: 11px; color: #6b7280; margin-top: 2px; }
+.planDataLine { font-size: 11px; color: #6b7280; margin-top: 2px; }
+.planAutoPay { font-size: 10px; color: #D97706; font-weight: 600; margin-top: auto; }
+.planUpgrade { font-size: 10px; color: #7a5c00; margin-top: 1px; }
+
+/* ── Tile C: Network ─────────────────────────────────── */
+.tileNetwork {
+  grid-area: network;
+  padding: 12px 16px 12px;
+  text-align: left;
+  align-items: flex-start;
+}
+
+.signalBars {
+  display: flex;
+  align-items: flex-end;
+  gap: 3px;
+  height: 24px;
+  margin: 4px 0 1px;
+}
+
+.signalBar {
+  flex: 1;
+  border-radius: 3px 3px 2px 2px;
+  transition: background 0.3s;
+}
+
+.networkBadge {
+  font-size: 13px;
+  font-weight: 800;
+  color: #00B5AD;
+  line-height: 1;
+}
+
+.networkSub {
+  font-size: 10px;
+  color: #6b7280;
+}
+
+/* ── Shared: tile header row (label + icon) ──────────── */
+.tileHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 2px;
+}
+
+.tileCapBadge {
+  font-size: 10px;
+  font-weight: 600;
+  color: #6b7280;
+  background: rgba(107, 114, 128, 0.1);
+  border: 1px solid rgba(107, 114, 128, 0.18);
+  border-radius: 10px;
+  padding: 2px 7px;
+  white-space: nowrap;
+}
+
+.tileIconWrap {
+  width: 26px;
+  height: 26px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+/* ── Tile D: Renews In ───────────────────────────────── */
+.tileRenew {
+  grid-area: renew;
+  background: linear-gradient(150deg, rgba(0,181,173,0.04) 0%, #ffffff 55%);
+  border: 1px solid rgba(0,181,173,0.1);
+}
+
+.tileRenewUrgent {
+  background: #fffbeb;
+  border: 1px solid rgba(255, 193, 7, 0.3);
+}
+
+.renewDays {
+  font-size: 22px;
+  font-weight: 800;
+  line-height: 1;
+  margin-top: 4px;
+}
+
+.renewUnit {
+  font-size: 12px;
+  font-weight: 600;
+  margin-left: 1px;
+}
+
+.renewDate {
+  font-size: 12px;
+  color: #6b7280;
+  margin-top: 2px;
+}
+
+.renewCycleBar {
+  height: 5px;
+  background: #e9ecef;
+  border-radius: 100px;
+  overflow: hidden;
+  margin-top: 6px;
+  margin-bottom: 2px;
+}
+
+.renewCycleFill {
+  height: 100%;
+  background: linear-gradient(90deg, #00B5AD, #00d4cb);
+  border-radius: 3px;
+  transition: width 0.6s ease;
+}
+
+.renewDue {
+  font-size: 10px;
+  color: #6b7280;
+  font-weight: 500;
+  margin-top: 3px;
+}
+
+.renewAutoPay {
+  font-size: 10px;
+  color: #D97706;
+  font-weight: 600;
+  margin-top: auto;
+  padding-top: 4px;
+}
+
+/* ── Tile E: Monthly Spend ───────────────────────────── */
+.tileSpend {
+  grid-area: spend;
+}
+
+.spendAmount {
+  font-size: 20px;
+  font-weight: 800;
+  color: #1a1a1a;
+  line-height: 1;
+  margin-top: 2px;
+}
+
+.spendSub {
+  font-size: 9px;
+  color: #6b7280;
+}
+
+.spendBar {
+  height: 3px;
+  background: #e9ecef;
+  border-radius: 3px;
+  overflow: hidden;
+  margin-top: auto;
+}
+
+.spendFill {
+  height: 100%;
+  background: linear-gradient(90deg, #00B5AD, #00d4cb);
+  border-radius: 3px;
+}
+
+/* ── Add-ons (inline row below grid, no separate tile) ── */
+.addonsRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 12px;
+  background: #ffffff;
+  border-radius: 12px;
+  box-shadow: 0 1px 5px rgba(0, 0, 0, 0.06);
+  margin-bottom: 6px;
+  flex-wrap: wrap;
+}
+
+.addonsRowLabel {
+  font-size: 9px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: #6b7280;
+  flex-shrink: 0;
+}
+
+.addonList {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+}
+
+.addonChip {
+  background: rgba(0, 181, 173, 0.1);
+  color: #00B5AD;
+  font-size: 11px;
+  font-weight: 600;
+  padding: 2px 8px;
+  border-radius: 20px;
+  border: 1px solid rgba(0, 181, 173, 0.25);
+}
+
+.addonNone {
+  font-size: 12px;
+  font-weight: 500;
+  color: #6b7280;
+}
+
+.addLink {
+  font-size: 11px;
+  font-weight: 600;
+  color: #00B5AD;
+  cursor: pointer;
+  margin-left: auto;
+  white-space: nowrap;
+}
+
+.addLink:hover {
+  text-decoration: underline;
+}
+
+.statusBadge {
+  font-size: 8px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  color: #fff;
+  padding: 2px 6px;
+  border-radius: 20px;
+  margin-top: 2px;
+  width: fit-content;
+}
+
+.planUpgrade {
+  font-size: 10px;
+  color: #7a5c00;
+  margin-top: 1px;
+}
+
+/* ── Tile E: Rewards ─────────────────────────────────── */
+.tileRewards {
+  grid-area: rewards;
+  background: linear-gradient(150deg, rgba(0,181,173,0.06) 0%, #ffffff 60%);
+  border: 1px solid rgba(0,181,173,0.12);
+}
+
+.rewardsPoints {
+  font-size: 26px;
+  font-weight: 800;
+  line-height: 1;
+  margin: 4px 0 1px;
+  letter-spacing: -0.02em;
+}
+
+.rewardsUnit {
+  font-size: 10px;
+  color: #6b7280;
+  font-weight: 500;
+}
+
+.rewardsBadge {
+  margin-top: 6px;
+  padding: 3px 6px;
+  background: #00B5AD;
+  color: #ffffff;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  border-radius: 4px;
+  text-align: center;
+}
+
+/* ── AMCharts usage trend ────────────────────────────── */
+.amChart {
+  width: 100%;
+  height: 108px;
+  margin-top: 4px;
+}
+
+.trendEmpty {
+  font-size: 11px;
+  color: #6B7280;
+  margin-top: 8px;
+  text-align: center;
+}
+
+/* ── Legacy bar chart (unused) ───────────────────────── */
+.trendBars {
+  display: flex;
+  align-items: flex-end;
+  gap: 3px;
+  height: 36px;
+  width: 100%;
+  margin-top: 6px;
+}
+
+.trendCol {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  flex: 1;
+  gap: 2px;
+}
+
+.trendBar {
+  flex: 1;
+  width: 100%;
+  background: rgba(0,0,0,0.06);
+  border-radius: 2px;
+  display: flex;
+  align-items: flex-end;
+  overflow: hidden;
+}
+
+.trendFill {
+  width: 100%;
+  border-radius: 2px;
+  transition: height 0.3s ease;
+  min-height: 2px;
+}
+
+.trendLabel {
+  font-size: 9px;
+  color: #6b7280;
+  text-align: center;
+  white-space: nowrap;
+}
+
+/* ── Extras / Add-ons cards ──────────────────────────── */
+.extrasSection {
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid rgba(0,0,0,0.06);
+}
+
+.extrasLabel {
+  font-size: 11px;
+  font-weight: 600;
+  color: #6b7280;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  display: block;
+  margin-bottom: 8px;
+  text-align: left;
+}
+
+.extrasGrid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+}
+
+/* ── Dark gradient add-on card ── */
+.extraCard {
+  border-radius: 14px;
+  overflow: hidden;
+  position: relative;
+  padding: 14px 14px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-height: 112px;
+  /* Dark navy fallback — gradient overlays this */
+  background-color: #0D2137;
+  box-shadow:
+    0 2px 6px rgba(0, 0, 0, 0.22),
+    0 10px 28px rgba(0, 0, 0, 0.28);
+  cursor: pointer;
+  transition: transform 0.18s ease, box-shadow 0.18s ease;
+  text-align: left;
+  isolation: isolate;
+}
+
+.extraCard:hover {
+  transform: translateY(-2px);
+  box-shadow:
+    0 4px 10px rgba(0, 0, 0, 0.26),
+    0 16px 38px rgba(0, 0, 0, 0.32);
+}
+
+/* Per-brand dark gradient backgrounds */
+.extraCardDisney {
+  background:
+    radial-gradient(ellipse at 80% 10%, rgba(0, 181, 173, 0.45) 0%, transparent 45%),
+    linear-gradient(145deg, #06111f 0%, #0D1F33 55%, #0d2a40 100%);
+}
+.extraCardProtect {
+  background:
+    radial-gradient(ellipse at 80% 10%, rgba(99, 102, 241, 0.50) 0%, transparent 45%),
+    linear-gradient(145deg, #0f0f24 0%, #1a1435 55%, #1e1040 100%);
+}
+.extraCardIntl {
+  background:
+    radial-gradient(ellipse at 80% 10%, rgba(16, 185, 129, 0.50) 0%, transparent 45%),
+    linear-gradient(145deg, #061810 0%, #0d2b1a 55%, #0f3020 100%);
+}
+.extraCardCloud {
+  background:
+    radial-gradient(ellipse at 80% 10%, rgba(251, 146, 60, 0.50) 0%, transparent 45%),
+    linear-gradient(145deg, #1c1007 0%, #2d1a0e 55%, #321e10 100%);
+}
+
+/* Decorative arc rings (no filter/blur — avoids WebKit overflow bleed) */
+.extraDeco {
+  position: absolute;
+  top: 0;
+  right: 0;
+  pointer-events: none;
+  opacity: 0.22;
+  transition: opacity 0.2s ease;
+}
+
+.extraCard:hover .extraDeco {
+  opacity: 0.38;
+}
+
+/* Icon container */
+.extraIconWrap {
+  width: 34px;
+  height: 34px;
+  border-radius: 9px;
+  background: rgba(255, 255, 255, 0.12);
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #ffffff;
+  flex-shrink: 0;
+}
+
+.extraName {
+  font-size: 13px;
+  font-weight: 700;
+  color: #ffffff;
+  line-height: 1.2;
+  margin-top: 2px;
+}
+
+.extraTagline {
+  font-size: 10px;
+  color: rgba(255, 255, 255, 0.55);
+  line-height: 1.3;
+}
+
+/* Bottom row: price + CTA */
+.extraBottom {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: auto;
+  padding-top: 4px;
+}
+
+.extraPrice {
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.70);
+  font-weight: 500;
+}
+
+.extraBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 10px;
+  font-weight: 700;
+  padding: 4px 10px;
+  border-radius: 100px;
+  border: 1px solid rgba(255, 255, 255, 0.28);
+  background: rgba(255, 255, 255, 0.12);
+  color: #ffffff;
+  cursor: pointer;
+  font-family: inherit;
+  backdrop-filter: blur(8px);
+  transition: background 0.15s ease;
+  line-height: 1;
+}
+
+.extraBtn:hover {
+  background: rgba(255, 255, 255, 0.22);
+}
+
+.extraBtnActive {
+  background: rgba(40, 167, 69, 0.25);
+  border-color: rgba(40, 167, 69, 0.5);
+  color: #6ee7a0;
+}
+
+/* ── Tile F: Disney+ ─────────────────────────────────── */
+.tileDisney {
+  grid-area: disney;
+  background: linear-gradient(160deg, #0d1d35 0%, #0f3555 45%, #1a7878 100%);
+  border: 1px solid rgba(26, 120, 120, 0.3);
+  justify-content: flex-start;
+  align-items: flex-start;
+  text-align: left;
+}
+
+.disneyLogo {
+  position: absolute;
+  bottom: 0;
+  right: 0;
+}
+
+.disneyActiveBadge {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 12px;
+  font-weight: 700;
+  color: #28A745;
+  background: rgba(40, 167, 69, 0.15);
+  border: 1px solid rgba(40, 167, 69, 0.35);
+  padding: 4px 10px;
+  border-radius: 20px;
+  width: fit-content;
+  margin-top: 8px;
+}
+
+.disneySubtitle {
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.9);
+  margin-top: 14px;
+  line-height: 1.3;
+  text-align: left;
+  max-width: 55%;
+}
+
+.disneyStream {
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.85);
+  font-weight: 600;
+  margin-top: auto;
+  padding-top: 12px;
+  text-align: left;
+}
+
+/* ── Usage trend insight line ────────────────────────── */
+.trendInsight {
+  font-size: 11px;
+  color: #374151;
+  font-weight: 700;
+  margin-top: 4px;
+  line-height: 1.3;
+  text-align: center;
+  width: 100%;
+}
+
+/* ── Rewards progress ────────────────────────────────── */
+.rewardsProgress {
+  height: 5px;
+  background: #e9ecef;
+  border-radius: 100px;
+  overflow: hidden;
+  margin-top: 6px;
+  margin-bottom: 4px;
+}
+
+.rewardsProgressFill {
+  height: 100%;
+  background: linear-gradient(90deg, #00B5AD, #00d4cb);
+  border-radius: 3px;
+  transition: width 0.6s ease;
+}
+
+.rewardsToGo {
+  font-size: 10px;
+  color: #6b7280;
+  font-weight: 500;
+  margin-top: 2px;
+}
+
+.rewardsToGoNum {
+  font-size: 11px;
+  font-weight: 700;
+  color: #374151;
+}
+
+/* ── Rewards expiry warning ──────────────────────────── */
+.rewardsExpiry {
+  font-size: 10px;
+  color: #D97706;
+  font-weight: 600;
+  margin-top: auto;
+  padding-top: 4px;
+}

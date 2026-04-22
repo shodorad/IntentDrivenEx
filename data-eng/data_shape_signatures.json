@@ -1,0 +1,176 @@
+{
+  "description": "Data Shape Signatures for Generative UI Demo. Maps BigQuery result shapes to UI component candidates. Used by the Data Shape Analyzer to guide LLM component selection. Aligns to PRD/Jira requirement: Define Data Shape Signature library (15+ entries).",
+  "signatures": [
+    {
+      "signature_id": "kpi_single_numeric",
+      "shape": {
+        "rows": 1,
+        "columns": 1,
+        "column_types": ["NUMERIC"]
+      },
+      "ui_components": ["labeled_stat_group", "single_card"],
+      "example_query": "SELECT COUNT(*) AS active_subscribers FROM dim_subscriber WHERE tenure_days > 0;",
+      "notes": "Single numeric KPI; render as a labeled stat or card."
+    },
+    {
+      "signature_id": "kpi_multiple_numeric",
+      "shape": {
+        "rows": 1,
+        "columns": 3,
+        "column_types": ["NUMERIC", "NUMERIC", "NUMERIC"]
+      },
+      "ui_components": ["kpi_strip", "labeled_stat_group"],
+      "example_query": "SELECT AVG(data_gb_used) AS avg_daily_data_gb, COUNT(*) AS total_days, COUNTIF(throttle_flag) AS throttle_days FROM fact_usage_daily;",
+      "notes": "Row with multiple numeric metrics; ideal for KPI strip."
+    },
+    {
+      "signature_id": "time_series_one_metric",
+      "shape": {
+        "rows": ">=10",
+        "columns": 2,
+        "column_types": ["DATE", "NUMERIC"]
+      },
+      "ui_components": ["line_chart", "area_chart"],
+      "example_query": "SELECT date, SUM(data_gb_used) AS total_data_gb FROM fact_usage_daily WHERE date >= DATE_SUB(CURRENT_DATE(), INTERVAL 30 DAY) GROUP BY date ORDER BY date;",
+      "notes": "Date + metric; default to line chart."
+    },
+    {
+      "signature_id": "time_series_category_metric",
+      "shape": {
+        "rows": ">=10",
+        "columns": 3,
+        "column_types": ["DATE", "STRING", "NUMERIC"]
+      },
+      "ui_components": ["multiline_chart", "stacked_area"],
+      "example_query": "SELECT DATE(event_timestamp) AS event_date, severity, COUNT(*) AS event_count FROM fact_network_events WHERE event_timestamp >= TIMESTAMP_SUB(CURRENT_TIMESTAMP(), INTERVAL 14 DAY) GROUP BY event_date, severity ORDER BY event_date, severity;",
+      "notes": "Date + category + metric; multiline chart."
+    },
+    {
+      "signature_id": "category_breakdown_bar",
+      "shape": {
+        "rows": ">=3",
+        "rows_max": 20,
+        "columns": 2,
+        "column_types": ["STRING", "NUMERIC"]
+      },
+      "ui_components": ["bar_chart", "column_chart"],
+      "example_query": "SELECT p.tier, SUM(f.data_gb_used) AS total_data_gb FROM fact_usage_daily f JOIN dim_plan p ON f.plan_id = p.plan_id WHERE date >= DATE_SUB(CURRENT_DATE(), INTERVAL 30 DAY) GROUP BY p.tier ORDER BY total_data_gb DESC;",
+      "notes": "Category + metric; bar chart."
+    },
+    {
+      "signature_id": "top_n_table",
+      "shape": {
+        "rows": ">=5",
+        "rows_max": 15,
+        "columns": ">=3",
+        "column_types": ["STRING", "NUMERIC", "NUMERIC"]
+      },
+      "ui_components": ["table", "ranked_list"],
+      "example_query": "SELECT d.brand, d.model, SUM(f.data_gb_used) AS total_data_gb, COUNT(DISTINCT f.subscriber_id) AS unique_subscribers FROM fact_usage_daily f JOIN dim_subscriber s ON f.subscriber_id = s.subscriber_id JOIN dim_device d ON s.device_id = d.device_id WHERE f.date >= DATE_SUB(CURRENT_DATE(), INTERVAL 30 DAY) GROUP BY d.brand, d.model ORDER BY total_data_gb DESC LIMIT 10;",
+      "notes": "Wide table with mixed types; use table component."
+    },
+    {
+      "signature_id": "percentage_breakdown",
+      "shape": {
+        "rows": ">=3",
+        "rows_max": 12,
+        "columns": 2,
+        "column_types": ["STRING", "NUMERIC"]
+      },
+      "ui_components": ["pie_chart", "donut_chart", "bar_chart"],
+      "example_query": "SELECT segment, COUNTIF(autopay_enabled) * 100.0 / COUNT(*) AS autopay_rate_pct FROM dim_subscriber GROUP BY segment ORDER BY autopay_rate_pct DESC;",
+      "notes": "Category + percentage; pie/donut chart."
+    },
+    {
+      "signature_id": "weekly_aggregate_series",
+      "shape": {
+        "rows": ">=4",
+        "columns": 3,
+        "column_types": ["DATE", "NUMERIC", "NUMERIC"]
+      },
+      "ui_components": ["dual_axis_chart", "combo_chart"],
+      "example_query": "SELECT DATE_TRUNC(date, WEEK) AS week_start, SUM(data_gb_used) AS weekly_data_gb, COUNT(DISTINCT subscriber_id) AS active_subscribers FROM fact_usage_daily GROUP BY week_start ORDER BY week_start;",
+      "notes": "Date + two metrics; dual-axis chart."
+    },
+    {
+      "signature_id": "small_summary_table",
+      "shape": {
+        "rows": ">=1",
+        "rows_max": 6,
+        "columns": 2,
+        "column_types": ["STRING", "NUMERIC"]
+      },
+      "ui_components": ["summary_card", "compact_table"],
+      "example_query": "SELECT SUM(hotspot_gb_used) AS total_hotspot_gb, AVG(hotspot_gb_used) AS avg_hotspot_gb_per_day FROM fact_usage_daily WHERE date >= DATE_SUB(CURRENT_DATE(), INTERVAL 30 DAY);",
+      "notes": "Few rows, two columns; compact summary card."
+    },
+    {
+      "signature_id": "event_rate_kpi",
+      "shape": {
+        "rows": 1,
+        "columns": 1,
+        "column_types": ["NUMERIC"]
+      },
+      "ui_components": ["alert_kpi", "single_card"],
+      "example_query": "SELECT COUNT(*) * 100.0 / (SELECT COUNT(*) FROM fact_usage_daily) AS event_rate_pct FROM fact_network_events WHERE DATE(event_timestamp) >= DATE_SUB(CURRENT_DATE(), INTERVAL 30 DAY);",
+      "notes": "Single percentage KPI; render as alert or card."
+    },
+    {
+      "signature_id": "refill_events_series",
+      "shape": {
+        "rows": ">=10",
+        "columns": 3,
+        "column_types": ["DATE", "NUMERIC", "NUMERIC"]
+      },
+      "ui_components": ["bar_line_combo", "dual_axis_chart"],
+      "example_query": "SELECT date, COUNTIF(refill_flag) AS refill_events, COUNT(DISTINCT subscriber_id) AS unique_subscribers FROM fact_usage_daily WHERE date >= DATE_SUB(CURRENT_DATE(), INTERVAL 30 DAY) GROUP BY date ORDER BY date;",
+      "notes": "Date + two metrics; combo chart."
+    },
+    {
+      "signature_id": "segment_mix_table",
+      "shape": {
+        "rows": ">=6",
+        "rows_max": 20,
+        "columns": 4,
+        "column_types": ["STRING", "STRING", "NUMERIC", "NUMERIC"]
+      },
+      "ui_components": ["nested_table", "expandable_table"],
+      "example_query": "SELECT s.segment, d.brand, COUNT(*) AS subscriber_count, COUNT(*) * 100.0 / SUM(COUNT(*)) OVER (PARTITION BY s.segment) AS segment_pct FROM dim_subscriber s JOIN dim_device d ON s.device_id = d.device_id GROUP BY s.segment, d.brand ORDER BY s.segment, segment_pct DESC;",
+      "notes": "Two categories + count + pct; nested/expandable table."
+    },
+    {
+      "signature_id": "top_zip_breakdown",
+      "shape": {
+        "rows": ">=3",
+        "rows_max": 10,
+        "columns": 3,
+        "column_types": ["STRING", "NUMERIC", "NUMERIC"]
+      },
+      "ui_components": ["ranked_bar_chart", "table"],
+      "example_query": "SELECT zip, SUM(data_gb_used) AS total_data_gb, COUNT(DISTINCT subscriber_id) AS unique_subscribers FROM fact_usage_daily f JOIN dim_subscriber s ON f.subscriber_id = s.subscriber_id WHERE f.date >= DATE_SUB(CURRENT_DATE(), INTERVAL 30 DAY) GROUP BY zip ORDER BY total_data_gb DESC LIMIT 5;",
+      "notes": "ZIP + metric + distinct count; ranked bar chart or table."
+    },
+    {
+      "signature_id": "single_text_metric",
+      "shape": {
+        "rows": 1,
+        "columns": 1,
+        "column_types": ["STRING"]
+      },
+      "ui_components": ["text_card", "inline_text"],
+      "example_query": "SELECT 'Demo dataset ready' AS status;",
+      "notes": "Single text value; render as text card or inline."
+    },
+    {
+      "signature_id": "multi_metric_kpi_row",
+      "shape": {
+        "rows": 1,
+        "columns": ">=4",
+        "column_types": ["NUMERIC", "NUMERIC", "NUMERIC", "NUMERIC"]
+      },
+      "ui_components": ["kpi_strip", "metric_grid"],
+      "example_query": "SELECT COUNT(*) AS total_subscribers, AVG(tenure_days) AS avg_tenure, COUNTIF(autopay_enabled) AS autopay_count, COUNTIF(autopay_enabled) * 100.0 / COUNT(*) AS autopay_pct FROM dim_subscriber;",
+      "notes": "Row with many metrics; KPI strip or metric grid."
+    }
+  ]
+}

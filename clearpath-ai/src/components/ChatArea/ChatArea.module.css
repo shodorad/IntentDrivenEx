@@ -1,0 +1,109 @@
+.area {
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+/* ── Floating back-to-home button ── */
+.homeBtn {
+  position: fixed;
+  top: 80px;
+  left: 24px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 14px;
+  background: white;
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  border-radius: 20px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--tw-gray-600, #4b5563);
+  cursor: pointer;
+  z-index: 20;
+  font-family: var(--font);
+  transition: all 0.15s ease;
+}
+
+.homeBtn:hover {
+  background: var(--tw-gray-50, #f9fafb);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+  transform: translateY(-1px);
+}
+
+/* ── Sticky signal card — fixed, floats left of the chat, out of flow ── */
+.stickySignalWrap {
+  position: fixed;
+  left: 24px;
+  top: 50vh;
+  transform: translateY(-50%);
+  width: 210px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  z-index: 10;
+}
+
+.stickySignalLabel {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--tw-gray-400, #9ca3af);
+  padding-left: 2px;
+}
+
+/* ── Messages column ── */
+.messagesCol {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.spacer {
+  height: 40px;
+}
+
+.messageGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+/* Wrapper for registry cards — stacks multiple cards with consistent gap */
+.cardsStack {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+@media (max-width: 1100px) {
+  .stickySignalWrap {
+    display: none;
+  }
+}
+
+/* ── Persistent escape hatch ── */
+.escapeHatch {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 12px 16px;
+  margin-top: 8px;
+  font-size: 0.78rem;
+  color: var(--tw-gray-400);
+  border-top: 1px solid rgba(0, 0, 0, 0.06);
+}
+
+.escapeLink {
+  color: var(--tw-teal);
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.escapeLink:hover {
+  text-decoration: underline;
+}

@@ -1,0 +1,426 @@
+/*
+  Layout: flex-end anchors content near the input bar.
+  Empty space goes to the top — standard chat UI pattern.
+  Spacing scale: 8px base → 8, 12, 16, 24
+*/
+
+.landing {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 32px 32px 20px;
+  text-align: center;
+  min-height: 0;
+}
+
+/* --- Brand --- (removed in P1-D1: brand logo + subhead JSX deleted) */
+
+/* .brand { … } */
+/* .logoMark { … } */
+/* .logoText { … } */
+
+/* --- Typography --- */
+
+/* --- Greeting line --- */
+.greeting {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+.greetingDash {
+  color: #00B5AD;
+  font-size: 1rem;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.greetingText {
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  color: #6b7280;
+  text-transform: uppercase;
+}
+
+/* --- Headline accent --- */
+.headlineAccent {
+  color: #00B5AD;
+}
+
+.headline {
+  font-size: 2rem;
+  font-weight: 800;
+  line-height: 1.2;
+  color: var(--tw-gray-900);
+  margin-bottom: 8px;
+  letter-spacing: -0.5px;
+  text-align: center;
+}
+
+/* .subhead { … } — removed in P1-D1: subhead JSX deleted */
+
+.signalWrap {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  margin: 20px 0;
+}
+
+/* --- Section groups (Lam §5 — unified labels) --- */
+.sectionGroup {
+  width: 100%;
+  margin-bottom: var(--spacing-md, 16px);
+}
+
+.sectionLabel {
+  display: block;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: #6b7280;
+  margin-bottom: var(--spacing-xs, 4px);
+  padding-left: 4px;
+  text-align: left;
+}
+
+/* --- Pills --- */
+
+.pillsBackdrop {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: rgba(248, 249, 250, 0.85);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  z-index: 9;
+  pointer-events: none;
+  padding-bottom: 70px; /* height of the input bar */
+}
+
+.pillsGrid {
+  display: grid;
+  grid-template-columns: repeat(4, auto);
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  max-width: 840px;
+}
+
+.pillsGridFocused {
+  position: fixed;
+  bottom: 82px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: calc(100% - 40px);
+  max-width: var(--container-max-width, 900px);
+  padding: 18px 20px 16px;
+  z-index: 100;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+
+  background: rgba(10, 26, 46, 0.93);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-bottom: none;
+  border-radius: 20px 20px 0 0;
+  box-shadow:
+    0 -8px 40px rgba(0, 0, 0, 0.22),
+    inset 0 1px 0 rgba(255, 255, 255, 0.08);
+}
+
+/* --- Pill categories (P1-D3) --- */
+
+.pillCategory {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 4px 0 12px;
+}
+
+.pillCategoryLabel {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.pillCategoryLabelFor {
+  color: var(--tw-teal, #00B5AD);
+}
+.pillCategoryLabelFor::before {
+  content: '';
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--tw-teal, #00B5AD);
+  flex-shrink: 0;
+}
+
+.pillCategoryLabelExplore {
+  color: rgba(255, 255, 255, 0.35);
+}
+
+.pillDivider {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 0 0 12px;
+}
+.pillDivider::before,
+.pillDivider::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: rgba(255, 255, 255, 0.08);
+}
+.pillDividerText {
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  color: rgba(255, 255, 255, 0.25);
+  white-space: nowrap;
+}
+
+.pillCategoryGrid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 8px;
+}
+
+.pill {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 11px 14px;
+  background: rgba(255, 255, 255, 0.07);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 12px;
+  font-size: 0.8rem;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.85);
+  cursor: pointer;
+  text-align: left;
+  transition: all 0.18s ease;
+  line-height: 1.3;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.pillIcon {
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 181, 173, 0.18);
+  border-radius: 8px;
+  color: var(--tw-teal, #00B5AD);
+  flex-shrink: 0;
+  transition: all 0.18s ease;
+}
+
+.pill:hover {
+  background: rgba(255, 255, 255, 0.13);
+  border-color: rgba(0, 181, 173, 0.4);
+  color: #ffffff;
+  transform: translateY(-1px);
+}
+
+.pill:hover .pillIcon {
+  background: var(--tw-teal, #00B5AD);
+  color: white;
+}
+
+/* Explore pills — dimmer to signal secondary intent */
+.pillExplore {
+  background: rgba(255, 255, 255, 0.04);
+  border-color: rgba(255, 255, 255, 0.07);
+  color: rgba(255, 255, 255, 0.5);
+}
+.pillExplore .pillIcon {
+  background: rgba(255, 255, 255, 0.07);
+  color: rgba(255, 255, 255, 0.4);
+}
+.pillExplore:hover {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(0, 181, 173, 0.35);
+  color: rgba(255, 255, 255, 0.9);
+}
+.pillExplore:hover .pillIcon {
+  background: rgba(0, 181, 173, 0.2);
+  color: var(--tw-teal, #00B5AD);
+}
+
+/* --- Mobile --- */
+
+@media (max-width: 768px) {
+  .landing {
+    padding: 24px 16px 12px;
+    justify-content: flex-start;
+  }
+
+  .headline {
+    font-size: 1.4rem;
+  }
+
+  /* .subhead — removed in P1-D1 */
+
+  .pillsGrid {
+    grid-template-columns: repeat(2, auto);
+    max-width: 100%;
+  }
+
+  .pill {
+    white-space: normal;
+    font-size: 0.76rem;
+    padding: 9px 12px;
+  }
+}
+.dashboardWrap {
+  width: 100%;
+  align-self: stretch;
+}
+
+/* --- Intent Driven Alerts grid --- */
+
+/* Mesh gradient backdrop makes glassmorphism visible */
+.alertGridWrap {
+  background: linear-gradient(135deg, #e8f4f8 0%, #f0f9f8 40%, #f5f0fb 100%);
+  border-radius: 14px;
+  padding: 10px;
+  margin-bottom: 8px;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.alertGrid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+  width: 100%;
+}
+
+/* ── Base alert card (glassmorphism) ── */
+.alertCard {
+  background: rgba(255, 255, 255, 0.68);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-radius: 12px;
+  padding: 12px 14px 10px;
+  border: 1px solid rgba(255, 255, 255, 0.85);
+  box-shadow:
+    0 1px 3px rgba(0, 0, 0, 0.04),
+    0 6px 20px rgba(0, 0, 0, 0.05),
+    inset 0 1px 0 rgba(255, 255, 255, 0.9);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  text-align: left;
+  position: relative;
+  overflow: hidden;
+}
+
+/* Per-severity gradient tint */
+.alertCardCritical {
+  background: linear-gradient(140deg, rgba(255, 255, 255, 0.78) 0%, rgba(255, 245, 246, 0.72) 100%);
+}
+.alertCardWarning {
+  background: linear-gradient(140deg, rgba(255, 255, 255, 0.78) 0%, rgba(255, 252, 235, 0.72) 100%);
+}
+.alertCardInfo {
+  background: linear-gradient(140deg, rgba(255, 255, 255, 0.78) 0%, rgba(240, 255, 254, 0.72) 100%);
+}
+
+/* Icon + body row */
+.alertTop {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+}
+
+/* ── Icon ring (rounded square) ── */
+.alertIconRing {
+  width: 32px;
+  height: 32px;
+  border-radius: 9px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+.alertIconRingCritical { background: rgba(220, 53, 69, 0.10); color: #DC3545; }
+.alertIconRingWarning  { background: rgba(255, 193, 7, 0.14);  color: #9A6B00; }
+.alertIconRingInfo     { background: rgba(0, 181, 173, 0.10);  color: #007A72; }
+
+.alertBody {
+  flex: 1;
+  min-width: 0;
+}
+
+.alertHeadline {
+  font-size: 0.72rem;
+  font-weight: 700;
+  line-height: 1.3;
+}
+.alertHeadlineCritical { color: #C0202F; }
+.alertHeadlineWarning  { color: #9A6B00; }
+.alertHeadlineInfo     { color: #007A72; }
+
+.alertSubtext {
+  font-size: 0.68rem;
+  color: #6B7280;
+  margin-top: 2px;
+  line-height: 1.4;
+}
+
+/* ── CTA button (pill outline) ── */
+.alertCta {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 5px 12px;
+  border-radius: 100px;
+  border: 1.5px solid;
+  cursor: pointer;
+  background: transparent;
+  font-family: inherit;
+  line-height: 1;
+  width: fit-content;
+  transition: background 0.15s ease, transform 0.12s ease;
+}
+.alertCtaCritical { color: #C0202F; border-color: rgba(192, 32, 47, 0.28); }
+.alertCtaCritical:hover { background: rgba(192, 32, 47, 0.06); transform: translateY(-1px); }
+.alertCtaWarning  { color: #9A6B00; border-color: rgba(154, 107, 0, 0.28); }
+.alertCtaWarning:hover  { background: rgba(154, 107, 0, 0.06); transform: translateY(-1px); }
+.alertCtaInfo     { color: #007A72; border-color: rgba(0, 122, 114, 0.28); }
+.alertCtaInfo:hover     { background: rgba(0, 122, 114, 0.06); transform: translateY(-1px); }
+
+/* Concentric arc decoration (bottom-right corner) */
+.alertDeco {
+  position: absolute;
+  bottom: -8px;
+  right: -8px;
+  pointer-events: none;
+}
+
+@media (max-width: 768px) {
+  .alertGrid {
+    grid-template-columns: 1fr;
+  }
+}
+
