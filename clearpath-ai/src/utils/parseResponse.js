@@ -1,14 +1,17 @@
-// Parse AI response — handles both:
-// 1. JSON format { message, cards[], followUp[] }  — LLM mode (registry-driven)
-// 2. Tag-based format [ACTION_PILLS]...[/ACTION_PILLS] — static flows
+// Parse AI response — two paths:
+// 1. JSON object { message, cards[], followUp[] } — LLM agentic mode
+// 2. Tag-based string [ACTION_PILLS]...[/ACTION_PILLS] — static flow engine
+
+// ── LLM mode ─────────────────────────────────────────────────────────────────
+// Cards come pre-typed from the agentic loop's tool calls.
+// Legacy flow flags are derived from card types for backward compat with ChatArea.
 
 function parseJsonResponse(json) {
   const { message = '', cards = [], followUp = [] } = json;
 
   const actionPills = followUp.length ? followUp : null;
 
-  // Pass cards[] raw — ChatArea renders via CARD_REGISTRY
-  // Also populate legacy flags for backward compat with static flows
+  // Derive legacy flags so ChatArea's existing flow rendering still works
   let recommendations   = null;
   let refillFlow        = false;
   let upgradeFlow       = false;
@@ -26,25 +29,29 @@ function parseJsonResponse(json) {
         recommendations = recommendations || [];
         recommendations.push(card);
         break;
-      case 'refill':        refillFlow = true;          break;
-      case 'upgrade':       upgradeFlow = true;         break;
-      case 'redeem':        redeemFlow = true;          break;
-      case 'live_chat':     liveChatFlow = true;        break;
-      case 'phone_order':   phoneOrderFlow = card;      break;
-      case 'international': internationalFlow = true;   break;
-      case 'activation':    activationFlow = true;      break;
-      case 'byop':          byopFlow = true;            break;
+      case 'refill':        refillFlow = true;       break;
+      case 'upgrade':       upgradeFlow = true;      break;
+      case 'redeem':        redeemFlow = true;       break;
+      case 'live_chat':     liveChatFlow = true;     break;
+      case 'phone_order':   phoneOrderFlow = card;   break;
+      case 'international': internationalFlow = true; break;
+      case 'activation':    activationFlow = true;   break;
+      case 'byop':          byopFlow = true;         break;
     }
   }
 
   return {
-    message, actionPills,
-    cards: cards.length ? cards : null,      // raw cards[] for registry
+    message,
+    actionPills,
+    cards: cards.length ? cards : null,
     recommendations,
     refillFlow, upgradeFlow, redeemFlow, liveChatFlow,
     phoneOrderFlow, internationalFlow, activationFlow, byopFlow,
   };
 }
+
+// ── Static/legacy mode ────────────────────────────────────────────────────────
+// Parses [TAG]...[/TAG] format produced by the static flow engine.
 
 function parseTagResponse(text) {
   const pillsMatch = text.match(/\[ACTION_PILLS\](.*?)\[\/ACTION_PILLS\]/s);
@@ -98,20 +105,22 @@ function parseTagResponse(text) {
   };
 }
 
+// ── Entry point ───────────────────────────────────────────────────────────────
+
 export function parseResponse(input) {
-  // JSON object (LLM mode — Gemma 4 returns structured JSON)
+  // JSON object — LLM agentic mode (agentLoop returns a plain object)
   if (input && typeof input === 'object') {
     return parseJsonResponse(input);
   }
 
-  // JSON string (API response body)
+  // JSON string — API response body passed as string
   if (typeof input === 'string' && input.trimStart().startsWith('{')) {
     try {
       const parsed = JSON.parse(input);
       if (parsed.message !== undefined) return parseJsonResponse(parsed);
-    } catch { /* fall through to tag parser */ }
+    } catch { /* fall through */ }
   }
 
-  // Tag-based string (static flows + legacy)
+  // Tag-based string — static flow engine
   return parseTagResponse(typeof input === 'string' ? input : '');
 }

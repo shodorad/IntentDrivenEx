@@ -10,9 +10,12 @@ import { PLANS } from '../../data/products';
 
 export default function PlanComparison({ data = {} }) {
   const { state } = useChat();
-  const currentPlan = state.persona?.account?.plan || '';
+  const currentPlan = data.currentPlan || state.persona?.account?.plan || '';
 
-  const plans = PLANS.slice(0, 3);
+  // LLM mode: optionally filter/order plans via data.planIds
+  const plans = data.planIds?.length
+    ? data.planIds.map(id => PLANS.find(p => p.id === id)).filter(Boolean)
+    : PLANS.slice(0, 3);
   const features = ['Data', 'Network', 'Talk & Text', 'Hotspot', 'International', 'Disney+'];
 
   const getFeatureValue = (plan, feature) => {

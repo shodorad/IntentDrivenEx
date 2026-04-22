@@ -2,7 +2,7 @@
 // Vercel routes /api/* → serverless functions in production.
 const API_URL = '/api/chat';
 
-export async function callAPI(messages, systemPrompt, chatMode = 'static') {
+export async function callAPI(messages, systemPrompt, chatMode = 'static', persona = null) {
   const res = await fetch(API_URL, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -10,6 +10,7 @@ export async function callAPI(messages, systemPrompt, chatMode = 'static') {
       chatMode,
       system: systemPrompt,
       messages,
+      persona,  // used by agentLoop data tools; ignored in static mode
     }),
   });
 

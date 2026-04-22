@@ -19,10 +19,12 @@ export default function UsageChart({ data = {} }) {
   const { state } = useChat();
   const account = state.persona?.account || {};
 
-  const totalGB  = parseFloat(account.dataTotal)     || 5;
-  const usedGB   = totalGB - (parseFloat(account.dataRemaining) || 0.8);
+  // LLM mode: prefer data prop; fall back to persona
+  const totalGB  = parseFloat(data.dataTotal   || account.dataTotal)     || 5;
+  const remaining = parseFloat(data.dataRemaining || account.dataRemaining) || 0.8;
+  const usedGB   = totalGB - remaining;
   const pctUsed  = Math.round((usedGB / totalGB) * 100);
-  const daysLeft = account.daysUntilRenewal || 14;
+  const daysLeft = data.daysUntilRenewal || account.daysUntilRenewal || 14;
 
   const usagePoints = generateUsageData(totalGB, usedGB);
   const xLabels     = usagePoints.map((_, i) => i === 0 ? 'Start' : i === 30 ? 'Today' : `Day ${i}`);
@@ -87,7 +89,7 @@ export default function UsageChart({ data = {} }) {
         {/* Stats row */}
         <Stack direction="row" spacing={2} mt={1.5}>
           {[
-            { label: 'Remaining', value: `${account.dataRemaining || '0.8 GB'}`, color: statusColor },
+            { label: 'Remaining', value: `${data.dataRemaining || account.dataRemaining || '0.8 GB'}`, color: statusColor },
             { label: 'Days left',  value: `${daysLeft}d`,  color: '#6B7280' },
             { label: 'Daily avg',  value: `${(usedGB / Math.max(30 - daysLeft, 1)).toFixed(2)} GB`, color: '#6B7280' },
           ].map((stat) => (

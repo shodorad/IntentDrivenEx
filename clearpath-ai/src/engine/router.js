@@ -88,7 +88,7 @@ export async function route(conversationState, userText, persona, messageHistory
   if (chatMode === 'llm') {
     try {
       const systemPrompt = getSystemPrompt(persona);
-      const apiResponse = await callAPI(messageHistory, systemPrompt, chatMode);
+      const apiResponse = await callAPI(messageHistory, systemPrompt, chatMode, persona);
       return {
         response:     apiResponse,
         nextFlowId:   null,
@@ -159,7 +159,7 @@ export async function route(conversationState, userText, persona, messageHistory
   // Let Claude handle it with persona context.
   try {
     const systemPrompt = getSystemPrompt(persona);
-    const apiResponse = await callAPI(messageHistory, systemPrompt, chatMode);
+    const apiResponse = await callAPI(messageHistory, systemPrompt, chatMode, persona);
     // apiResponse is either a JSON object (LLM/static mode) or a plain string (legacy)
     return {
       response:     apiResponse,

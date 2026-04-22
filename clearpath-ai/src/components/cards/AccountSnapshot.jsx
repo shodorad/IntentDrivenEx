@@ -41,7 +41,21 @@ function StatTile({ icon, label, value, sub, color = '#00B5AD', progress }) {
 
 export default function AccountSnapshot({ data = {} }) {
   const { state } = useChat();
-  const a = state.persona?.account || {};
+  const account = state.persona?.account || {};
+
+  // LLM mode: prefer data prop; fall back to persona
+  const a = {
+    plan:             data.plan             || account.plan,
+    dataRemaining:    data.dataRemaining    || account.dataRemaining,
+    dataTotal:        data.dataTotal        || account.dataTotal,
+    dataPercent:      data.dataPercent      ?? account.dataPercent,
+    renewalDate:      data.renewalDate      || account.renewalDate,
+    daysUntilRenewal: data.daysUntilRenewal ?? account.daysUntilRenewal,
+    autoPayEnabled:   data.autoPayEnabled   ?? account.autoPayEnabled,
+    rewardsPoints:    data.rewardsPoints    ?? account.rewardsPoints,
+    device:           data.device           || account.device,
+    savedCard:        data.savedCard        || account.savedCard,
+  };
 
   const pct    = parseFloat(a.dataPercent) || 16;
   const statusColor = pct <= 20 ? '#DC3545' : pct <= 50 ? '#FFC107' : '#00B5AD';

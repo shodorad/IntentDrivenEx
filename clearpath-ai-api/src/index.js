@@ -8,7 +8,9 @@ const PORT = process.env.PORT || 3001;
 
 app.use(cors({
   origin: [
-    'http://localhost:5173',              // Vite dev
+    'http://localhost:5173',              // Vite dev (default port)
+    'http://localhost:5174',              // Vite dev (fallback port)
+    'http://localhost:5175',              // Vite dev (fallback port)
     'https://clearpath-ai-pearl.vercel.app', // Production frontend
   ],
 }));
