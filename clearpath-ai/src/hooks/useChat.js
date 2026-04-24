@@ -11,6 +11,10 @@ export function useChatActions() {
     dispatch({ type: 'CLEAR_ACTION_PILLS' });
     dispatch({ type: 'ADD_MESSAGE', payload: { role: 'user', content: text } });
     dispatch({ type: 'SET_LOADING', payload: true });
+    dispatch({ type: 'SET_THINKING_STAGE', payload: 'reading context' });
+
+    const t1 = setTimeout(() => dispatch({ type: 'SET_THINKING_STAGE', payload: 'analyzing your question' }), 1500);
+    const t2 = setTimeout(() => dispatch({ type: 'SET_THINKING_STAGE', payload: 'building your answer' }), 3000);
 
     try {
       const conversationState = {
@@ -71,6 +75,9 @@ export function useChatActions() {
         }
       });
     } finally {
+      clearTimeout(t1);
+      clearTimeout(t2);
+      dispatch({ type: 'SET_THINKING_STAGE', payload: null });
       dispatch({ type: 'SET_LOADING', payload: false });
     }
   }, [state, dispatch]);

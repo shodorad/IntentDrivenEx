@@ -14,6 +14,7 @@ const initialState = {
   chatMode: localStorage.getItem(CHAT_MODE_KEY) || 'static', // 'llm' | 'static'
   messages: [],     // { role, content, actionPills?, recommendations? }
   isLoading: false,
+  thinkingStage: null, // null | 'reading context' | 'analyzing your question' | 'building your answer'
   showTransparencyPanel: false,
   language: 'en',   // 'en' | 'es'
   signalBanner: null, // Derived from persona.signals[0] in LandingScreen
@@ -40,6 +41,8 @@ function chatReducer(state, action) {
       return { ...state, messages: [...state.messages, action.payload] };
     case 'SET_LOADING':
       return { ...state, isLoading: action.payload };
+    case 'SET_THINKING_STAGE':
+      return { ...state, thinkingStage: action.payload };
     case 'RESET_CHAT':
       return { ...initialState, language: state.language, persona: state.persona };
     case 'SET_PERSONA':

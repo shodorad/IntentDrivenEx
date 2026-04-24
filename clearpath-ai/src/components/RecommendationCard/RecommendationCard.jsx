@@ -12,19 +12,28 @@ function findProduct(type, id) {
   return null;
 }
 
-function PlanCard({ product, reason, isBest, onExplore, costDiff, solveHighlight }) {
+// density: 'single' | 'grid' | 'grid6' | 'grid9'
+const DENSITY_CARD_CLASS  = { single: styles.cardSingle,  grid: '', grid6: styles.cardGrid6,  grid9: styles.cardGrid9  };
+const DENSITY_TOP_CLASS   = { single: '',                 grid: '', grid6: styles.cardTopGrid6, grid9: styles.cardTopGrid9 };
+const DENSITY_FEAT_CLASS  = { single: '',                 grid: '', grid6: styles.featuresGrid6, grid9: styles.featuresGrid9 };
+
+function PlanCard({ product, reason, isBest, onExplore, costDiff, solveHighlight, density }) {
+  const showStats     = density === 'single' || density === 'grid';
+  const showHighlight = showStats && !!solveHighlight;
+  const maxFeatures   = density === 'grid9' ? 1 : density === 'grid6' ? 2 : isBest ? 6 : 4;
+
   return (
     <motion.div
-      className={`${styles.card} ${isBest ? styles.best : styles.alt}`}
+      className={[styles.card, isBest ? styles.best : styles.alt, DENSITY_CARD_CLASS[density]].join(' ')}
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.4 }}
     >
       {/* Gradient header */}
-      <div className={`${styles.cardTop} ${isBest ? styles.cardTopBest : styles.cardTopAlt}`}>
+      <div className={[styles.cardTop, isBest ? styles.cardTopBest : styles.cardTopAlt, DENSITY_TOP_CLASS[density]].join(' ')}>
         <div className={styles.cardTopRow}>
           <h3 className={styles.planName}>{product.name}</h3>
-          {product.badge && (
+          {product.badge && density !== 'grid9' && (
             <Badge variant="tealDark">{product.badge}</Badge>
           )}
         </div>
@@ -32,146 +41,148 @@ function PlanCard({ product, reason, isBest, onExplore, costDiff, solveHighlight
           {product.price !== null ? (
             <>
               <span className={styles.priceDollar}>$</span>
-              <span className={styles.priceAmount}>{product.price}</span>
-              <div className={styles.priceMeta}>
-                <span>/line</span>
-                <span>per month</span>
-              </div>
+              <span className={density === 'grid9' ? styles.priceAmountSmall : styles.priceAmount}>{product.price}</span>
+              {density !== 'grid9' && (
+                <div className={styles.priceMeta}>
+                  <span>/line</span>
+                  <span>per month</span>
+                </div>
+              )}
             </>
           ) : (
             <span className={styles.priceDynamic}>See current price</span>
           )}
         </div>
-        {product.priceNote && (
+        {product.priceNote && density === 'single' && (
           <div className={styles.priceNote}>{product.priceNote}</div>
         )}
-        {/* Cost differential badge */}
-        {costDiff && (
+        {costDiff && density !== 'grid9' && (
           <span className={styles.costDiffBadge}>{costDiff}</span>
         )}
       </div>
 
-      {/* Problem-solved highlight */}
-      {solveHighlight && (
+      {showHighlight && (
         <div className={styles.solveHighlight}>
           <Lightning size={14} weight="fill" />
           <span>{solveHighlight}</span>
         </div>
       )}
 
-      {/* Stats row */}
-      <div className={styles.statsRow}>
-        <div className={styles.stat}>
-          <span className={styles.statLabel}>Data</span>
-          <span className={styles.statValue}>{product.data}</span>
+      {showStats && (
+        <div className={styles.statsRow}>
+          <div className={styles.stat}>
+            <span className={styles.statLabel}>Data</span>
+            <span className={styles.statValue}>{product.data}</span>
+          </div>
+          <div className={styles.stat}>
+            <span className={styles.statLabel}>Network</span>
+            <span className={styles.statValue}>{product.network}</span>
+          </div>
+          <div className={styles.stat}>
+            <span className={styles.statLabel}>Talk & Text</span>
+            <span className={styles.statValue}>{product.talk}</span>
+          </div>
         </div>
-        <div className={styles.stat}>
-          <span className={styles.statLabel}>Network</span>
-          <span className={styles.statValue}>{product.network}</span>
-        </div>
-        <div className={styles.stat}>
-          <span className={styles.statLabel}>Talk & Text</span>
-          <span className={styles.statValue}>{product.talk}</span>
-        </div>
-      </div>
+      )}
 
-      {/* Features */}
-      <ul className={styles.features}>
-        {product.features.slice(0, isBest ? 6 : 4).map((f, i) => (
+      <ul className={[styles.features, DENSITY_FEAT_CLASS[density]].join(' ')}>
+        {product.features.slice(0, maxFeatures).map((f, i) => (
           <li key={i}>
-            <CheckCircle size={15} weight="fill" className={styles.checkIcon} />
+            <CheckCircle size={density === 'grid9' ? 12 : 15} weight="fill" className={styles.checkIcon} />
             {f}
           </li>
         ))}
       </ul>
 
-      {/* CTA */}
       <div className={styles.actions}>
         <Button
           variant={isBest ? 'primary' : 'outline'}
           size="sm"
           onClick={() => onExplore(product, 'plan', reason)}
         >
-          Upgrade Now
+          {density === 'grid9' ? 'Select' : 'Upgrade Now'}
         </Button>
       </div>
     </motion.div>
   );
 }
 
-function PhoneCard({ product, reason, isBest, onExplore, costDiff, solveHighlight }) {
+function PhoneCard({ product, reason, isBest, onExplore, costDiff, solveHighlight, density }) {
+  const showStats     = density === 'single' || density === 'grid';
+  const showImage     = showStats;
+  const showHighlight = showStats && !!solveHighlight;
+  const maxFeatures   = density === 'grid9' ? 1 : density === 'grid6' ? 2 : isBest ? 5 : 3;
+
   return (
     <motion.div
-      className={`${styles.card} ${isBest ? styles.best : styles.alt}`}
+      className={[styles.card, isBest ? styles.best : styles.alt, DENSITY_CARD_CLASS[density]].join(' ')}
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.4 }}
     >
       {/* Gradient header */}
-      <div className={`${styles.cardTop} ${isBest ? styles.cardTopBest : styles.cardTopAlt}`}>
+      <div className={[styles.cardTop, isBest ? styles.cardTopBest : styles.cardTopAlt, DENSITY_TOP_CLASS[density]].join(' ')}>
         <div className={styles.cardTopRow}>
           <h3 className={styles.planName}>{product.name}</h3>
-          {product.badge && (
+          {product.badge && density !== 'grid9' && (
             <Badge variant="tealDark">{product.badge}</Badge>
           )}
         </div>
         <div className={styles.priceRow}>
           <span className={styles.priceDollar}>$</span>
-          <span className={styles.priceAmount}>{product.price}</span>
+          <span className={density === 'grid9' ? styles.priceAmountSmall : styles.priceAmount}>{product.price}</span>
         </div>
-        {/* Cost differential badge */}
-        {costDiff && (
+        {costDiff && density !== 'grid9' && (
           <span className={styles.costDiffBadge}>{costDiff}</span>
         )}
       </div>
 
-      {/* Problem-solved highlight */}
-      {solveHighlight && (
+      {showHighlight && (
         <div className={styles.solveHighlight}>
           <Lightning size={14} weight="fill" />
           <span>{solveHighlight}</span>
         </div>
       )}
 
-      {/* Phone image */}
-      <div className={styles.phoneImageWrap}>
-        <PhoneImage src={product.image} alt={product.name} brand={product.brand} className={styles.phoneImage} />
-      </div>
+      {showImage && (
+        <div className={styles.phoneImageWrap}>
+          <PhoneImage src={product.image} alt={product.name} brand={product.brand} className={styles.phoneImage} />
+        </div>
+      )}
 
-      {/* Stats row */}
-      <div className={styles.statsRow}>
-        <div className={styles.stat}>
-          <span className={styles.statLabel}>Camera</span>
-          <span className={styles.statValue}>{product.camera}</span>
+      {showStats && (
+        <div className={styles.statsRow}>
+          <div className={styles.stat}>
+            <span className={styles.statLabel}>Camera</span>
+            <span className={styles.statValue}>{product.camera}</span>
+          </div>
+          <div className={styles.stat}>
+            <span className={styles.statLabel}>Storage</span>
+            <span className={styles.statValue}>{product.storage}</span>
+          </div>
+          <div className={styles.stat}>
+            <span className={styles.statLabel}>Battery</span>
+            <span className={styles.statValue}>{product.battery}</span>
+          </div>
         </div>
-        <div className={styles.stat}>
-          <span className={styles.statLabel}>Storage</span>
-          <span className={styles.statValue}>{product.storage}</span>
-        </div>
-        <div className={styles.stat}>
-          <span className={styles.statLabel}>Battery</span>
-          <span className={styles.statValue}>{product.battery}</span>
-        </div>
-      </div>
+      )}
 
-      {/* Features */}
-      <ul className={styles.features}>
-        {product.features.slice(0, isBest ? 5 : 3).map((f, i) => (
+      <ul className={[styles.features, DENSITY_FEAT_CLASS[density]].join(' ')}>
+        {product.features.slice(0, maxFeatures).map((f, i) => (
           <li key={i}>
-            <CheckCircle size={15} weight="fill" className={styles.checkIcon} />
+            <CheckCircle size={density === 'grid9' ? 12 : 15} weight="fill" className={styles.checkIcon} />
             {f}
           </li>
         ))}
       </ul>
 
-      {/* CTA */}
       <div className={styles.actions}>
         <Button
           variant="primary"
           size="sm"
           onClick={() => onExplore(product, 'phone', reason)}
         >
-          Upgrade Now
+          {density === 'grid9' ? 'Select' : 'Upgrade Now'}
         </Button>
       </div>
     </motion.div>
@@ -203,15 +214,34 @@ function HumanCard({ reason }) {
   );
 }
 
-export default function RecommendationCard({ recommendations, onExplore }) {
+const ROW_CLASS = {
+  single: styles.cardsRowSingle,
+  grid:   '',
+  grid6:  styles.cardsRowGrid6,
+  grid9:  styles.cardsRowGrid9,
+  compact: styles.cardsRowGrid6, // legacy alias
+};
+
+function deriveDensity(layout, count) {
+  // LLM-supplied layout takes precedence; fall back to count-based
+  if (layout && ROW_CLASS[layout] !== undefined) return layout;
+  if (count === 1)  return 'single';
+  if (count <= 3)   return 'grid';
+  if (count <= 6)   return 'grid6';
+  return 'grid9';
+}
+
+export default function RecommendationCard({ recommendations, layout, onExplore }) {
   if (!recommendations || recommendations.length === 0) return null;
+
+  const density = deriveDensity(layout, recommendations.length);
 
   // Sort: best first
   const sorted = [...recommendations].sort((a, b) => (b.isBest ? 1 : 0) - (a.isBest ? 1 : 0));
 
   return (
     <div className={styles.wrapper}>
-      <div className={styles.cardsRow}>
+      <div className={[styles.cardsRow, ROW_CLASS[density]].join(' ')}>
         {sorted.map((rec, i) => {
           if (rec.type === 'human') {
             return <HumanCard key={i} reason={rec.reason} />;
@@ -220,12 +250,11 @@ export default function RecommendationCard({ recommendations, onExplore }) {
           if (!product) return null;
 
           if (rec.type === 'plan') {
-            return <PlanCard key={i} product={product} reason={rec.reason} isBest={rec.isBest} onExplore={onExplore} costDiff={rec.costDiff} solveHighlight={rec.solveHighlight} />;
+            return <PlanCard key={i} product={product} reason={rec.reason} isBest={rec.isBest} onExplore={onExplore} costDiff={rec.costDiff} solveHighlight={rec.solveHighlight} density={density} />;
           }
-          return <PhoneCard key={i} product={product} reason={rec.reason} isBest={rec.isBest} onExplore={onExplore} costDiff={rec.costDiff} solveHighlight={rec.solveHighlight} />;
+          return <PhoneCard key={i} product={product} reason={rec.reason} isBest={rec.isBest} onExplore={onExplore} costDiff={rec.costDiff} solveHighlight={rec.solveHighlight} density={density} />;
         })}
       </div>
-
     </div>
   );
 }

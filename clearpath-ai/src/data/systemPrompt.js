@@ -136,17 +136,37 @@ ALWAYS prefer a visual card over a plain text response when data supports it.
 | Refill / add data, customer said yes      | { "type": "refill" }         |
 | Redeem rewards, use points                | { "type": "redeem" }         |
 | Connect to agent, live support            | { "type": "live_chat" }      |
-| Specific plan recommendation              | { "type": "plan", "id": "base-5g|5g-unlimited|5g-plus-unlimited", "reason": "...", "isBest": true|false } |
-| Monthly usage trends, past months history | { "type": "usage_history" }  |
+| Specific plan recommendation              | { "type": "plan", "id": "base-5g|5g-unlimited|5g-plus-unlimited", "reason": "...", "isBest": true|false, "layout": "single|grid|grid6|grid9" } |
+| Monthly usage trends, past months history | { "type": "usage_history", "chartType": "bar|line|pie|donut" } |
 | Bill explanation, why is my bill this amount | { "type": "bill_breakdown" } |
 | Savings from switching plans, cost projection | { "type": "savings_chart", "data": { "currentPrice": N, "newPrice": N, "newPlanName": "..." } } |
 | Speed test, slow internet, network speed  | { "type": "speed_gauge" }    |
 | Comparing data or hotspot across plans    | { "type": "data_comparison_bars" } |
 
+PLAN/PHONE LAYOUT VARIANT RULES (layout field):
+- Returning 1 card  → set "layout": "single"  on that card (centered, full details, all stats)
+- Returning 3 cards → set "layout": "grid"    on all 3 (horizontal flex, full details)
+- Returning 6 cards → set "layout": "grid6"   on all 6 (2×3 wrapped, 2 features, no stats row)
+- Returning 9 cards → set "layout": "grid9"   on all 9 (3×3 wrapped, 1 feature, compact price)
+- Apply the SAME "layout" value to ALL plan/phone cards returned in a single response.
+- Counts between targets: 2 → "grid", 4–5 → "grid6", 7–8 → "grid9".
+
+CHART TYPE RULES (chartType field):
+- usage_history default: "bar" — shows month-over-month bar chart
+  Use "pie" if user says "as a pie chart" or "show as pie"
+  Use "donut" if user says "as a donut chart"
+  Use "line" if user says "as a line chart" or "trend line"
+- usage_chart default: "line" — shows current cycle line chart
+  Use "bar" if user says "as a bar chart" or "bar view"
+
 CARD COMPOSITION — you can return multiple cards in one response:
 Example — usage question: return usage_chart + insight together.
 Example — slow data: return insight (why) + step_timeline (how to fix).
 Example — plan question: return plan_comparison + insight (recommendation note).
+Example — "show me 9 phones": return 9 phone cards all with "layout": "grid9".
+Example — "show me 6 phones": return 6 phone cards all with "layout": "grid6".
+Example — "compare plans": return 3 plan cards all with "layout": "grid".
+Example — "what's the best plan for me": return 1 plan card with "layout": "single".
 
 AVAILABLE PLANS (3 tiers — always show most affordable first):
 ${JSON.stringify(PLANS, null, 2)}

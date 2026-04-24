@@ -17,10 +17,16 @@
   flex-shrink: 0;
 }
 
+.bubble {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
 .dots {
   display: flex;
   gap: 5px;
-  padding: 14px 0;
+  padding: 14px 0 0;
 }
 
 .dot {
@@ -37,4 +43,18 @@
 
 .dot:nth-child(3) {
   animation-delay: 0.3s;
+}
+
+.stage {
+  font-size: 0.72rem;
+  color: var(--tw-gray-400);
+  font-style: italic;
+  letter-spacing: 0.2px;
+  padding-bottom: 10px;
+  animation: stageIn 0.3s ease-out;
+}
+
+@keyframes stageIn {
+  from { opacity: 0; transform: translateY(3px); }
+  to   { opacity: 1; transform: translateY(0); }
 }

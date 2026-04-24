@@ -157,6 +157,14 @@
   letter-spacing: -0.3px;
 }
 
+.priceAmountSmall {
+  font-size: 1.4rem;
+  font-weight: 800;
+  color: white;
+  line-height: 1;
+  letter-spacing: -0.5px;
+}
+
 .priceNote {
   font-size: 0.7rem;
   color: rgba(255, 255, 255, 0.7);
@@ -318,6 +326,73 @@
 
 .talkLink strong {
   color: var(--tw-teal);
+}
+
+/* ── Single layout — 1 card, centered ── */
+.cardsRowSingle {
+  justify-content: center;
+}
+
+.cardSingle {
+  flex: 0 1 300px;
+  max-width: 300px;
+}
+
+/* ── Grid6 layout — 2 rows × 3 cards, reduced density ── */
+.cardsRowGrid6 {
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.cardGrid6 {
+  flex: 0 1 calc(33.333% - 7px);
+  min-width: 0;
+}
+
+.cardTopGrid6 {
+  padding: 10px 10px 8px;
+}
+
+.featuresGrid6 {
+  padding: 6px 10px 2px;
+}
+
+/* ── Grid9 layout — 3 rows × 3 cards, ultra-minimal ── */
+.cardsRowGrid9 {
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.cardGrid9 {
+  flex: 0 1 calc(33.333% - 6px);
+  min-width: 0;
+}
+
+.cardTopGrid9 {
+  padding: 8px 10px 6px;
+}
+
+.featuresGrid9 {
+  padding: 4px 10px 4px;
+}
+
+/* ── Compact alias (legacy — maps to grid6 behaviour) ── */
+.cardsRowCompact {
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.cardCompact {
+  flex: 0 1 calc(33.333% - 7px);
+  min-width: 0;
+}
+
+.cardTopCompact {
+  padding: 10px 10px 8px;
+}
+
+.featuresCompact {
+  padding: 6px 10px 2px;
 }
 
 /* ── Mobile ── */

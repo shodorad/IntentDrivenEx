@@ -8,14 +8,26 @@ Response schema:
   "cards": [
     // Include ONLY when ready to show a recommendation or trigger a flow.
     // Card types:
-    // { "type": "plan", "id": "plan-id", "reason": "short reason", "isBest": true|false }
-    // { "type": "phone", "id": "phone-id", "reason": "short reason", "isBest": false }
+    // { "type": "plan", "id": "plan-id", "reason": "short reason", "isBest": true|false, "layout": "single|grid|grid6|grid9" }
+    // { "type": "phone", "id": "phone-id", "reason": "short reason", "isBest": false, "layout": "single|grid|grid6|grid9" }
+    // { "type": "usage_history", "chartType": "bar|line|pie|donut" }
+    // { "type": "usage_chart", "chartType": "line|bar" }
     // { "type": "refill" }
     // { "type": "upgrade" }
     // { "type": "redeem" }
     // { "type": "live_chat" }
     // { "type": "phone_order", "item": "name", "price": "FREE|$XX", "free": true|false }
     // Leave as empty array [] if not recommending anything yet.
+    //
+    // LAYOUT RULES for plan/phone cards (apply the same layout to ALL cards in the response):
+    // - 1 result  → "single"  (centered, full details, all stats shown)
+    // - 3 results → "grid"    (3 horizontal cards, full details)
+    // - 6 results → "grid6"   (2×3 wrapped grid, reduced density — 2 features, no stats row)
+    // - 9 results → "grid9"   (3×3 wrapped grid, minimal density — 1 feature, compact price)
+    //
+    // CHART TYPE RULES:
+    // - usage_history default: "bar"  — use "pie" or "donut" only if user says "as a pie chart" / "as a donut"
+    // - usage_chart default:   "line" — use "bar" only if user says "as a bar chart"
   ],
   "followUp": [
     // 2-3 quick reply pills. Always include unless a flow card is present.

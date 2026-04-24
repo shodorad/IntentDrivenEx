@@ -24,7 +24,8 @@ function RegistryCards({ cards, onExplore }) {
 
   const flushRec = () => {
     if (recBuffer.length) {
-      grouped.push({ type: '_grouped_rec', cards: recBuffer });
+      const layout = recBuffer[0]?.layout; // LLM sets same layout on all cards in a batch
+      grouped.push({ type: '_grouped_rec', cards: recBuffer, layout });
       recBuffer = [];
     }
   };
@@ -41,7 +42,7 @@ function RegistryCards({ cards, onExplore }) {
 
   return grouped.map((item, idx) => {
     if (item.type === '_grouped_rec') {
-      return <RecommendationCard key={idx} recommendations={item.cards} onExplore={onExplore} />;
+      return <RecommendationCard key={idx} recommendations={item.cards} layout={item.layout} onExplore={onExplore} />;
     }
     const Component = CARD_REGISTRY[item.type];
     if (!Component) return null;
@@ -147,7 +148,7 @@ export default function ChatArea() {
             )}
           </div>
         ))}
-        {state.isLoading && <TypingIndicator />}
+        {state.isLoading && <TypingIndicator stage={state.thinkingStage} />}
 
         {/* Persistent escape hatch — always visible during chat */}
         <div className={styles.escapeHatch}>
