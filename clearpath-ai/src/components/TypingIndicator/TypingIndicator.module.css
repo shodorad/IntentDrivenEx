@@ -15,46 +15,61 @@
   justify-content: center;
   color: white;
   flex-shrink: 0;
+  animation: avatarPulse 2s ease-in-out infinite;
 }
 
 .bubble {
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 6px;
+  padding-top: 2px;
 }
 
-.dots {
-  display: flex;
-  gap: 5px;
-  padding: 14px 0 0;
+.label {
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: var(--tw-teal);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
 }
 
-.dot {
-  width: 7px;
-  height: 7px;
-  background: var(--tw-gray-400);
-  border-radius: 50%;
-  animation: bounce 1.2s infinite;
+/* Constant sweeping loader bar */
+.shimmer {
+  width: 180px;
+  height: 3px;
+  border-radius: 100px;
+  background: linear-gradient(
+    90deg,
+    rgba(0, 181, 173, 0.10) 0%,
+    rgba(0, 181, 173, 0.55) 38%,
+    rgba(0, 181, 173, 0.95) 50%,
+    rgba(0, 181, 173, 0.55) 62%,
+    rgba(0, 181, 173, 0.10) 100%
+  );
+  background-size: 200% 100%;
+  animation: shimmerSweep 1.4s linear infinite;
 }
 
-.dot:nth-child(2) {
-  animation-delay: 0.15s;
-}
-
-.dot:nth-child(3) {
-  animation-delay: 0.3s;
-}
-
+/* Cycling status text — re-triggered by key change */
 .stage {
   font-size: 0.72rem;
   color: var(--tw-gray-400);
   font-style: italic;
   letter-spacing: 0.2px;
-  padding-bottom: 10px;
-  animation: stageIn 0.3s ease-out;
+  animation: stageIn 0.35s ease-out;
+}
+
+@keyframes avatarPulse {
+  0%, 100% { box-shadow: 0 0 0 0   rgba(0, 181, 173, 0.35); }
+  50%       { box-shadow: 0 0 0 7px rgba(0, 181, 173, 0);    }
+}
+
+@keyframes shimmerSweep {
+  0%   { background-position:  200% 0; }
+  100% { background-position: -200% 0; }
 }
 
 @keyframes stageIn {
-  from { opacity: 0; transform: translateY(3px); }
-  to   { opacity: 1; transform: translateY(0); }
+  from { opacity: 0; transform: translateY(4px); }
+  to   { opacity: 1; transform: translateY(0);   }
 }
